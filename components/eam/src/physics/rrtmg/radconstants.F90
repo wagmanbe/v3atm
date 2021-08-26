@@ -87,11 +87,11 @@ integer, parameter, public :: rrtmg_lw_cloudsim_band = 6  ! rrtmg band for 10.5 
 integer, parameter, public :: nlwbands = 16
 integer, parameter, public :: nbndlw = 16
 
-real(r8), parameter :: wavenumber1_longwave(nlwbands) = &! Longwave spectral band limits (cm-1)
+real(r8), parameter, public :: wavenumber1_longwave(nlwbands) = &! Longwave spectral band limits (cm-1)
     (/   10._r8,  350._r8, 500._r8,   630._r8,  700._r8,  820._r8,  980._r8, 1080._r8, &
        1180._r8, 1390._r8, 1480._r8, 1800._r8, 2080._r8, 2250._r8, 2390._r8, 2600._r8 /)
 
-real(r8), parameter :: wavenumber2_longwave(nlwbands) = &! Longwave spectral band limits (cm-1)
+real(r8), parameter, public :: wavenumber2_longwave(nlwbands) = &! Longwave spectral band limits (cm-1)
     (/  350._r8,  500._r8,  630._r8,  700._r8,  820._r8,  980._r8, 1080._r8, 1180._r8, &
        1390._r8, 1480._r8, 1800._r8, 2080._r8, 2250._r8, 2390._r8, 2600._r8, 3250._r8 /)
 
