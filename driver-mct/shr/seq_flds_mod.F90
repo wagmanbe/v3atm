@@ -383,6 +383,8 @@ contains
 
     character(len=*),parameter :: subname = '(seq_flds_set) '
 
+    integer,  parameter :: nlwbands = 16  !number of LW radiation bands, added by U-MICH
+
     !-------------------------------------------------------------------------------
 
     call seq_comm_setptrs(ID,mpicom=mpicom)
@@ -3445,6 +3447,69 @@ contains
     ! Read namelist for CARMA
     ! if carma_flds are specified then setup fields for CLM to CAM communication
     !-----------------------------------------------------------------------------
+
+! added by U-MICH team on Dec.15, 2019 -->
+    ! leaf area index
+    call seq_flds_add(l2x_states,"Sl_tlai")
+    call seq_flds_add(x2a_states,"Sl_tlai")
+    longname = 'leaf area index'
+    stdname  = 'leaf area index'
+    units    = '%'
+    attname  = 'tlai'
+    call metadata_set(attname, longname, stdname, units)
+
+    !surface spectral emissivity
+    do num=1,nlwbands
+       write(cnum,'(i2.2)') num
+       name = 'Sl_srf_emis_spec' // cnum
+       call seq_flds_add(x2a_states,trim(name))
+       call seq_flds_add(l2x_states,trim(name))
+       longname = 'surface spectral emissivity'
+       stdname  = 'surface_spectral_emissivity'
+       units    = '1'
+       attname  = 'Sl_srf_emis_spec'//cnum
+       call metadata_set(attname, longname, stdname, units)
+    enddo
+   
+    ! surface skin temperature
+    call seq_flds_add(x2a_states,"Sl_ts_atm")
+    call seq_flds_add(l2x_states,"Sl_ts_atm")
+    longname = 'corrected surface temperature passed to atmosphere model'
+    stdname  = 'surface temperature'
+    units    = 'K'
+    attname  = 'ts_atm'
+
+    ! A switch for turning on surface spectral emissivity
+    call seq_flds_add(a2x_states,'Do_emis')
+    call seq_flds_add(x2l_states,'Do_emis')
+    longname = 'A switch for turning on surface spectral emissivity'
+    stdname  = 'Switch for surface emissivity'
+    units  ='None'
+    attname ='do_emis'
+
+   do num=1,nlwbands
+      write(cnum,'(i2.2)') num
+      ! downward longwave spectral flux (W/m**2) 
+      name = 'Faxa_lwdn_spec' // cnum
+      call seq_flds_add(a2x_fluxes,trim(name))
+      call seq_flds_add(x2l_fluxes,trim(name))
+      longname = 'Downward longwave spectral flux'
+      stdname  = 'downwelling_longwave_spectral_flux'
+      units    = 'W m-2'
+      attname  = 'Faxa_lwdn_spec'//cnum
+      call metadata_set(attname, longname, stdname, units)
+
+      !surface spectral emissivity
+      name = 'Faxa_emis_spec' // cnum
+      call seq_flds_add(a2x_fluxes,trim(name))
+      call seq_flds_add(x2l_fluxes,trim(name))
+      longname = 'surface spectral emissivity'
+      stdname  = 'surface_spectral_emissivity'
+      units    = '1'
+      attname  = 'Faxa_emis_spec'//cnum
+      call metadata_set(attname, longname, stdname, units)
+   enddo
+! <-- end of U-MICH add
 
     call shr_carma_readnl(nlfilename='drv_flds_in', carma_fields=carma_fields)
     if (carma_fields /= ' ') then
