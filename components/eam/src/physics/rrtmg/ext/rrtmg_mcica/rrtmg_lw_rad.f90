@@ -64,7 +64,7 @@
 ! Move call to rrtmg_lw_ini and following use association to 
 ! GCM initialization area
 !      use rrtmg_lw_init, only: rrtmg_lw_ini
-      use rrtmg_lw_rtrnmc, only: rtrnmc
+      use rrtmg_lw_rtrnmc, only: rtrnmc, rtr2function  ! U-MICH team add rrtr2function
       use rrtmg_lw_setcoef, only: setcoef
       use rrtmg_lw_taumol, only: taumol
 
@@ -81,15 +81,18 @@
 ! Public subroutines
 !------------------------------------------------------------------
 
+! U-MICH team modify (add input: flag_rtr2, ssacmcl, and asmcmcl) -->
       subroutine rrtmg_lw &
-            (lchnk   ,ncol    ,nlay    ,icld    ,                   &
+            (lchnk   ,ncol    ,nlay    ,icld    , flag_rtr2,        &
              play    ,plev    ,tlay    ,tlev    ,tsfc    ,h2ovmr  , &
              o3vmr   ,co2vmr  ,ch4vmr  ,o2vmr   ,n2ovmr  ,&
              cfc11vmr,cfc12vmr, &
              cfc22vmr,ccl4vmr ,emis    ,inflglw ,iceflglw,liqflglw, &
-             cldfmcl ,taucmcl ,ciwpmcl ,clwpmcl ,reicmcl ,relqmcl , &
+             cldfmcl ,taucmcl , ssacmcl, asmcmcl,  &
+             ciwpmcl ,clwpmcl ,reicmcl ,relqmcl , &
              tauaer  , &
              uflx    ,dflx    ,hr      ,uflxc   ,dflxc,  hrc, uflxs, dflxs )
+! <---
 
 ! -------- Description --------
 
@@ -383,6 +386,15 @@
       real(kind=r8) :: fnetc(0:nlay)            ! clear sky net longwave flux (w/m2)
       real(kind=r8) :: htrc(0:nlay)             ! clear sky longwave heating rate (k/day)
 
+! U-MICH team -->
+! New variables in TAMU Ice Optics/Scattering scheme
+      logical, intent(in)       :: flag_rtr2       ! flag to control cloud LW scattering
+      real(kind=r8), intent(in) :: ssacmcl(:,:,:)  ! Cloud single scattering albedo
+      real(kind=r8), intent(in) :: asmcmcl(:,:,:)  ! Cloud asymmetric factor
+      real(kind=r8) :: ssacmc(ngptlw,nlay)         ! LOCAL, cloud singlescattering albedo
+      real(kind=r8) :: asmcmc(ngptlw,nlay)         ! LOCAL, cloud asymmetric factor
+! <--- 
+
 ! Initializations
 
       oneminus = 1._r8 - 1.e-6_r8
@@ -425,14 +437,18 @@
 !  Prepare atmospheric profile from GCM for use in RRTMG, and define
 !  other input parameters.  
 
+! U-MICH team comment (add input ssacmcl & asmcmcl, output ssacmc & asmcmc)--> 
          call inatm (iplon, nlay, icld, iaer, &
               play, plev, tlay, tlev, tsfc, h2ovmr, &
               o3vmr, co2vmr, ch4vmr, o2vmr, n2ovmr, cfc11vmr, cfc12vmr, &
               cfc22vmr, ccl4vmr, emis, inflglw, iceflglw, liqflglw, &
-              cldfmcl, taucmcl, ciwpmcl, clwpmcl, reicmcl, relqmcl, tauaer, &
+              cldfmcl, taucmcl, ssacmcl, asmcmcl, &
+              ciwpmcl, clwpmcl, reicmcl, relqmcl, tauaer, &
               pavel, pz, tavel, tz, tbound, semiss, coldry, &
               wkl, wbrodl, wx, pwvcm, inflag, iceflag, liqflag, &
-              cldfmc, taucmc, ciwpmc, clwpmc, reicmc, dgesmc, relqmc, taua)
+              cldfmc, taucmc, ssacmc, asmcmc, &
+              ciwpmc, clwpmc, reicmc, dgesmc, relqmc, taua)
+! <---
 
 !  For cloudy atmosphere, use cldprop to set cloud optical properties based on
 !  input cloud physical properties.  Select method based on choices described
@@ -496,11 +512,24 @@
 ! to be used.  Clear sky calculation is done simultaneously.
 ! For McICA, RTRNMC is called for clear and cloudy calculations.
 
+! U-MICH team add rtr2function option -->
+      if (flag_rtr2) then
+      ! use new 2/4 hybrid transfer routine (U-MICH add)
+            call rtr2function(nlay, istart, iend, iout, pz, semiss, ncbands, &
+                              cldfmc, taucmc, ssacmc, asmcmc, &
+                              planklay, planklev, plankbnd, &
+                              pwvcm, fracs, taut, &
+                              totuflux, totdflux, fnet, htr, &
+                              totuclfl, totdclfl, fnetc, htrc, totufluxs, totdfluxs)
+      else 
+      ! use default transfer routine
          call rtrnmc(nlay, istart, iend, iout, pz, semiss, ncbands, &
                      cldfmc, taucmc, planklay, planklev, plankbnd, &
                      pwvcm, fracs, taut, &
                      totuflux, totdflux, fnet, htr, &
                      totuclfl, totdclfl, fnetc, htrc, totufluxs, totdfluxs )
+      end if 
+! <---
 
 !  Transfer up and down fluxes and heating rate to output arrays.
 !  Vertical indexing goes from bottom to top
@@ -523,14 +552,18 @@
       end subroutine rrtmg_lw
 
 !***************************************************************************
+! U-MICH team modify (add input ssacmcl & asmcmcl, output ssacmc & asmcmc)-->
       subroutine inatm (iplon, nlay, icld, iaer, &
               play, plev, tlay, tlev, tsfc, h2ovmr, &
               o3vmr, co2vmr, ch4vmr, o2vmr, n2ovmr, cfc11vmr, cfc12vmr, &
               cfc22vmr, ccl4vmr, emis, inflglw, iceflglw, liqflglw, &
-              cldfmcl, taucmcl, ciwpmcl, clwpmcl, reicmcl, relqmcl, tauaer, &
+              cldfmcl, taucmcl, ssacmcl, asmcmcl, &
+              ciwpmcl, clwpmcl, reicmcl, relqmcl, tauaer, &
               pavel, pz, tavel, tz, tbound, semiss, coldry, &
               wkl, wbrodl, wx, pwvcm, inflag, iceflag, liqflag, &
-              cldfmc, taucmc, ciwpmc, clwpmc, reicmc, dgesmc, relqmc, taua)
+              cldfmc, taucmc, ssacmc, asmcmc, &
+              ciwpmc, clwpmc, reicmc, dgesmc, relqmc, taua)
+! <---      
 !***************************************************************************
 !
 !  Input atmospheric profile from GCM, and prepare it for use in RRTMG_LW.
@@ -678,6 +711,13 @@
       integer :: isp, l, ix, n, imol, ib, ig            ! Loop indices
       real(kind=r8) :: amm, amttl, wvttl, wvsh, summol  
 
+! U-MICH team add input & output-->
+      real(kind=r8), intent(in) :: ssacmcl(:,:,:)   ! Cloud single scattering albedo
+      real(kind=r8), intent(in) :: asmcmcl(:,:,:)   ! cloud phase  function expansion coefficient
+      real(kind=r8), intent(out) :: ssacmc(:,:)     ! Cloud single scattering albedo
+      real(kind=r8), intent(out) :: asmcmc(:,:)     ! cloud phase  function expansion coefficient
+! <---
+
 !  Initialize all molecular amounts and cloud properties to zero here, then pass input amounts
 !  into RRTM arrays below.
 
@@ -693,7 +733,11 @@
       taua(:,:) = 0.0_r8
       amttl = 0.0_r8
       wvttl = 0.0_r8
- 
+ ! U-MICH team add -->
+      ssacmc (:,:) = 0.0_r8
+      asmcmc(:,:) = 0.0_r8
+! <---
+
 !  Set surface temperature.
       tbound = tsfc(iplon)
 
@@ -807,6 +851,10 @@
                taucmc(ig,l) = taucmcl(ig,iplon,nlay-l)
                ciwpmc(ig,l) = ciwpmcl(ig,iplon,nlay-l)
                clwpmc(ig,l) = clwpmcl(ig,iplon,nlay-l)
+! U-MICH team add -->
+               ssacmc(ig,l)  = ssacmcl(ig,iplon,nlay-l)
+               asmcmc(ig,l)  = asmcmcl(ig,iplon,nlay-l)
+! <--- 
             enddo
             reicmc(l) = reicmcl(iplon,nlay-l)
             if (iceflag .eq. 3) then
@@ -825,6 +873,10 @@
          dgesmc(nlay) = 0.0_r8
          relqmc(nlay) = 0.0_r8
          taua(nlay,:) = 0.0_r8
+! U-MICH team add -->
+         ssacmc(:,nlay) = 0.0_r8
+         asmcmc(:,nlay) = 0.0_r8
+! <--- 
 
       endif
       
