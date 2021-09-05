@@ -3964,6 +3964,30 @@ to make this functionality default
 Default: FALSE
 </entry>
 
+<entry id="flag_mc6" type="logical"  category="radiation"
+       group="radiation_nl" valid_values="" >
+Indicates whether to consider cloud scattering in longwave radiative calculations (U-MICH)
+Default: FALSE
+</entry>
+
+<entry id="flag_emis" type="logical"  category="radiation"
+       group="radiation_nl" valid_values="" >
+Indicates whether to consider observational surface emissivity (U-MICH)
+Default: FALSE
+</entry>
+
+<entry id="flag_rtr2" type="logical"  category="radiation"
+       group="radiation_nl" valid_values="" >
+Indicates whether to use a hybrid 2-4 stream radiative transfer in longwave radiative calculations (U-MICH)
+Default: FALSE
+</entry>
+
+<entry id="flag_scat" type="logical"  category="radiation"
+       group="radiation_nl" valid_values="" >
+Indicates whether to use a hybrid 2-4 stream radiative transfer in longwave radiative calculations (U-MICH)
+Default: FALSE
+</entry>
+
 <entry id="raytau0" type="real"  category="physc_test"
        group="cam_inparm" valid_values="" >
 Approximate value of decay time at model top (days);
