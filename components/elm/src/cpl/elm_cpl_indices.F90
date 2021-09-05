@@ -24,6 +24,12 @@ module elm_cpl_indices
 
   ! lnd -> drv (required)
 
+! Added by U-MICH team on Dec.15, 2019 -->
+  integer, parameter, private :: nlwbands = 16 ! number of LW radiation bands
+  integer, public :: index_l2x_Sl_ts_atm            ! temperature to atmosphere
+  integer, public :: index_l2x_Sl_srf_emis_spec(nlwbands) ! surface emissivity
+  integer, public :: index_l2x_Sl_tlai              ! leaf area index
+! <--
   integer, public ::index_l2x_Flrl_rofsur     ! lnd->rtm input liquid surface fluxes
   integer, public ::index_l2x_Flrl_rofgwl     ! lnd->rtm input liquid gwl fluxes
   integer, public ::index_l2x_Flrl_rofsub     ! lnd->rtm input liquid subsurface fluxes
@@ -71,6 +77,11 @@ module elm_cpl_indices
 
   ! drv -> lnd (required)
 
+! added by U-MICH team on Dec.15, 2019 -->
+  integer, public ::index_x2l_Faxa_lwdn_spec(nlwbands) = 0      ! downward lw heat spectral flux
+  integer, public ::index_x2l_Faxa_emis_spec(nlwbands) = 0      ! surface emissivity
+  integer, public ::index_x2l_Do_emis                  = 0      ! A switch for turning on surface spectral emissivity
+! <--
   integer, public ::index_x2l_Sa_z            ! bottom atm level height
   integer, public ::index_x2l_Sa_u            ! bottom atm level zon wind
   integer, public ::index_x2l_Sa_v            ! bottom atm level mer wind
@@ -171,6 +182,15 @@ contains
     ! clm -> drv 
     !-------------------------------------------------------------
 
+! Added by U-MICH team on Dec.15, 2019 -->
+    index_l2x_Sl_ts_atm = mct_avect_indexra(l2x,'Sl_ts_atm') 
+    do num=1,nlwbands
+        write(cnum,'(i2.2)') num
+       index_l2x_Sl_srf_emis_spec(num) = mct_avect_indexra(l2x,trim('Sl_srf_emis_spec'//cnum)) 
+    enddo
+    index_l2x_Sl_t          = mct_avect_indexra(l2x,'Sl_t')
+    index_l2x_Sl_tlai       = mct_avect_indexra(l2x,'Sl_tlai') 
+! <--
     index_l2x_Flrl_rofsur   = mct_avect_indexra(l2x,'Flrl_rofsur')
     index_l2x_Flrl_rofgwl   = mct_avect_indexra(l2x,'Flrl_rofgwl')
     index_l2x_Flrl_rofsub   = mct_avect_indexra(l2x,'Flrl_rofsub')
@@ -226,6 +246,14 @@ contains
     ! drv -> clm
     !-------------------------------------------------------------
 
+! Added by U-MICH team on Dec.15, 2019 -->
+    index_x2l_Do_emis  = mct_avect_indexra(x2l,'Do_emis')
+    do num=1,nlwbands
+        write(cnum,'(i2.2)') num
+       index_x2l_Faxa_lwdn_spec(num)     = mct_avect_indexra(x2l,trim('Faxa_lwdn_spec'//cnum)) 
+       index_x2l_Faxa_emis_spec(num)     = mct_avect_indexra(x2l,trim('Faxa_emis_spec'//cnum)) 
+    enddo
+! <--
     index_x2l_Sa_z          = mct_avect_indexra(x2l,'Sa_z')
     index_x2l_Sa_u          = mct_avect_indexra(x2l,'Sa_u')
     index_x2l_Sa_v          = mct_avect_indexra(x2l,'Sa_v')

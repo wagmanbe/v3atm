@@ -26,6 +26,12 @@ module lnd2atmType
   type, public :: lnd2atm_type
 
      ! lnd->atm
+! Added by U-MICH team on Dec.15, 2019 -->
+     real(r8), pointer :: t_grnd(:) => null()      ! ground surface temperature (Kelvin)
+     real(r8), pointer :: tlai(:)   => null()      ! leaf area index
+     real(r8), pointer :: ts_atm(:) => null()      !radiative temperature for atmosphpere model
+     real(r8), pointer :: srf_emis_spec(:,:) => null() !surface emissivity
+! <--
      real(r8), pointer :: t_rad_grc          (:)   => null() ! radiative temperature (Kelvin)
      real(r8), pointer :: t_ref2m_grc        (:)   => null() ! 2m surface air temperature (Kelvin)
      real(r8), pointer :: q_ref2m_grc        (:)   => null() ! 2m surface specific humidity (kg/kg)
@@ -106,10 +112,18 @@ contains
     ! !LOCAL VARIABLES:
     real(r8) :: ival  = 0.0_r8  ! initial value
     integer  :: begg, endg
+
+    integer, parameter :: nlwbands = 16 !number of LW radiation bands, U-MICH
     !------------------------------------------------------------------------
 
     begg = bounds%begg; endg= bounds%endg
 
+! Added by U-MICH team on Dec.15, 2019 -->
+    allocate(this%t_grnd(begg:endg))  ; this%t_grnd  (:) =ival
+    allocate(this%tlai(begg:endg))    ; this%tlai    (:) =ival
+    allocate(this%ts_atm(begg:endg))  ; this%ts_atm  (:) =ival
+    allocate(this%srf_emis_spec(begg:endg, nlwbands))  ;  this%srf_emis_spec (:,:) =ival
+! <--
     allocate(this%t_rad_grc            (begg:endg))            ; this%t_rad_grc            (:) =ival
     allocate(this%t_ref2m_grc          (begg:endg))            ; this%t_ref2m_grc          (:) =ival
     allocate(this%q_ref2m_grc          (begg:endg))            ; this%q_ref2m_grc          (:) =ival

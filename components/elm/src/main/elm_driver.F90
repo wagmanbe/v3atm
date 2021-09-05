@@ -1357,7 +1357,8 @@ contains
     call lnd2atm(bounds_proc,       &
          atm2lnd_vars, surfalb_vars, frictionvel_vars,    &
          energyflux_vars, solarabs_vars, drydepvel_vars,  &
-         vocemis_vars, dust_vars, ch4_vars, soilhydrology_vars, lnd2atm_vars)
+         vocemis_vars, dust_vars, ch4_vars, soilhydrology_vars, lnd2atm_vars, &
+         canopystate_vars) ! canopystate_vars is added by U-MICH team on Dec.15, 2019 
     call t_stopf('lnd2atm')
 
     ! ============================================================================
