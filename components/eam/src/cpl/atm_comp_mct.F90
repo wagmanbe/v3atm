@@ -1148,32 +1148,32 @@ CONTAINS
        status = nf90_inq_varid (ncid, 'lat', lat_varID )
        !status = nf90_get_var (ncid, lat_varID, lat)
        status = nf90_get_var (ncid, lat_varID, lat_tmp)
-       lat(:) = real(lat_tmp(:), shr_kind_r8)
+       lat(:) = real(lat_tmp(:), r8)
  
        status = nf90_inq_varid (ncid, 'lon', lon_varID )
        !status = nf90_get_var (ncid, lon_varID, lon)
        status = nf90_get_var (ncid, lon_varID, lon_tmp)
-       lon(:) = real(lon_tmp(:), shr_kind_r8)
+       lon(:) = real(lon_tmp(:), r8)
  
        status = nf90_inq_varid (ncid, 'water_emissivity', waterID )
        !status = nf90_get_var (ncid, waterID, water_emis)
        status = nf90_get_var (ncid, waterID, water_emis_tmp)
-       water_emis(:) = real(water_emis_tmp(:), shr_kind_r8)
+       water_emis(:) = real(water_emis_tmp(:), r8)
  
        status = nf90_inq_varid (ncid, 'ice_emissivity', iceID )
        !status = nf90_get_var (ncid, iceID, ice_emis)
        status = nf90_get_var (ncid, iceID, ice_emis_tmp)
-       ice_emis(:) = real(ice_emis_tmp(:), shr_kind_r8)
+       ice_emis(:) = real(ice_emis_tmp(:), r8)
  
        status = nf90_inq_varid (ncid, 'desert_emissivity', desertID )
        !status = nf90_get_var (ncid, desertID, desert_emis)
        status = nf90_get_var (ncid, desertID, desert_emis_tmp)
-       desert_emis(:) = real(desert_emis_tmp(:), shr_kind_r8)
+       desert_emis(:) = real(desert_emis_tmp(:), r8)
  
        status = nf90_inq_varid (ncid, 'grass_emissivity', grassID )
        !status = nf90_get_var (ncid, grassID, grass_emis)
        status = nf90_get_var (ncid, grassID, grass_emis_tmp)
-       grass_emis(:) = real(desert_emis_tmp(:), shr_kind_r8)
+       grass_emis(:) = real(desert_emis_tmp(:), r8)
  
  
        !count =(/nlwbands,1,1,1/)
@@ -1198,7 +1198,7 @@ CONTAINS
           status = nf90_inq_varid (ncid, 'band_emissivity', emis_varID )
           !status = nf90_get_var (ncid, emis_varID, band_emissivity,start = start,count = count)
           status = nf90_get_var (ncid, emis_varID, band_emissivity,start = start,count = cnt)
-          surface_emis(i,:) = real(band_emissivity(:),shr_kind_r8)
+          surface_emis(i,:) = real(band_emissivity(:),r8)
        enddo
         
        status = NF90_CLOSE( ncid )
@@ -1348,7 +1348,7 @@ CONTAINS
  
    do i=1,m
      !z = cos(3.141592654d0*(i-0.25d0)/(n+0.5d0))
-     z = cos(3.141592654_r8*(real(i,shr_kind_r8)-0.25_r8)/(real(n,shr_kind_r8)+0.5_r8))
+     z = cos(3.141592654_r8*(real(i,r8)-0.25_r8)/(real(n,r8)+0.5_r8))
      z1 = 0.0_r8
      do while(abs(z-z1) .gt. eps)
        p1 = 1.0_r8
@@ -1357,9 +1357,9 @@ CONTAINS
          p3 = p2
          p2 = p1
          !p1 = ((2.0d0*j-1.0d0)*z*p2-(j-1.0d0)*p3)/j
-         p1 = ((2.0_r8*real(j,shr_kind_r8)-1.0_r8)*z*p2-(real(j,shr_kind_r8)-1.0_r8)*p3)/real(j,shr_kind_r8)
+         p1 = ((2.0_r8*real(j,r8)-1.0_r8)*z*p2-(real(j,r8)-1.0_r8)*p3)/real(j,r8)
        end do
-       pp = real(n,shr_kind_r8)*(z*p1-p2)/(z*z-1.0_r8)
+       pp = real(n,r8)*(z*p1-p2)/(z*z-1.0_r8)
        z1 = z
        z = z1 - p1/pp
      end do
