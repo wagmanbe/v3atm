@@ -52,7 +52,7 @@ real(r8), allocatable :: abs_lw_ice(:,:)
 ! 
 ! indexes into pbuf for optical parameters of MG clouds
 ! 
-   integer :: i_dei, i_mu, i_lambda, i_iciwp, i_iclwp, i_des, i_icswp
+   integer :: i_dei, i_mu, i_lambda, i_iciwp, i_iclwp, i_des, i_icswp, i_cld
 
 ! indexes into constituents for old optics
    integer :: &
@@ -107,6 +107,7 @@ subroutine cloud_rad_props_init()
    i_iclwp  = pbuf_get_index('ICLWP',errcode=err)
    i_des    = pbuf_get_index('DES',errcode=err)
    i_icswp  = pbuf_get_index('ICSWP',errcode=err)
+   i_cld    = pbuf_get_index('CLD',errcode=err)
 
    ! old optics
    call cnst_get_ind('CLDICE', ixcldice)
