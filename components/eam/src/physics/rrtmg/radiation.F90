@@ -125,7 +125,8 @@ subroutine radiation_readnl(nlfile, dtime_in)
 
    ! Variables defined in namelist
    namelist /radiation_nl/ iradsw, iradlw, irad_always, &
-                           use_rad_dt_cosz, spectralflux
+                           use_rad_dt_cosz, spectralflux, &
+                           flag_mc6, flag_emis, flag_rtr2, flag_scat
 
    ! Read the namelist, only if called from master process
    ! TODO: better documentation and cleaner logic here?
