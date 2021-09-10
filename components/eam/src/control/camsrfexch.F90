@@ -81,10 +81,9 @@ module camsrfexch
      real(r8), allocatable :: wsresp(:)   ! first-order response of low-level wind to surface fluxes
      real(r8), allocatable :: tau_est(:)  ! stress estimated to be in equilibrium with ubot/vbot
      real(r8), allocatable :: ugust(:)    ! gustiness value
-     ! Added by U-MICH team on Dec.15, 2019  -->
-     real(r8)::flwds_spec(pcols,16)  ! spectral downward flux at surface  
-     real(r8)::emis_spec(pcols,16)   ! spectral surface emissivity
-     integer :: do_emis(pcols)       ! A switch for turning on spectral surface emissivity 
+     real(r8), allocatable :: flwds_spec(:,:)  ! spectral downward flux at surface  
+     real(r8), allocatable :: emis_spec(:,:)   ! spectral surface emissivity
+     integer, allocatable :: do_emis(:)       ! A switch for turning on spectral surface emissivity 
 ! <--
   end type cam_out_t 
 
@@ -129,9 +128,9 @@ module camsrfexch
      real(r8), pointer, dimension(:,:) :: dstflx   ! dust fluxes
      real(r8), pointer, dimension(:,:) :: meganflx ! MEGAN fluxes
      ! Added by U-MICH team on Dec.15, 2019 -->
-     real(r8) :: tlai(pcols)             ! leaf area index   
-     real(r8) :: ts_atm(pcols)           ! surface radiative temperature from t_rad 
-     real(r8) :: srf_emis_spec(pcols,16) ! surface spectral emissivity  
+     real(r8), allocatable :: tlai(:)             ! leaf area index   
+     real(r8), allocatable :: ts_atm(:)           ! surface radiative temperature from t_rad 
+     real(r8), allocatable :: srf_emis_spec(:,:) ! surface spectral emissivity  
 ! <--
   end type cam_in_t    
 
@@ -283,6 +282,15 @@ CONTAINS
        allocate (cam_in(c)%ssq(pcols), stat=ierror)
        if ( ierror /= 0 ) call endrun('HUB2ATM_ALLOC error: allocation error ssq')
 
+       allocate (cam_in(c)%tlai(pcols), stat=ierror)
+       if ( ierror /= 0 ) call endrun('HUB2ATM_ALLOC error: allocation error tlai')
+
+       allocate (cam_in(c)%ts_atm(pcols), stat=ierror)
+       if ( ierror /= 0 ) call endrun('HUB2ATM_ALLOC error: allocation error ts_atm')
+
+       allocate (cam_in(c)%srf_emis_spec(pcols,16), stat=ierror)
+       if ( ierror /= 0 ) call endrun('HUB2ATM_ALLOC error: allocation error srf_emis_spec')
+
        if (index_x2a_Fall_flxdst1>0) then
           ! Assume 4 bins from surface model ....
           allocate (cam_in(c)%dstflx(pcols,4), stat=ierror)
@@ -346,11 +354,9 @@ CONTAINS
        if (lnd_drydep .and. n_drydep>0) then
           cam_in(c)%depvel (:,:) = 0._r8
        endif
-       ! Added by U-MICH team on Dec.15,2019
        cam_in(c)%tlai       (:) = posinf    
        cam_in(c)%ts_atm     (:) = posinf    
        cam_in(c)%srf_emis_spec(:,:) = 1.0_r8
-       ! <--
     end do
 
   end subroutine hub2atm_alloc
@@ -510,6 +516,15 @@ CONTAINS
 
        allocate (cam_out(c)%ugust(pcols), stat=ierror)
        if ( ierror /= 0 ) call endrun('ATM2HUB_ALLOC error: allocation error ugust')
+
+       allocate (cam_out(c)%flwds_spec(pcols,16), stat=ierror)
+       if ( ierror /= 0 ) call endrun('ATM2HUB_ALLOC error: allocation error flwds_spec')
+
+       allocate (cam_out(c)%emis_spec(pcols,16), stat=ierror)
+       if ( ierror /= 0 ) call endrun('ATM2HUB_ALLOC error: allocation error emis_spec')
+
+       allocate (cam_out(c)%do_emis(pcols), stat=ierror)
+       if ( ierror /= 0 ) call endrun('ATM2HUB_ALLOC error: allocation error do_emis')
     enddo  
 
     do c = begchunk,endchunk
@@ -553,11 +568,9 @@ CONTAINS
        cam_out(c)%wsresp(:)   = 0._r8
        cam_out(c)%tau_est(:)  = 0._r8
        cam_out(c)%ugust(:)    = 0._r8
-       ! Added by U-MICH team on Dec.15, 2019 -->
        cam_out(c)%flwds_spec(:,:) = 0._r8 
        cam_out(c)%emis_spec(:,:)  = 0._r8  
        cam_out(c)%do_emis(:)      = 0
-       ! <--
     end do
 
   end subroutine atm2hub_alloc
@@ -605,6 +618,9 @@ CONTAINS
           deallocate(cam_out(c)%wsresp)
           deallocate(cam_out(c)%tau_est)
           deallocate(cam_out(c)%ugust)
+          deallocate(cam_out(c)%flwds_spec)
+          deallocate(cam_out(c)%emis_spec)
+          deallocate(cam_out(c)%do_emis)
        enddo  
 
        deallocate(cam_out)
@@ -659,6 +675,9 @@ CONTAINS
           deallocate(cam_in(c)%ustar)
           deallocate(cam_in(c)%re)
           deallocate(cam_in(c)%ssq)
+          deallocate(cam_in(c)%tlai)
+          deallocate(cam_in(c)%ts_atm)
+          deallocate(cam_in(c)%srf_emis_spec)
 
           if(associated(cam_in(c)%dstflx)) then
              deallocate(cam_in(c)%dstflx)
