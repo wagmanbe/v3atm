@@ -121,6 +121,7 @@ contains
     do i = 1,ncol
       ! Changed by U-MICH team on Dec.15, 2019  -->
       ! This change is to replace original surface skin temperature with new one
+      tint(i,1) = pstate%t(i,1)
       tint(i,pverp) = ts_lw(i)
       ! <--
        do k = 2,pver
