@@ -71,22 +71,6 @@ CONTAINS
 
 ! This change is to compute surface skin temperature and pass it to cam_in
     call get_curr_date(yr, mon, day, tod)
-    pi = 4._r8*atan(1._r8)
-    sizebuf=0
-    do c=begchunk, endchunk
-       ncols = get_ncols_p(c)
-       call get_rlat_all_p(c, ncols, lats)
-       call get_rlon_all_p(c, ncols, lons)
-       do i=1,ncols
-          sizebuf = sizebuf+1
-          lats2(sizebuf) = lats(i)*180._r8/pi
-          if (lons(i) .lt. 0._r8) then
-             lons2(sizebuf) = lons(i)*180._r8/pi + 180._r8
-          else
-             lons2(sizebuf) = lons(i)*180._r8/pi
-          endif
-       enddo
-    enddo
 
     !*** using realstic emissivity ***       
     if (cam_out(begchunk)%do_emis(1) .eq. 1) then
@@ -95,6 +79,22 @@ CONTAINS
           allocate(emis0(pcols*(endchunk-begchunk+1),nlwbands))
        end if
        if (mon .ne. month_last_read) then
+          pi = 4._r8*atan(1._r8)
+          sizebuf=0
+          do c=begchunk, endchunk
+             ncols = get_ncols_p(c)
+             call get_rlat_all_p(c, ncols, lats)
+             call get_rlon_all_p(c, ncols, lons)
+             do i=1,ncols
+                sizebuf = sizebuf+1
+                lats2(sizebuf) = lats(i)*180._r8/pi
+                if (lons(i) .lt. 0._r8) then
+                   lons2(sizebuf) = lons(i)*180._r8/pi + 180._r8
+                else
+                   lons2(sizebuf) = lons(i)*180._r8/pi
+                endif
+             enddo
+          enddo
           call t_startf('SURF_EMIS_READ')
           call read_surface_emis(sizebuf,lats2,lons2,mon,emis0(1:sizebuf,:) )
                               
