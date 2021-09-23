@@ -5,11 +5,11 @@ module atm_import_export
 
 contains
 
-  subroutine atm_import( x2a, cam_in, restart_init )
+  subroutine atm_import( x2a, cam_in, cam_out, restart_init )
 
     !-----------------------------------------------------------------------
     use cam_cpl_indices
-    use camsrfexch,     only: cam_in_t
+    use camsrfexch,     only: cam_in_t, cam_out_t
     use phys_grid ,     only: get_ncols_p
     use ppgrid    ,     only: begchunk, endchunk, pcols
     use shr_const_mod,  only: shr_const_stebol
@@ -19,12 +19,15 @@ contains
     use co2_cycle     , only: data_flux_ocn, data_flux_fuel
     use physconst     , only: mwco2
     use time_manager  , only: is_first_step, get_curr_date
+    use perf_mod      , only: t_startf, t_stopf
     use radconstants  , only: nlwbands
+    use surface_emis_mod, only: surface_emis_intr
     !
     ! Arguments
     !
-    real(r8)      , intent(in)    :: x2a(:,:)
+    real(r8)      , intent(inout)    :: x2a(:,:)
     type(cam_in_t), intent(inout) :: cam_in(begchunk:endchunk)
+    type(cam_out_t), optional, intent(in) :: cam_out(begchunk:endchunk)
     logical, optional, intent(in) :: restart_init
     !
     ! Local variables
@@ -235,12 +238,28 @@ contains
                 cam_in(c)%lwup(i) = shr_const_stebol*(cam_in(c)%ts(i)**4)
                 ! added by U-MICH team on Dec.15, 2019       
                 cam_in(c)%ts_atm(i)      = sqrt(sqrt((cam_in(c)%lwup(i)/shr_const_stebol)))  
-                cam_in(c)%srf_emis_spec(i,1:16) = 1.0_r8
+                cam_in(c)%srf_emis_spec(i,1:nlwbands) = 1.0_r8
                 ! <--
              end do
           end do
        end if
        first_time = .false.
+    else
+       if (cam_out(begchunk)%do_emis(1) .eq. 1) then   ! to be consistent with when the block was in atm_comp_mct
+         call t_startf('SURF_EMIS')
+         call surface_emis_intr(cam_in,cam_out)
+         ig=1
+         do c=begchunk,endchunk
+            ncols = get_ncols_p(c) 
+            do i=1,ncols
+               x2a(index_x2a_Sl_ts_atm, ig) = cam_in(c)%ts_atm(i)
+               x2a(index_x2a_Sl_srf_emis_spec(:),ig) = &
+                          cam_in(c)%srf_emis_spec(i,:)
+               ig=ig+1
+            end do  ! i
+         end do ! chunk
+         call t_stopf('SURF_EMIS')
+       end if
     end if
 
   end subroutine atm_import
