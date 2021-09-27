@@ -32,10 +32,11 @@ module surface_emis_mod
 !--------------------------------------------------------------------------
 
   integer, save :: month_last_read = -999
-  real(r8), save, allocatable:: emis0(:,:)
+  real(r8), save, allocatable :: surface_emis(:,:,:)
   real(r8) :: v1_rrtmg_lw(nlwbands + 1)   ! RRTMG_LW band edges
   real(r8) :: desert_emis(nlwbands), water_emis(nlwbands),ice_emis(nlwbands), &
               grass_emis(nlwbands), snow_emis(nlwbands)
+  character(256) :: surf_emis_file='surface_emissivity_1x1_to_ne30np4_RRTMG_53deg.ra_c20210416.nc'
 
 !
 !================================================================================
@@ -52,12 +53,11 @@ CONTAINS
     type(cam_out_t), intent(IN) :: cam_out(begchunk:endchunk)
 
     ! This change is to define and initialize new variables
-    integer :: i,j,c,ncols,sizebuf
+    integer :: i,j,c,ncols
     real(r8) :: ts_lw              ! surface temperature derived from longwave upward flux
     real(r8) :: lats(pcols)           ! array of chunk latitudes
     real(r8) :: lons(pcols)           ! array of chunk longitude
     real(r8) :: pi
-    real(r8) :: lats2(pcols*(endchunk-begchunk+1)),lons2(pcols*(endchunk-begchunk+1))
 
     integer :: yr              ! CAM current year
     integer :: mon             ! CAM current month
@@ -76,28 +76,11 @@ CONTAINS
     if (cam_out(begchunk)%do_emis(1) .eq. 1) then
        if (month_last_read .le. 0) then
           ! never read
-          allocate(emis0(pcols*(endchunk-begchunk+1),nlwbands))
+          allocate(surface_emis(pcols,nlwbands,begchunk:endchunk))
        end if
        if (mon .ne. month_last_read) then
-          pi = 4._r8*atan(1._r8)
-          sizebuf=0
-          do c=begchunk, endchunk
-             ncols = get_ncols_p(c)
-             call get_rlat_all_p(c, ncols, lats)
-             call get_rlon_all_p(c, ncols, lons)
-             do i=1,ncols
-                sizebuf = sizebuf+1
-                lats2(sizebuf) = lats(i)*180._r8/pi
-                if (lons(i) .lt. 0._r8) then
-                   lons2(sizebuf) = lons(i)*180._r8/pi + 180._r8
-                else
-                   lons2(sizebuf) = lons(i)*180._r8/pi
-                endif
-             enddo
-          enddo
           call t_startf('SURF_EMIS_READ')
-          call read_surface_emis(sizebuf,lats2,lons2,mon,emis0(1:sizebuf,:) )
-                              
+          call read_surface_emis_all(mon)
           call t_stopf('SURF_EMIS_READ')
            month_last_read = mon
            if(masterproc) then
@@ -105,33 +88,29 @@ CONTAINS
            endif
        endif
 
-       sizebuf=0
        do c=begchunk, endchunk
           ncols = get_ncols_p(c)
-
           do i=1,ncols
-             sizebuf = sizebuf + 1
-
              if (cam_in(c)%landfrac(i).gt. 0.99_r8 .and. cam_in(c)%icefrac(i) .lt. 0.01_r8 .and. &
                      (cam_in(c)%snowhland(i) + cam_in(c)%snowhice(i)).lt. 0.001_r8) then
                 ! if original emissivity over band 1080-1180 cm-1, ie.
                 ! cam_in%srf_emis_spec(i,8) is
                 ! smaller than 0.8, then the original surface type
                 ! of this grid is desert, otherwise is non-desert
-                 cam_in(c)%srf_emis_spec(i,:)= emis0(sizebuf,:)
+                 cam_in(c)%srf_emis_spec(i,:)= surface_emis(i,:,c)
   
                 ! if the original surface type is non-desert but LAI is
                 ! smaller than 0.001, change to desert type
-                 if (cam_in(c)%tlai(i).lt. 0.001_r8 .and. emis0(sizebuf,8)>0.8_r8) then
+                 if (cam_in(c)%tlai(i).lt. 0.001_r8 .and. surface_emis(i,8,c)>0.8_r8) then
                    cam_in(c)%srf_emis_spec(i,:)  = desert_emis
                  endif
                 ! if the orignal surface type is desert but LAI larger than
                 ! 2, change to grass type
-                 if (cam_in(c)%tlai(i).gt. 2._r8 .and. emis0(sizebuf,8)<0.8_r8) then
+                 if (cam_in(c)%tlai(i).gt. 2._r8 .and. surface_emis(i,8,c)<0.8_r8) then
                    cam_in(c)%srf_emis_spec(i,:)  = grass_emis
                  endif
              else
-                 cam_in(c)%srf_emis_spec(i,:)  =  emis0(sizebuf,:) * cam_in(c)%landfrac(i) + &
+                 cam_in(c)%srf_emis_spec(i,:)  =  surface_emis(i,:,c) * cam_in(c)%landfrac(i) + &
                          ice_emis * cam_in(c)%icefrac(i) + water_emis * cam_in(c)%ocnfrac(i)
              endif  ! end if of cam_in(c)%landfrac, %icefrac, and %snowhland 
   
@@ -149,130 +128,174 @@ CONTAINS
 
   end subroutine surface_emis_intr
 
-!-------------------------------------------
-! U-MICH team added the following subroutines/functions -->  
+  subroutine read_surface_emis_all(month)
 
-  subroutine read_surface_emis(ncols,lats2,lons2,mn,surface_emis)
-  !  This subroutine is added by U-MICH team on Dec.15, 2019
-  !  This subroutine is to read surface emissivity from dataset
+  !  alternative approach to read emissivity data. masterproc read all and scatter
+  !  data already regridded to target model grid
 
       use netcdf
-  
-      use time_manager, only: get_curr_date
-      use ppgrid
-
       use error_messages, only : handle_ncerr
-      use radconstants  , only : nlwbands  ! added by U-MICH team on Dec.15, 2019
-      use cam_logfile   , only : iulog
+      use mpishorthand
 
       implicit none
-      integer :: ncid, status, latid,lonid,bandid,timeid
-      character(256) filename
+      integer month
+      integer :: ncid, status
 
-      integer :: ntime, nlat, nlon, nband,i,mn
-      real, allocatable :: band_emissivity(:)
+      integer :: ntime, nband,i
+      integer :: ncol,j
+
+      integer :: dimID, varid
+      integer :: start(3),count(3)
+      logical :: EMIS_File_Present
+
       real :: water_emis_tmp(nlwbands), ice_emis_tmp(nlwbands), &
               desert_emis_tmp(nlwbands), grass_emis_tmp(nlwbands)
-      character(len = nf90_max_name) :: RecordDimName
-      integer :: lat_varID,emis_varID, lon_varID, waterID, iceID, desertID, grassID
-      real, allocatable:: lat_tmp(:), lon_tmp(:)
-      real(r8), allocatable:: lat(:), lon(:)
-      !integer ::start(4),count(4)
-      integer ::start(4),cnt(4)
-      integer :: ncols,j
-      integer ::ilats, ilons
-      real(r8) :: lats2(ncols)           ! array of chunk latitudes
-      real(r8) :: lons2(ncols)           ! array of chunk longitude
-      real(r8) :: minvalue
-      real(r8),intent(out) :: surface_emis(ncols, nlwbands)
+      integer :: waterID, iceID, desertID, grassID
 
-      filename = "surface_emissivity_1x1_UMRad_53deg.nc"
-      !filename = "/global/cscratch1/sd/xianwen/data/emis/surface_emissivity_1x1_RRTMGP_53deg.nc"
-      status = nf90_open(trim(filename), nf90_nowrite, ncid)
-      status = nf90_inq_dimid(ncid, "time", timeID)
-      status = nf90_inq_dimid(ncid, "lat", latID)
-      status = nf90_inq_dimid(ncid, "lon", lonID)
-      status = nf90_inq_dimid(ncid, "band", bandID)
+      EMIS_File_Present = .false.
+
+      if(masterproc) then
+         inquire(FILE=trim(surf_emis_file),EXIST=EMIS_File_Present)
+      endif
+#ifdef SPMD
+      call mpibcast(EMIS_File_Present, 1, mpilog, 0, mpicom)
+#endif
+      if(.not.EMIS_File_Present) call endrun('Surface emissivity file not exist!')
+
+      ! masterproc does all the work: read and scatter
+
+      if(masterproc) then 
+        status = nf90_open(trim(surf_emis_file), nf90_nowrite, ncid)
+        if(status.ne.NF90_NOERR) then
+           write(iulog,*)'NF90_OPEN: failed for file ',trim(surf_emis_file)
+           write(iulog,*) nf90_strerror(status)
+           call endrun ('Error open surface emissivity file.')
+        endif
+
+        status = nf90_inq_dimid(ncid, "time", dimID)
+        status = nf90_inquire_dimension(ncid, dimID,len=ntime)
+
+        status = nf90_inq_dimid(ncid, "ncol", dimID)
+        status = nf90_inquire_dimension(ncid, dimID,len=ncol)
+
+        status = nf90_inq_dimid(ncid, "band", dimID)
+        status = nf90_inquire_dimension(ncid, dimID,len=nband)
+        write(iulog,*)'Surface emissivity ncol and nband',ncol,nband
+
+        if (month_last_read .le. 0) then
+           status = nf90_inq_dimid(ncid, "water_emissivity", waterID)
+           status = nf90_inq_dimid(ncid, "ice_emissivity", iceID)
+           status = nf90_inq_dimid(ncid, "desert_emissivity", desertID)
+           status = nf90_inq_dimid(ncid, "grass_emissivity", grassID)
+
+           status = nf90_inq_varid (ncid, 'water_emissivity', waterID )
+           status = nf90_get_var (ncid, waterID, water_emis_tmp)
+           water_emis(:) = real(water_emis_tmp(:), r8)
+  
+           status = nf90_inq_varid (ncid, 'ice_emissivity', iceID )
+           status = nf90_get_var (ncid, iceID, ice_emis_tmp)
+           ice_emis(:) = real(ice_emis_tmp(:), r8)
+  
+           status = nf90_inq_varid (ncid, 'desert_emissivity', desertID )
+           status = nf90_get_var (ncid, desertID, desert_emis_tmp)
+           desert_emis(:) = real(desert_emis_tmp(:), r8)
+  
+           status = nf90_inq_varid (ncid, 'grass_emissivity', grassID )
+           status = nf90_get_var (ncid, grassID, grass_emis_tmp)
+           grass_emis(:) = real(desert_emis_tmp(:), r8)
+
+        endif
+
+       ! check consistency between nband and nlwbands, and ncol and model horizontal dim
       
-      if (month_last_read .le. 0) then
-         status = nf90_inq_dimid(ncid, "water_emissivity", waterID)
-         status = nf90_inq_dimid(ncid, "ice_emissivity", iceID)
-         status = nf90_inq_dimid(ncid, "desert_emissivity", desertID)
-         status = nf90_inq_dimid(ncid, "grass_emissivity", grassID)
+      endif ! masterproc
+
+#ifdef SPMD
+      call mpibcast(water_emis,  nlwbands, mpir8, 0, mpicom)
+      call mpibcast(ice_emis,    nlwbands, mpir8, 0, mpicom)
+      call mpibcast(desert_emis, nlwbands, mpir8, 0, mpicom)
+      call mpibcast(grass_emis,  nlwbands, mpir8, 0, mpicom)
+
+      ! should ncol and nband be broadcast? Do it anyway
+      ! apparently needed in call to scatter_field_to_chunk via start and count
+      call mpibcast(ncol,  1, mpiint, 0, mpicom)
+      call mpibcast(nband, 1, mpiint, 0, mpicom)
+
+#endif
+      count =(/ncol,nband,1/)  ! if data oriented this way
+      start =(/1,1,month/)
+
+      call read_and_scatter_se(ncid, 'band_emissivity', start, count, surface_emis)
+
+      if(masterproc) then
+        status = NF90_CLOSE( ncid )
       endif
 
-      status =  nf90_inquire_dimension( ncid, timeID,len=ntime )
-      status =  nf90_inquire_dimension( ncid, latID,len=nlat )
-      status =  nf90_inquire_dimension( ncid, lonID,len=nlon )
-      status =  nf90_inquire_dimension( ncid, bandID,len=nband )
-      ! nband needs to be get only once. xianwen. 
-      !status =  nf90_inquire_dimension( ncid, waterID,len=nband )
-      !status =  nf90_inquire_dimension( ncid, iceID,len=nband )
-      !status =  nf90_inquire_dimension( ncid, desertID,len=nband )
-      !status =  nf90_inquire_dimension( ncid, grassID,len=nband )
+  end subroutine read_surface_emis_all
+  
+  !---------------------------------------
+  ! Get and scatter emissivity data for SE
+  !---------------------------------------
+  subroutine read_and_scatter_se (ncid, vname, strt3, cnt3, out_x)
+  use netcdf
+  use ppgrid, only                 : pcols,begchunk,endchunk
+  use phys_grid, only              :scatter_field_to_chunk
 
-      allocate(band_emissivity(nband))
-      allocate(lat_tmp(nlat))
-      allocate(lon_tmp(nlon))
-      allocate(lat(nlat))
-      allocate(lon(nlon))
-      
-       
-      status = nf90_inq_varid (ncid, 'lat', lat_varID )
-      !status = nf90_get_var (ncid, lat_varID, lat)
-      status = nf90_get_var (ncid, lat_varID, lat_tmp)
-      lat(:) = real(lat_tmp(:), r8)
+  integer, intent(in)             :: ncid
+  integer, intent(in)             :: strt3(3), cnt3(3)
+  character (len = *), intent(in) :: vname
+  real(r8), intent(out)           :: out_x(pcols,nlwbands,begchunk:endchunk)
 
-      status = nf90_inq_varid (ncid, 'lon', lon_varID )
-      !status = nf90_get_var (ncid, lon_varID, lon)
-      status = nf90_get_var (ncid, lon_varID, lon_tmp)
-      lon(:) = real(lon_tmp(:), r8)
+  ! local variables
+  real(r8), allocatable           :: Xemis(:,:)
+  real(r8)                        :: tinfo
+  integer                         :: istat, varid, varid1
+  integer                         :: emis_ncol, emis_nband
 
+  emis_ncol = cnt3(1)
+  emis_nband = cnt3(2)
 
-      if (month_last_read .le. 0) then
-         status = nf90_inq_varid (ncid, 'water_emissivity', waterID )
-         status = nf90_get_var (ncid, waterID, water_emis_tmp)
-         water_emis(:) = real(water_emis_tmp(:), r8)
+  if (masterproc) then
+    allocate(Xemis(emis_ncol,emis_nband))
+    call t_startf ('read_emissivity_data')
+    istat = nf90_inq_varid(ncid,vname,varid)
+    if (istat .ne. NF90_NOERR) then
+        write(iulog,*) nf90_strerror(istat)
+        call endrun ('READ_EMISSIVITY_INQ_VARID')
+    end if
+    istat = nf90_get_var(ncid,varid,Xemis,strt3,cnt3)
+    if (istat .ne. NF90_NOERR) then
+        write(iulog,*) nf90_strerror(istat)
+        call endrun ('READ_EMISSIVITY_GET_VAR')
+    end if
+    call t_stopf ('read_emissivity_data')
 
-         status = nf90_inq_varid (ncid, 'ice_emissivity', iceID )
-         status = nf90_get_var (ncid, iceID, ice_emis_tmp)
-         ice_emis(:) = real(ice_emis_tmp(:), r8)
+    ! check whether the time slice is read in correctly
+    istat = nf90_inq_varid(ncid,'time',varid1)
+    if (istat .ne. NF90_NOERR) then
+         write(iulog,*) nf90_strerror(istat)
+         call endrun ('READ_EMISSIVITY_INQ_VARID')
+     end if
+     istat = nf90_get_var(ncid,varid1,tinfo,start=(/strt3(3)/))
+     if (istat .ne. NF90_NOERR) then
+         write(iulog,*) nf90_strerror(istat)
+         call endrun ('READ_EMISSIVITY_GET_VAR')
+     end if
+     write(iulog,*) 'Emissivity: Current time slice is: ', tinfo, ', strt3(3) = ', strt3(3), ', reading variable: ', vname
+  end if
+  call t_startf ('distribute_data')
+  ! original from phys_grid, may need to do band by band
+  ! !  call scatter_field_to_chunk(1,         1,1,Nudge_ncol,PSanal,Target_PS)
+  ! call scatter_field_to_chunk(1,Nudge_nlev,1,Nudge_ncol,Xanal,out_x)
 
-         status = nf90_inq_varid (ncid, 'desert_emissivity', desertID )
-         status = nf90_get_var (ncid, desertID, desert_emis_tmp)
-         desert_emis(:) = real(desert_emis_tmp(:), r8)
+  call scatter_field_to_chunk(1,emis_nband,1, emis_ncol,Xemis,out_x)
 
-         status = nf90_inq_varid (ncid, 'grass_emissivity', grassID )
-         status = nf90_get_var (ncid, grassID, grass_emis_tmp)
-         grass_emis(:) = real(desert_emis_tmp(:), r8)
-      endif
+  if(masterproc) then
+     deallocate(Xemis)
+  endif
+  call t_stopf ('distribute_data')
 
-      cnt =(/nlwbands,1,1,1/)
-      do i = 1, ncols
-         minvalue= 10000.0_r8
-         do j=1, nlat
-           if (abs(lat(j) - lats2(i)) .le. minvalue)  then
-             ilats = j
-             minvalue = abs(lat(j) - lats2(i))
-           endif
-         enddo
-         minvalue= 10000.0_r8
-         do j=1, nlon
-           if (abs(lon(j) - lons2(i)) .le. minvalue)  then
-             ilons = j
-             minvalue = abs(lon(j) - lons2(i))
-           endif
-         enddo
-         start =(/1,ilons,ilats,mn/)
-         status = nf90_inq_varid (ncid, 'band_emissivity', emis_varID )
-         status = nf90_get_var (ncid, emis_varID, band_emissivity,start = start,count = cnt)
-         surface_emis(i,:) = real(band_emissivity(:),r8)
-      enddo
-       
-      status = NF90_CLOSE( ncid )
-
-  end subroutine read_surface_emis
-
+  end subroutine
   subroutine get_Ts_from_LW_emis(v1, emis, LW, LWdown, v1_num, nguass_point, Ts)
   !  This subroutine is made by U-MICH team on Dec.15, 2019
   !  This subroutine is to obtain the Ts that can give the right upward LW
