@@ -1523,7 +1523,6 @@ subroutine tphysac (ztodt,   cam_in,  &
     use phys_control,       only: use_qqflx_fixer
     use co2_cycle,          only: co2_cycle_set_ptend, co2_transport
     use co2_diagnostics,    only: get_carbon_sfc_fluxes, get_carbon_air_fluxes
-    use cam_history,        only: outfld
 
     implicit none
 
