@@ -192,10 +192,12 @@ end subroutine linoz_readnl
 
     ! define additional output
 
-    call addfld( 'LINOZ_DO3LNZ'    , (/ 'lev' /), 'A', '/s'     , 'O3LNZ vmr tendency by linearized ozone chemistry'   )
-    call addfld( 'LINOZ_DO3LNZ_PSC', (/ 'lev' /), 'A', '/s'     , 'O3LNZ vmr loss by PSCs using Carille et al. (1990)' )
-    call addfld( 'LINOZ_2DDO3LNZ'    , horiz_only, 'A', 'DU/s'     , 'O3LNZ 2D DU tendency by linearized ozone chemistry'   )
-    call addfld( 'LINOZ_2DDO3LNZ_PSC', horiz_only, 'A', 'DU/s'     , 'O3LNZ 2D DU loss by PSCs using Carille et al. (1990)' )
+    if (o3lnz_ndx >0) then
+        call addfld( 'LINOZ_DO3LNZ'    , (/ 'lev' /), 'A', '/s'     , 'O3LNZ vmr tendency by linearized ozone chemistry'   )
+        call addfld( 'LINOZ_DO3LNZ_PSC', (/ 'lev' /), 'A', '/s'     , 'O3LNZ vmr loss by PSCs using Carille et al. (1990)' )
+        call addfld( 'LINOZ_2DDO3LNZ'    , horiz_only, 'A', 'DU/s'     , 'O3LNZ 2D DU tendency by linearized ozone chemistry'   )
+        call addfld( 'LINOZ_2DDO3LNZ_PSC', horiz_only, 'A', 'DU/s'     , 'O3LNZ 2D DU loss by PSCs using Carille et al. (1990)' )
+    endif
     call addfld( 'LINOZ_SSO3'   , (/ 'lev' /), 'A', 'kg'     , 'steady state O3 in LINOZ'                        )
     call addfld( 'LINOZ_O3COL'  , (/ 'lev' /), 'A', 'DU'     , 'ozone column above'                                 )
     call addfld( 'LINOZ_O3CLIM' , (/ 'lev' /), 'A', 'mol/mol', 'climatology of ozone in LINOZ'                      )
@@ -205,16 +207,16 @@ end subroutine linoz_readnl
     call addfld( 'LINOZ_DO3_PSC', (/ 'lev' /), 'A', '/s'     , 'O3 vmr loss by PSCs using Carille et al. (1990)' )
     call addfld( 'LINOZ_2DDO3'  , horiz_only, 'A', 'DU/s'     , 'O3 2D DU tendency by linearized ozone chemistry'   )
     call addfld( 'LINOZ_2DDO3_PSC', horiz_only, 'A', 'DU/s'     , 'O3 2D DU loss by PSCs using Carille et al. (1990)' )
-    if(linoz_v3)then
-    call addfld( 'LINOZ_NOYSFCSINK', horiz_only, 'A', 'Tg/yr/m2'   , 'surface noylnz sink in LINOZ v3 with an e-fold to a fixed concentration' )
-    call addfld( 'LINOZ_N2OSFCSRC',  horiz_only, 'A', 'Tg/yr/m2'   , 'surface n2o source in LINOZ v3 with an e-fold to a fixed concentration' )
-    call addfld( 'LINOZ_CH4SFCSRC',  horiz_only, 'A', 'Tg/yr/m2'   , 'surface n2o source in LINOZ v3 with an e-fold to a fixed concentration' )
-    endif
+    if (noylnz_ndx >0) call addfld( 'LINOZ_NOYSFCSINK', horiz_only, 'A', 'Tg/yr/m2'   , 'surface noylnz sink in LINOZ v3 with an e-fold to a fixed concentration' )
+    if (n2olnz_ndx >0) call addfld( 'LINOZ_N2OSFCSRC',  horiz_only, 'A', 'Tg/yr/m2'   , 'surface n2o source in LINOZ v3 with an e-fold to a fixed concentration' )
+    if (ch4lnz_ndx >0) call addfld( 'LINOZ_CH4SFCSRC',  horiz_only, 'A', 'Tg/yr/m2'   , 'surface n2o source in LINOZ v3 with an e-fold to a fixed concentration' )
 
-    call add_default( 'LINOZ_DO3LNZ'    , 1, ' ' )
-    call add_default( 'LINOZ_DO3LNZ_PSC', 1, ' ' )
-    call add_default( 'LINOZ_2DDO3LNZ'    , 1, ' ' )
-    call add_default( 'LINOZ_2DDO3LNZ_PSC', 1, ' ' )
+    if (o3lnz_ndx >0) then
+       call add_default( 'LINOZ_DO3LNZ'    , 1, ' ' )
+       call add_default( 'LINOZ_DO3LNZ_PSC', 1, ' ' )
+       call add_default( 'LINOZ_2DDO3LNZ'    , 1, ' ' )
+       call add_default( 'LINOZ_2DDO3LNZ_PSC', 1, ' ' )
+    endif
     call add_default( 'LINOZ_SSO3'   , 1, ' ' )
     call add_default( 'LINOZ_O3COL'  , 1, ' ' )
     call add_default( 'LINOZ_O3CLIM' , 1, ' ' )
@@ -222,18 +224,17 @@ end subroutine linoz_readnl
     call add_default( 'LINOZ_O3SFCSINK', 1, ' ' )
     call add_default( 'LINOZ_2DDO3'    , 1, ' ' )
     call add_default( 'LINOZ_2DDO3_PSC', 1, ' ' )
-    if(linoz_v3)then
-       call add_default( 'LINOZ_NOYSFCSINK', 1, ' ' )
-       call add_default( 'LINOZ_N2OSFCSRC', 1, ' ' )
-       call add_default( 'LINOZ_CH4SFCSRC', 1, ' ' )
-    endif
+
+    if (noylnz_ndx >0) call add_default( 'LINOZ_NOYSFCSINK', 1, ' ' )
+    if (n2olnz_ndx >0) call add_default( 'LINOZ_N2OSFCSRC', 1, ' ' )
+    if (ch4lnz_ndx >0) call add_default( 'LINOZ_CH4SFCSRC', 1, ' ' )
     return
   end subroutine lin_strat_chem_inti
 
 
 !--------------------------------------------------------------------
 !--------------------------------------------------------------------
-  subroutine linv3_strat_chem_solve(ncol, lchnk, xvmr, h2ovmr, xsfc, o3col,temp, sza, pmid, delta_t, rlats, ltrop, pdeldry, chemFlag, tropFlag)
+  subroutine linv3_strat_chem_solve(ncol, lchnk, xvmr, h2ovmr, xsfc, o3col,temp, sza, pmid, delta_t, rlats, ltrop, pdeldry, tropFlag)
 
 !--------------------------------------------------------------------
 ! linearized ozone chemistry linoz-v3 (o3-n2o-noy-ch4 prognostic equations, h2o diagnosed from ch4) 
@@ -282,7 +283,6 @@ end subroutine linoz_readnl
     real(r8), intent(in)                           :: rlats(ncol)         ! column latitudes (radians)
     integer,  intent(in)   , dimension(pcols)      :: ltrop               ! chunk index    
     real(r8), intent(in)   , dimension(ncol ,pver) :: pdeldry             !  dry pressure delta about midpoints (Pa) 
-    character(len=*),  intent(in)                  :: chemFlag            ! flag for LNZ tracers
     logical, optional, intent(in)                  :: tropFlag(pcols,pver)! 3D tropospheric level flag
     !
     integer  :: i,k,n,ll,lt0,lt, n_dl !,index_lat,index_month
@@ -337,19 +337,12 @@ end subroutine linoz_readnl
     if ( .not. linoz_v3) return
 
 !    write(iulog,*)'inside lin_strat_solve for ndx o3, o3lnz, n2o, noylnz, ch4', o3_ndx, o3lnz_ndx, n2o_ndx, noylnz_ndx, ch4_ndx
-    if (chemFlag == 'LNZ') then
-        o3_vmr =  xvmr(:,:, o3lnz_ndx)
-       n2o_vmr =  xvmr(:,:,n2olnz_ndx)
-       noy_vmr =  xvmr(:,:,noylnz_ndx)
-       ch4_vmr =  xvmr(:,:,ch4lnz_ndx)
-       h2o_vmr =  xvmr(:,:,h2olnz_ndx)
-    else
-        o3_vmr =  xvmr(:,:, o3_ndx)
-       n2o_vmr =  xvmr(:,:,n2olnz_ndx)
-       noy_vmr =  xvmr(:,:,noylnz_ndx)
-       ch4_vmr =  xvmr(:,:,ch4_ndx)
-       h2o_vmr =  xvmr(:,:,h2olnz_ndx)
-    endif
+    o3_vmr =  xvmr(:,:, o3_ndx)
+    n2o_vmr =  xvmr(:,:,n2olnz_ndx)
+    noy_vmr =  xvmr(:,:,noylnz_ndx)
+    ch4_vmr =  xvmr(:,:,ch4lnz_ndx)
+    h2o_vmr =  xvmr(:,:,h2olnz_ndx)
+
     ! associate the field pointers
     !
     !Linoz climatological data 
@@ -368,7 +361,7 @@ end subroutine linoz_readnl
        dCH4(:,:)    =  ch4_vmr(:,:)  - linoz_ch4_clim(:,:)
        dH2O(:,:)    =  h2o_vmr(:,:)  - linoz_h2o_clim(:,:) 
        dTemp(:,:)   =  temp(:,:)     - linoz_t_clim(:,:)
-       dCOL(:,:)     =  o3col(:,:)*convert_to_du - linoz_o3col_clim(:,:)
+       dCOL(:,:)    =  o3col(:,:)*convert_to_du - linoz_o3col_clim(:,:)
 
 ! potential water 2*ch4 +h2o !it might be better to get maxch4 3-4 years back in time but this will do for now 
 ! upated yearly o3,n2o,noy and ch4 value are stored at xx_clim in linoz file at the bottom padding layer
@@ -401,6 +394,15 @@ end subroutine linoz_readnl
             +  linoz_dPmL_dh2o    * dH2O  &
             +  linoz_dPmL_dT      * dTemp &
             +  linoz_dPmL_dO3col  * dCOL
+
+       PL_O3e3sm =  linoz_PmL_clim             &       
+            +  linoz_dPmL_dn2o    * dN2O  &
+            +  linoz_dPmL_dnoy    * dNOY  &
+            +  linoz_dPmL_dch4    * dCH4  &
+            +  linoz_dPmL_dh2o    * dH2O  &
+            +  linoz_dPmL_dT      * dTemp &
+            +  linoz_dPmL_dO3col  * dO3e3smCOL
+! 
 ! 
 !pointer to pn2o
        linoz_PmL_clim     => fields(pn2o_PmL_clim_ndx)     %data(:,:,lchnk )
@@ -506,6 +508,7 @@ end subroutine linoz_readnl
        o3col_du_diag     = 0._r8
        o3clim_linoz_diag = 0._r8
        ss_o3             = 0._r8
+
     !
     ! convert lats from radians to degrees
     !
@@ -536,7 +539,7 @@ end subroutine linoz_readnl
              noy_old=   noy_vmr(i,k)
              ch4_old=   ch4_vmr(i,k)
              h2o_old=   h2o_vmr(i,k)
-    
+
           ! climatological ozone
              o3_clim = linoz_o3_clim(i,k)
           ! diagnostic for output
@@ -574,6 +577,7 @@ end subroutine linoz_readnl
           ! use only if abs(latitude) > 40.
           !
              delo3_psc = 0._r8
+             delo3_e3sm_psc = 0._r8
              if ( abs(lats(i)) > 40._r8  ) then   
                 if ( (chlorine_loading-chlorine_loading_bgnd) > 0._r8 ) then
                    if ( temp(i,k) <= psc_T ) then
@@ -600,6 +604,7 @@ end subroutine linoz_readnl
                       ! output diagnostic
                       !
                          do3_linoz_psc(i,k) = delo3_psc/delta_t
+                         do3_e3sm_psc(i,k) = delo3_e3sm_psc/delta_t
                       !
                       end if
                    end if
@@ -607,21 +612,19 @@ end subroutine linoz_readnl
              end if
           !
           ! update vmr
-           if (chemFlag == 'LNZ') then
-              xvmr(i,k,  o3lnz_ndx) =   o3_new
-              xvmr(i,k, n2olnz_ndx)   = n2o_new
-              xvmr(i,k, noylnz_ndx)   = noy_new
-              xvmr(i,k, ch4lnz_ndx)   = ch4_new
-              xvmr(i,k, h2olnz_ndx)   = h2o_new
-           else
+           if (o3lnz_ndx > 0) xvmr(i,k,  o3lnz_ndx) =   o3_new
+           if (n2olnz_ndx > 0) xvmr(i,k, n2olnz_ndx)   = n2o_new
+           if (noylnz_ndx > 0) xvmr(i,k, noylnz_ndx)   = noy_new
+           if (ch4lnz_ndx > 0) xvmr(i,k, ch4lnz_ndx)   = ch4_new
+           if (h2olnz_ndx > 0) xvmr(i,k, h2olnz_ndx)   = h2o_new
+
           !update real o3, ch4, n2o      
-              if(o3_ndx  > 0) xvmr(i,k, o3_ndx ) =  delo3   + delo3_psc +  xvmr(i,k, o3_ndx )
-              if(ch4_ndx > 0) xvmr(i,k, ch4_ndx) =  delch4  +  xvmr(i,k, ch4_ndx)
-              if(n2o_ndx > 0) xvmr(i,k, n2o_ndx) =  (dn2op + dn2ol)  +  xvmr(i,k, n2o_ndx)
-              if(no_ndx >0)  xvmr(i,k, no_ndx)   =  0.05 *(dnoyp + dnoyl) + xvmr(i,k, no_ndx)
-              if(no2_ndx>0)  xvmr(i,k, no2_ndx)  =  0.05 *(dnoyp + dnoyl) + xvmr(i,k, no2_ndx)
-              if(hno3_ndx>0) xvmr(i,k,hno3_ndx)  =  0.90 *(dnoyp + dnoyl) + xvmr(i,k, hno3_ndx)
-           endif
+           if(o3_ndx  > 0) xvmr(i,k, o3_ndx ) =  delo3   + delo3_psc +  xvmr(i,k, o3_ndx )
+           if(ch4_ndx > 0) xvmr(i,k, ch4_ndx) =  delch4  +  xvmr(i,k, ch4_ndx)
+           if(n2o_ndx > 0) xvmr(i,k, n2o_ndx) =  (dn2op + dn2ol)  +  xvmr(i,k, n2o_ndx)
+           if(no_ndx >0)  xvmr(i,k, no_ndx)   =  0.05 *(dnoyp + dnoyl) + xvmr(i,k, no_ndx)
+           if(no2_ndx>0)  xvmr(i,k, no2_ndx)  =  0.05 *(dnoyp + dnoyl) + xvmr(i,k, no2_ndx)
+           if(hno3_ndx>0) xvmr(i,k,hno3_ndx)  =  0.90 *(dnoyp + dnoyl) + xvmr(i,k, hno3_ndx)
            
         end do LOOP_LEV
 
@@ -652,35 +655,22 @@ end subroutine linoz_readnl
      end do 
     ! output
     !
+    call outfld( 'LINOZ_SSO3'   , ss_o3                  , ncol, lchnk )
+    call outfld( 'LINOZ_O3COL'  , o3col_du_diag          , ncol, lchnk )
+    call outfld( 'LINOZ_O3CLIM' , o3clim_linoz_diag      , ncol, lchnk )
+    call outfld( 'LINOZ_SZA'    ,(sza*radians_to_degrees), ncol, lchnk )
 
-     if (chemFlag == 'LNZ') then
-        call outfld( 'LINOZ_SSO3'   , ss_o3                  , ncol, lchnk )
-        call outfld( 'LINOZ_O3COL'  , o3col_du_diag          , ncol, lchnk )
-        call outfld( 'LINOZ_O3CLIM' , o3clim_linoz_diag      , ncol, lchnk )
-        call outfld( 'LINOZ_SZA'    ,(sza*radians_to_degrees), ncol, lchnk )
- 
-        call outfld( 'LINOZ_DO3LNZ'      , do3_linoz              , ncol, lchnk )
-        call outfld( 'LINOZ_DO3LNZ_PSC'  , do3_linoz_psc          , ncol, lchnk )
-        call outfld( 'LINOZ_2DDO3LNZ'    , twod_do3_linoz             , ncol, lchnk )
-        call outfld( 'LINOZ_2DDO3LNZ_PSC', twod_do3_linoz_psc         , ncol, lchnk )
-     else
-        call outfld( 'LINOZ_SSO3'   , ss_o3                  , ncol, lchnk )
-        call outfld( 'LINOZ_O3COL'  , o3col_du_diag          , ncol, lchnk )
-        call outfld( 'LINOZ_O3CLIM' , o3clim_linoz_diag      , ncol, lchnk )
-        call outfld( 'LINOZ_SZA'    ,(sza*radians_to_degrees), ncol, lchnk )
-
-        call outfld( 'LINOZ_DO3'         , do3_linoz              , ncol, lchnk )
-        call outfld( 'LINOZ_DO3_PSC'     , do3_linoz_psc          , ncol, lchnk )
-        call outfld( 'LINOZ_2DDO3'       , twod_do3_linoz              , ncol, lchnk )
-        call outfld( 'LINOZ_2DDO3_PSC'   , twod_do3_linoz_psc          , ncol, lchnk )
-     endif
+    call outfld( 'LINOZ_DO3'         , do3_linoz              , ncol, lchnk )
+    call outfld( 'LINOZ_DO3_PSC'     , do3_linoz_psc          , ncol, lchnk )
+    call outfld( 'LINOZ_2DDO3'       , twod_do3_linoz              , ncol, lchnk )
+    call outfld( 'LINOZ_2DDO3_PSC'   , twod_do3_linoz_psc          , ncol, lchnk )
 
     return
   end subroutine linv3_strat_chem_solve
 
  !--------------------------------------------------------------------
 !--------------------------------------------------------------------
-  subroutine linv2_strat_chem_solve( ncol, lchnk, xvmr, o3col, temp, sza, pmid, delta_t, rlats, ltrop, pdeldry, chemFlag, tropFlag )
+  subroutine linv2_strat_chem_solve( ncol, lchnk, xvmr, o3col, temp, sza, pmid, delta_t, rlats, ltrop, pdeldry, tropFlag )
 !  modified from Linoz v2 written by   
     use chlorine_loading_data, only: chlorine_loading
     use chem_mods,             only: gas_pcnst
@@ -901,11 +891,8 @@ end subroutine linoz_readnl
           !
           ! update ozone vmr
           !
-          if (chemFlag == 'LNZ') then
-             xvmr(i,k, o3lnz_ndx) = o3_new
-          else
-             if(o3_ndx >0) xvmr(i,k, o3_ndx) = delta_o3 + delta_o3_psc + xvmr(i,k, o3_ndx)
-          endif
+          !xvmr(i,k, o3lnz_ndx) = o3_new
+          if(o3_ndx >0) xvmr(i,k, o3_ndx) = delta_o3 + delta_o3_psc + xvmr(i,k, o3_ndx)
           
        end do LOOP_LEV
     end do LOOP_COL
@@ -921,27 +908,15 @@ end subroutine linoz_readnl
     end do 
     ! output
     !
-     if (chemFlag == 'LNZ') then
-        call outfld( 'LINOZ_SSO3'   , ss_o3                  , ncol, lchnk )
-        call outfld( 'LINOZ_O3COL'  , o3col_du_diag          , ncol, lchnk )
-        call outfld( 'LINOZ_O3CLIM' , o3clim_linoz_diag      , ncol, lchnk )
-        call outfld( 'LINOZ_SZA'    ,(sza*radians_to_degrees), ncol, lchnk )
- 
-        call outfld( 'LINOZ_DO3LNZ'      , do3_linoz              , ncol, lchnk )
-        call outfld( 'LINOZ_DO3LNZ_PSC'  , do3_linoz_psc          , ncol, lchnk )
-        call outfld( 'LINOZ_2DDO3LNZ'    , twod_do3_linoz             , ncol, lchnk )
-        call outfld( 'LINOZ_2DDO3LNZ_PSC', twod_do3_linoz_psc         , ncol, lchnk )
-     else
-        call outfld( 'LINOZ_SSO3'   , ss_o3                  , ncol, lchnk )
-        call outfld( 'LINOZ_O3COL'  , o3col_du_diag          , ncol, lchnk )
-        call outfld( 'LINOZ_O3CLIM' , o3clim_linoz_diag      , ncol, lchnk )
-        call outfld( 'LINOZ_SZA'    ,(sza*radians_to_degrees), ncol, lchnk )
+     call outfld( 'LINOZ_SSO3'   , ss_o3                  , ncol, lchnk )
+     call outfld( 'LINOZ_O3COL'  , o3col_du_diag          , ncol, lchnk )
+     call outfld( 'LINOZ_O3CLIM' , o3clim_linoz_diag      , ncol, lchnk )
+     call outfld( 'LINOZ_SZA'    ,(sza*radians_to_degrees), ncol, lchnk )
 
-        call outfld( 'LINOZ_DO3'         , do3_linoz              , ncol, lchnk )
-        call outfld( 'LINOZ_DO3_PSC'     , do3_linoz_psc          , ncol, lchnk )
-        call outfld( 'LINOZ_2DDO3'       , twod_do3_linoz              , ncol, lchnk )
-        call outfld( 'LINOZ_2DDO3_PSC'   , twod_do3_linoz_psc          , ncol, lchnk )
-     endif
+     call outfld( 'LINOZ_DO3'         , do3_linoz              , ncol, lchnk )
+     call outfld( 'LINOZ_DO3_PSC'     , do3_linoz_psc          , ncol, lchnk )
+     call outfld( 'LINOZ_2DDO3'       , twod_do3_linoz              , ncol, lchnk )
+     call outfld( 'LINOZ_2DDO3_PSC'   , twod_do3_linoz_psc          , ncol, lchnk )
     
     return
   end subroutine linv2_strat_chem_solve
