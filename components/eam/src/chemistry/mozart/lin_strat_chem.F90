@@ -283,6 +283,7 @@ end subroutine linoz_readnl
     real(r8), intent(in)                           :: rlats(ncol)         ! column latitudes (radians)
     integer,  intent(in)   , dimension(pcols)      :: ltrop               ! chunk index    
     real(r8), intent(in)   , dimension(ncol ,pver) :: pdeldry             !  dry pressure delta about midpoints (Pa) 
+    character(len=*),  intent(in)                  :: chemFlag            ! flag for LNZ tracers
     logical, optional, intent(in)                  :: tropFlag(pcols,pver)! 3D tropospheric level flag
     !
     integer  :: i,k,n,ll,lt0,lt, n_dl !,index_lat,index_month
@@ -394,15 +395,6 @@ end subroutine linoz_readnl
             +  linoz_dPmL_dh2o    * dH2O  &
             +  linoz_dPmL_dT      * dTemp &
             +  linoz_dPmL_dO3col  * dCOL
-
-       PL_O3e3sm =  linoz_PmL_clim             &       
-            +  linoz_dPmL_dn2o    * dN2O  &
-            +  linoz_dPmL_dnoy    * dNOY  &
-            +  linoz_dPmL_dch4    * dCH4  &
-            +  linoz_dPmL_dh2o    * dH2O  &
-            +  linoz_dPmL_dT      * dTemp &
-            +  linoz_dPmL_dO3col  * dO3e3smCOL
-! 
 ! 
 !pointer to pn2o
        linoz_PmL_clim     => fields(pn2o_PmL_clim_ndx)     %data(:,:,lchnk )
@@ -508,7 +500,6 @@ end subroutine linoz_readnl
        o3col_du_diag     = 0._r8
        o3clim_linoz_diag = 0._r8
        ss_o3             = 0._r8
-
     !
     ! convert lats from radians to degrees
     !
@@ -577,7 +568,6 @@ end subroutine linoz_readnl
           ! use only if abs(latitude) > 40.
           !
              delo3_psc = 0._r8
-             delo3_e3sm_psc = 0._r8
              if ( abs(lats(i)) > 40._r8  ) then   
                 if ( (chlorine_loading-chlorine_loading_bgnd) > 0._r8 ) then
                    if ( temp(i,k) <= psc_T ) then
@@ -604,7 +594,6 @@ end subroutine linoz_readnl
                       ! output diagnostic
                       !
                          do3_linoz_psc(i,k) = delo3_psc/delta_t
-                         do3_e3sm_psc(i,k) = delo3_e3sm_psc/delta_t
                       !
                       end if
                    end if
@@ -612,6 +601,8 @@ end subroutine linoz_readnl
              end if
           !
           ! update vmr
+          ! as a defense the assignments are only performed when the species are active. Otherwise the
+          ! index would be an invalid value (-1)
            if (o3lnz_ndx > 0) xvmr(i,k,  o3lnz_ndx) =   o3_new
            if (n2olnz_ndx > 0) xvmr(i,k, n2olnz_ndx)   = n2o_new
            if (noylnz_ndx > 0) xvmr(i,k, noylnz_ndx)   = noy_new
