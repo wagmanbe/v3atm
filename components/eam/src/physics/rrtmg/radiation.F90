@@ -1416,6 +1416,13 @@ end function radiation_nextsw_cday
                 call endrun('liqcldoptics must be either slingo or gammadist')
              end select
              cld_lw_abs(:,1:ncol,:) = liq_lw_abs(:,1:ncol,:) + ice_lw_abs(:,1:ncol,:)
+             ! U-MICH output for value check
+             tau_liq(:,:)=liq_lw_abs(2,:,:)
+             tau_ice(:,:)=ice_lw_abs(2,:,:)
+             taua_ice(:,:)=ice_lw_abs(2,:,:)
+             tau_liq_sum(:)=sum(liq_lw_abs(2,:,:),dim=2)
+             tau_ice_sum(:)=sum(ice_lw_abs(2,:,:),dim=2)
+             taua_ice_sum(:)=sum(ice_lw_abs(2,:,:),dim=2)
           endif
           !call cloud_rad_props_get_lw(state,  pbuf, cld_lw_abs, oldliq=.true., oldice=.true.)
           !call cloud_rad_props_get_lw(state,  pbuf, cld_lw_abs, oldcloud=.true.)
@@ -1424,6 +1431,9 @@ end function radiation_nextsw_cday
           if (cldfsnow_idx > 0) then
             ! add in snow
              call snow_cloud_get_rad_props_lw(state, pbuf, snow_lw_abs)
+             ! U-MICH output for value check
+             tau_sno(:,:)=snow_lw_abs(2,:,:)
+             tau_sno_sum(:)=sum(snow_lw_abs(2,:,:),dim=2)
              do i=1,ncol
                 do k=1,pver
                    cldfprime(i,k)=max(cld(i,k),cldfsnow(i,k))
@@ -1574,7 +1584,10 @@ end function radiation_nextsw_cday
           c_cld_lw_ssa  (:,:,:) = 0._r8
           c_cld_lw_asm  (:,:,:) = 0._r8
         endif
-
+      
+        ! U-MICH test only
+        tau_tot(:,:) = c_cld_lw_ext(2,:,:)
+        tau_tot_sum(:) = sum(c_cld_lw_ext(2,:,:),dim=2)
        endif !(.not.flag_mc6)
 
        endif !(dolw)
