@@ -166,11 +166,9 @@ end subroutine linoz_readnl
        return
     end if
 
-    !linoz_v3= (o3lnz_ndx > 0 .and. n2olnz_ndx >0  .and. noylnz_ndx >0  .and. ch4lnz_ndx > 0)
-    !linoz_v2= (o3lnz_ndx > 0 .and. n2olnz_ndx <0  .and. noylnz_ndx <0  .and. ch4lnz_ndx < 0)
-    linoz_v3= (n2olnz_ndx >0  .and. noylnz_ndx >0 )
-    linoz_v2= (n2olnz_ndx <0  .and. noylnz_ndx <0 )
-!    write(iulog,*)'linoz_v3=',linoz_v3,'linoz_v2=',linoz_v2
+    linoz_v3= (n2olnz_ndx >0  .and. noylnz_ndx >0 .and. ch4lnz_ndx > 0)
+    linoz_v2= (n2olnz_ndx <0  .and. noylnz_ndx <0 .and. ch4lnz_ndx < 0)
+    if (masterproc) write(iulog,*)'linoz_v3=',linoz_v3,'linoz_v2=',linoz_v2
 ! real o3, ch4, n2o tracers
     o3_ndx   =   get_spc_ndx('O3')
     ch4_ndx  =   get_spc_ndx('CH4')
