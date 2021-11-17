@@ -222,7 +222,6 @@ end subroutine linoz_readnl
     call add_default( 'LINOZ_O3SFCSINK', 1, ' ' )
     call add_default( 'LINOZ_2DDO3'    , 1, ' ' )
     call add_default( 'LINOZ_2DDO3_PSC', 1, ' ' )
-
     if (noylnz_ndx >0) call add_default( 'LINOZ_NOYSFCSINK', 1, ' ' )
     if (n2olnz_ndx >0) call add_default( 'LINOZ_N2OSFCSRC', 1, ' ' )
     if (ch4lnz_ndx >0) call add_default( 'LINOZ_CH4SFCSRC', 1, ' ' )
@@ -950,15 +949,20 @@ end subroutine linoz_readnl
  !   initializing array
  !  
     ms =0   
-    if(linoz_v2)then
+    if (linoz_v2) then
+     if (o3lnz_ndx >0) then
        ms=1
        nx(1) =  o3lnz_ndx
        mw(1) =  adv_mass(o3lnz_ndx)
        sfc_const(1,:)= o3_sfc
        o3_lbl=4
+     else
+       return
+     endif
     endif
 !       
-    if(linoz_v3)then
+    if (linoz_v3)then
+     if (o3lnz_ndx >0) then
        ms=4
        nx(1) = o3lnz_ndx
        nx(2) = n2olnz_ndx
@@ -970,6 +974,15 @@ end subroutine linoz_readnl
        mw(4) =  adv_mass(ch4lnz_ndx)   
        sfc_const(1:4,:ncol) = x_sfc(1:4,:ncol)
        o3_lbl =9
+     else
+       ms=2
+       nx(1) = n2olnz_ndx
+       nx(2) = noylnz_ndx
+       mw(1) =  adv_mass(n2olnz_ndx)  
+       mw(2) =  adv_mass(noylnz_ndx)
+       sfc_const(1:2,:ncol) = x_sfc(1:2,:ncol)
+       o3_lbl =9
+     endif    
     endif    
 ! 
     do k = 1,pver
@@ -991,6 +1004,7 @@ end subroutine linoz_readnl
 !
              j= nx(n)
              x_old = x_vmr(i,k,j)  !vmr
+             
              dx =  (sfc_const(n,i) - x_old)* efactor !vmr
              x_new  = x_old + dx
 ! loss in kg/m2 summed over boundary layers within one time step   
@@ -1003,10 +1017,10 @@ end subroutine linoz_readnl
        
        x_sfcsink(:ncol) = dx_mass(:ncol)/delta_t * KgtoTg * peryear ! saved in Tg/yr/m2 unit
     
-       if(j.eq.  o3lnz_ndx)  call outfld('LINOZ_O3SFCSINK',    x_sfcsink, ncol, lchnk)
-       if(j.eq. n2olnz_ndx)  call outfld('LINOZ_N2OSFCSRC',    x_sfcsink, ncol, lchnk)
-       if(j.eq. noylnz_ndx)  call outfld('LINOZ_NOYSFCSINK',   x_sfcsink, ncol, lchnk)       
-       if(j.eq. ch4lnz_ndx)  call outfld('LINOZ_CH4SFCSRC',    x_sfcsink, ncol, lchnk)
+       if(o3lnz_ndx > 0 .and. j.eq.  o3lnz_ndx)  call outfld('LINOZ_O3SFCSINK',    x_sfcsink, ncol, lchnk)
+       if(n2olnz_ndx >0 .and. j.eq. n2olnz_ndx)  call outfld('LINOZ_N2OSFCSRC',    x_sfcsink, ncol, lchnk)
+       if(noylnz_ndx >0 .and. j.eq. noylnz_ndx)  call outfld('LINOZ_NOYSFCSINK',   x_sfcsink, ncol, lchnk)       
+       if(ch4lnz_ndx >0 .and. j.eq. ch4lnz_ndx)  call outfld('LINOZ_CH4SFCSRC',    x_sfcsink, ncol, lchnk)
 
     End do Loop_N
 
