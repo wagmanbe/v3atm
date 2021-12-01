@@ -1115,7 +1115,7 @@ contains
   ! This routine implements the E90 defintion of the 3D tropopause.
   !
   ! NOTE: the tropLevB and tropLevU gridboxes themselves are assumed to be STRATOSPHERIC.
-  subroutine tropopause_e90_3d(pstate, tropLevB, tropLevU, tropFlag, tropP, tropT, tropZ)
+  subroutine tropopause_e90_3d(pstate, tropLevB, tropLevU, tropFlag, tropFlagInt, tropP, tropT, tropZ)
 
     use constituents,   only : cnst_get_ind
     use physconst,      only : mwdry
@@ -1133,6 +1133,8 @@ contains
     integer,            intent(out)    :: tropLevU(pcols)           ! highest tropopause level index
     logical,            intent(out)    :: tropFlag(pcols,pver)      ! 3D tropospheric level flag
                                                                     ! true: tropospheric box
+    real(r8), optional, intent(out)    :: tropFlagInt(pcols,pver)   ! 3D tropospheric level flag integer
+                                                                    ! 1: tropospheric box
     ! Local Variables
     real(r8)               :: thrd_mmr                      ! E90 tropopause threshold (kg/kg)
     real(r8)               :: mwe90                         ! molecular weight of E90
@@ -1150,6 +1152,7 @@ contains
 
     ! default to tropospheric box
     tropFlag(:,:) = .true.
+    tropFlagInt(:,:) = 1._r8
 
     ! Information about the chunk.
     lchnk = pstate%lchnk
@@ -1179,6 +1182,7 @@ contains
             ! Search starts at the surface
             if (pstate%q(i,k,e90_ndx) < thrd_mmr) then
                tropFlag(i,k) = .false.
+               tropFlagInt(i,k) = 0._r8
             end if
          end do
          !
@@ -1651,13 +1655,14 @@ contains
     real(r8)      :: tropPdf(pcols, pver)     ! tropopause probability distribution  
     integer       :: tropLevU(pcols)          ! highest tropopause level index   
     logical       :: tropFlag(pcols,pver)     ! 3D tropospheric level flag
+    real(r8)      :: tropFlagInt(pcols,pver)  ! 3D tropospheric level flag integer
 
     ! Information about the chunk.  
     lchnk = pstate%lchnk
     ncol  = pstate%ncol
 
     ! Find the tropopause
-    call tropopause_e90_3d(pstate, tropLevB, tropLevU, tropFlag, tropP=tropP, tropT=tropT, tropZ=tropZ)
+    call tropopause_e90_3d(pstate, tropLevB, tropLevU, tropFlag, tropFlagInt, tropP=tropP, tropT=tropT, tropZ=tropZ)
     
     tropPdf(:,:) = 0._r8
     tropFound(:) = 0._r8
