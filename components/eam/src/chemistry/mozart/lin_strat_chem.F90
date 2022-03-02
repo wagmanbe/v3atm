@@ -975,13 +975,16 @@ end subroutine linoz_readnl
        sfc_const(1:4,:ncol) = x_sfc(1:4,:ncol)
        o3_lbl =9
      else
-       ms=2
+       ms=3
        nx(1) = n2olnz_ndx
        nx(2) = noylnz_ndx
+       nx(3) = ch4lnz_ndx
        mw(1) =  adv_mass(n2olnz_ndx)  
        mw(2) =  adv_mass(noylnz_ndx)
+       mw(3) =  adv_mass(ch4lnz_ndx)
        sfc_const(1,:ncol) = x_sfc(2,:ncol)
        sfc_const(2,:ncol) = x_sfc(3,:ncol)
+       sfc_const(3,:ncol) = x_sfc(4,:ncol)
        o3_lbl =9
      endif    
     endif    
