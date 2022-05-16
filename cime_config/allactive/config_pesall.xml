@@ -143,7 +143,9 @@
         </rootpe>
       </pes>
     </mach>
-    <mach name="jlse">
+
+    <mach name="thetapm-gpu|cori-knl|cori-haswell|jlse">
+>>>>>>> 160cc23b04... Add pm-cpu as a new machine -- CPU-only nodes of perlmutter
       <pes compset="any" pesize="any">
         <comment>default pelayout on jlse</comment>
         <ntasks>
@@ -178,8 +180,46 @@
         </rootpe>
       </pes>
     </mach>
-  </grid>
-  <grid name="any">
+
+    <mach name="pm-cpu">
+      <pes compset="any" pesize="any">
+        <comment>allactive: default, 1 node x MAX_MPITASKS_PER_NODE mpi x 2 omp @ root 0</comment>
+        <ntasks>
+          <ntasks_atm>-1</ntasks_atm>
+          <ntasks_lnd>-1</ntasks_lnd>
+          <ntasks_rof>-1</ntasks_rof>
+          <ntasks_ice>-1</ntasks_ice>
+          <ntasks_ocn>-1</ntasks_ocn>
+          <ntasks_glc>-1</ntasks_glc>
+          <ntasks_wav>-1</ntasks_wav>
+          <ntasks_cpl>-1</ntasks_cpl>
+        </ntasks>
+        <nthrds>
+          <nthrds_atm>2</nthrds_atm>
+          <nthrds_lnd>2</nthrds_lnd>
+          <nthrds_rof>2</nthrds_rof>
+          <nthrds_ice>2</nthrds_ice>
+          <nthrds_ocn>2</nthrds_ocn>
+          <nthrds_cpl>2</nthrds_cpl>
+        </nthrds>
+      </pes>
+    </mach>
+    <mach name="gcp">
+      <pes compset="any" pesize="any">
+        <comment>allactive+gcp: default</comment>
+        <ntasks>
+          <ntasks_atm>30</ntasks_atm>
+          <ntasks_lnd>30</ntasks_lnd>
+          <ntasks_rof>30</ntasks_rof>
+          <ntasks_ice>16</ntasks_ice>
+          <ntasks_ocn>16</ntasks_ocn>
+          <ntasks_glc>16</ntasks_glc>
+          <ntasks_wav>30</ntasks_wav>
+          <ntasks_cpl>30</ntasks_cpl>
+        </ntasks>
+      </pes>
+    </mach>    
+
     <mach name="lawrencium-lr3">
       <pes compset="any" pesize="any">
         <comment>none</comment>
