@@ -280,7 +280,6 @@ end subroutine linoz_readnl
     real(r8), intent(in)                           :: rlats(ncol)         ! column latitudes (radians)
     integer,  intent(in)   , dimension(pcols)      :: ltrop               ! chunk index    
     real(r8), intent(in)   , dimension(ncol ,pver) :: pdeldry             !  dry pressure delta about midpoints (Pa) 
-    character(len=*),  intent(in)                  :: chemFlag            ! flag for LNZ tracers
     logical, optional, intent(in)                  :: tropFlag(pcols,pver)! 3D tropospheric level flag
     !
     integer  :: i,k,n,ll,lt0,lt, n_dl !,index_lat,index_month
@@ -638,8 +637,8 @@ end subroutine linoz_readnl
      twod_do3_linoz = 0._r8
      twod_do3_linoz_psc = 0._r8
      do k = 1, pver
-        twod_do3_linoz(:)     = twod_do3_linoz(:)     + do3_linoz(:,k) 
-        twod_do3_linoz_psc(:) = twod_do3_linoz_psc(:) + do3_linoz_psc(:,k) 
+        twod_do3_linoz(:)     = twod_do3_linoz(:)     + do3_linoz_du(:,k) 
+        twod_do3_linoz_psc(:) = twod_do3_linoz_psc(:) + do3_linoz_psc_du(:,k) 
      end do 
     ! output
     !
@@ -652,7 +651,7 @@ end subroutine linoz_readnl
     call outfld( 'LINOZ_DO3_PSC'     , do3_linoz_psc          , ncol, lchnk )
     call outfld( 'LINOZ_2DDO3'       , twod_do3_linoz              , ncol, lchnk )
     call outfld( 'LINOZ_2DDO3_PSC'   , twod_do3_linoz_psc          , ncol, lchnk )
-
+    
     return
   end subroutine linv3_strat_chem_solve
 
@@ -691,7 +690,6 @@ end subroutine linoz_readnl
     real(r8), intent(in)                           :: rlats(ncol)         ! column latitudes (radians)
     integer,  intent(in)   , dimension(pcols)      :: ltrop               ! chunk index
     real(r8), intent(in)   , dimension(ncol ,pver) :: pdeldry             !  dry pressure delta about midpoints (Pa)
-    character(len=*),  intent(in)                  :: chemFlag            ! flag for LNZ tracers
     logical, optional, intent(in)                  :: tropFlag(pcols,pver)! 3D tropospheric level flag
     !
     ! local
@@ -805,11 +803,8 @@ end subroutine linoz_readnl
           !
           ! old ozone mixing ratio
           !
-          if (chemFlag == 'LNZ') then
-             o3_old = xvmr(i,k, o3lnz_ndx)
-          else
-             o3_old = xvmr(i,k, o3_ndx)
-          endif
+          !o3_old = xvmr(i,k, o3lnz_ndx)
+          o3_old = xvmr(i,k, o3_ndx)
           !
           ! convert o3col from mol/cm2
           !
