@@ -248,7 +248,8 @@ contains
      !kzm--
      
      if ( chem_name == 'linoz_mam3'.or.chem_name == 'linoz_mam4_resus'.or.chem_name == 'linoz_mam4_resus_mom' &
-         .or.chem_name == 'linoz_mam4_resus_soag'.or.chem_name == 'linoz_mam4_resus_mom_soag') then
+         .or.chem_name == 'linoz_mam4_resus_soag'.or.chem_name == 'linoz_mam4_resus_mom_soag'  &
+          .or.chem_name == 'linoz_mam4_resus_soa_mom_soag_vbs') then
        if ( inv_ndx_cnst_o3 < 1 ) then
           call endrun('ERROR: chem_name = '//trim(chem_name)//&
           ' requies cnst_O3 fixed oxidant field. Use cnst_O3:O3 in namelist tracer_cnst_specifier')
@@ -944,8 +945,10 @@ contains
        call outfld( tag_names(i), reaction_rates(:ncol,:,rxt_tag_map(i)), ncol, lchnk )
     enddo
 
+    ! + QZR added linoz_mam4_resus_soa_mom_soag_vbs
     if ( has_linoz_data .and. .not. &
        (chem_name == 'linoz_mam3'.or.chem_name == 'linoz_mam4_resus'.or.chem_name == 'linoz_mam4_resus_mom' &
+       .or.chem_name == 'linoz_mam4_resus_soa_mom_soag_vbs' &
        .or.chem_name == 'linoz_mam4_resus_soag'.or.chem_name == 'linoz_mam4_resus_mom_soag' )) then
        ltrop_sol(:ncol) = troplev(:ncol) !kzm changed to 0 for test
  !kzm note: this is a strange setting  
@@ -1319,15 +1322,23 @@ contains
 !
 ! Remove the impact of aerosol processes on gas chemistry tracers ...
 !
+! QZR -- ++ SOA vbs relevant changes
     if (uci1_ndx > 0) then
        do m = 1,pcnst
           n = map2chm( m )
           if ( n > 0 ) then
              if ( .not. any( aer_species == n ) ) then
                if (trim(solsym(n))/='DMS' .and. trim(solsym(n))/='SO2' .and. &
-                   trim(solsym(n))/='H2SO4' .and. trim(solsym(n))/='SOAG' .and. &
-                   trim(solsym(n))/='HNO3' .and. trim(solsym(n))/='NH3' .and. & 
+                   trim(solsym(n))/='H2SO4' .and. &   
+                   trim(solsym(n))/='SOAG0' .and. trim(solsym(n))/='SOAG15' .and. &
+                   trim(solsym(n))/='SOAG24' .and. trim(solsym(n))/='SOAG31' .and. &
+                   trim(solsym(n))/='SOAG32' .and. trim(solsym(n))/='SOAG33' .and. & 
+                   trim(solsym(n))/='SOAG34' .and. trim(solsym(n))/='SOAG35' .and. &
+                   trim(solsym(n))/='HNO3' .and. trim(solsym(n))/='NH3' .and. &
                    trim(solsym(n))/='HCL' ) then
+                   !trim(solsym(n))/='H2SO4' .and. trim(solsym(n))/='SOAG' .and. &
+                   !trim(solsym(n))/='HNO3' .and. trim(solsym(n))/='NH3' .and. & 
+                   !trim(solsym(n))/='HCL' ) then
                    !write(iulog,*) 'n=',n,'solsym=',trim(solsym(n))
                    vmr(:ncol,:,n) = vmr_old2(:ncol,:,n)
                endif
