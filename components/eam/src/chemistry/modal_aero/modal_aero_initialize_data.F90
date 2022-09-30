@@ -55,7 +55,7 @@ contains
     character(len=*), parameter ::     xname_numptrcw(ntot_amode) = (/ 'num_c1  ', 'num_c2  ', 'num_c3  ', &
          'num_c4  ', 'num_c5  ', 'num_c6  ', 'num_c7  ', &
          'num_c8  ', 'num_c9  ' /)
-#elif ( defined MODAL_AERO_4MODE || defined MODAL_AERO_4MODE_MOM )
+#elif ( defined MODAL_AERO_4MODE || defined MODAL_AERO_4MODE_MOM ||  defined MODAL_AERO_4MODE_SOA_MOM )
     character(len=*), parameter ::     xname_numptr(ntot_amode)   = (/ 'num_a1  ', 'num_a2  ', &
          'num_a3  ', 'num_a4  ' /)
     character(len=*), parameter ::     xname_numptrcw(ntot_amode) = (/ 'num_c1  ', 'num_c2  ', &
@@ -80,6 +80,8 @@ contains
        ! mode 1 (accumulation) species
        ! JPE 02022011: These could also be parameters but a bug in the pathscale compiler prevents
        !               parameter initialization of 2D variables
+ 
+        ! qzr added || defined MODAL_AERO_4MODE_SOA_MOM with && MOSAIC_SPECIES
 #if ( defined MODAL_AERO_7MODE )
        xname_massptr(:nspec_amode(1),1)   = (/ 'so4_a1  ', 'nh4_a1  ', &
             'pom_a1  ', 'soa_a1  ', 'bc_a1   ', 'ncl_a1  ' /)
@@ -110,7 +112,7 @@ contains
        xname_spectype(:nspec_amode(1),1)  = (/ 'sulfate   ', 'ammonium  ', &
             'p-organic ', 's-organic ', 'black-c   ', 'seasalt   ', &
             'm-poly    ', 'm-prot    ', 'm-lip     ' /)
-#elif ( ( defined MODAL_AERO_4MODE_MOM ) && ( defined MOSAIC_SPECIES ) )
+#elif ( ( defined MODAL_AERO_4MODE_MOM || defined MODAL_AERO_4MODE_SOA_MOM) && ( defined MOSAIC_SPECIES ) )
        xname_massptr(:nspec_amode(1),1)   = (/ 'so4_a1  ', &
             'pom_a1  ', 'soa_a1  ', 'bc_a1   ', &
             'dst_a1  ', 'ncl_a1  ', 'mom_a1  ', &
@@ -126,7 +128,7 @@ contains
             'dust      ', 'seasalt   ', 'm-organic ', &
             'ammonium  ', 'nitrate   ', 'calcium   ', &
             'carbonate ', 'chloride  ' /)
-#elif ( defined MODAL_AERO_4MODE_MOM )
+#elif ( defined MODAL_AERO_4MODE_MOM ||  defined MODAL_AERO_4MODE_SOA_MOM )
        xname_massptr(:nspec_amode(1),1)   = (/ 'so4_a1  ', &
             'pom_a1  ', 'soa_a1  ', 'bc_a1   ', &
             'dst_a1  ', 'ncl_a1  ', 'mom_a1  ' /)
@@ -149,6 +151,7 @@ contains
 #endif
 
        ! mode 2 (aitken) species
+        ! qzr added || defined MODAL_AERO_4MODE_SOA_MOM with && MOSAIC_SPECIES
 #if ( defined MODAL_AERO_7MODE )
        xname_massptr(:nspec_amode(2),2)   = (/ 'so4_a2  ', 'nh4_a2  ', &
             'soa_a2  ', 'ncl_a2  ' /)
@@ -166,17 +169,20 @@ contains
        xname_spectype(:nspec_amode(2),2)  = (/ 'sulfate   ', 'ammonium  ', &
             's-organic ', 'seasalt   ', &
             'm-poly    ', 'm-prot    ', 'm-lip     ' /)
-#elif ( ( defined MODAL_AERO_4MODE_MOM ) && ( defined MOSAIC_SPECIES ) )
+#elif ( ( defined MODAL_AERO_4MODE_MOM || defined MODAL_AERO_4MODE_SOA_MOM) && ( defined MOSAIC_SPECIES ) )
        xname_massptr(:nspec_amode(2),2)   = (/ 'so4_a2  ', &
-            'soa_a2  ', 'ncl_a2  ', 'mom_a2  ', &
-            'nh4_a2  ', 'no3_a2  ', 'cl_a2   ' /)
+            'soa_a2  ', 'dst_a2  ', 'ncl_a2  ', &
+            'mom_a2  ', 'nh4_a2  ', 'no3_a2  ', &
+            'ca_a2   ', 'co3_a2  ', 'cl_a2   ' /)
        xname_massptrcw(:nspec_amode(2),2) = (/ 'so4_c2  ', &
-            'soa_c2  ', 'ncl_c2  ', 'mom_c2  ', & 
-            'nh4_c2  ', 'no3_c2  ', 'cl_c2   ' /)
+            'soa_c2  ', 'dst_c2  ', 'ncl_c2  ', &
+            'mom_c2  ', 'nh4_c2  ', 'no3_c2  ', &
+            'ca_c2   ', 'co3_c2  ', 'cl_c2   ' /)
        xname_spectype(:nspec_amode(2),2)  = (/ 'sulfate   ', &
-            's-organic ', 'seasalt   ', 'm-organic ', & 
-            'ammonium  ', 'nitrate   ', 'chloride  ' /)
-#elif ( defined MODAL_AERO_4MODE_MOM || defined MODAL_AERO_5MODE)
+            's-organic ', 'dust      ', 'seasalt   ', &
+            'm-organic ', 'ammonium  ', 'nitrate   ', &
+            'calcium   ', 'carbonate ', 'chloride  ' /)
+#elif ( defined MODAL_AERO_4MODE_MOM ||  defined MODAL_AERO_4MODE_SOA_MOM || defined MODAL_AERO_5MODE)
        xname_massptr(:nspec_amode(2),2)   = (/ 'so4_a2  ', &
             'soa_a2  ', 'ncl_a2  ', 'mom_a2  ' /)
        xname_massptrcw(:nspec_amode(2),2) = (/ 'so4_c2  ', &
@@ -191,7 +197,7 @@ contains
        xname_spectype(:nspec_amode(2),2)  = (/ 'sulfate   ', &
             's-organic ', 'seasalt   ' /)
 #endif
-
+           ! qzr added || defined MODAL_AERO_4MODE_SOA_MOM WITH && MOSAIC SPECIES
 #if ( defined MODAL_AERO_7MODE )
        ! mode 3 (primary carbon) species
        xname_massptr(:nspec_amode(3),3)   = (/ 'pom_a3  ', 'bc_a3   ' /)
@@ -218,7 +224,7 @@ contains
        xname_massptr(:nspec_amode(3),3)   = (/ 'dst_a3  ', 'ncl_a3  ', 'so4_a3  ' /)
        xname_massptrcw(:nspec_amode(3),3) = (/ 'dst_c3  ', 'ncl_c3  ', 'so4_c3  ' /)
        xname_spectype(:nspec_amode(3),3)  = (/ 'dust      ', 'seasalt   ', 'sulfate   ' /)
-#elif ( ( defined MODAL_AERO_4MODE_MOM ) && ( defined RAIN_EVAP_TO_COARSE_AERO ) && ( defined MOSAIC_SPECIES ) )
+#elif ( ( defined MODAL_AERO_4MODE_MOM || defined MODAL_AERO_4MODE_SOA_MOM) && ( defined RAIN_EVAP_TO_COARSE_AERO ) && ( defined MOSAIC_SPECIES ) )
        ! mode 3 (coarse dust & seasalt) species
        xname_massptr(:nspec_amode(3),3)   = (/ 'dst_a3  ', 'ncl_a3  ', 'so4_a3  ', &
                                                'bc_a3   ', 'pom_a3  ', 'soa_a3  ', &
@@ -232,7 +238,7 @@ contains
                                                'black-c   ', 'p-organic ', 's-organic ', &
                                                'm-organic ', 'ammonium  ', 'nitrate   ', &
                                                'calcium   ', 'carbonate ', 'chloride  ' /)
-#elif ( ( defined MODAL_AERO_4MODE_MOM || defined MODAL_AERO_5MODE ) && ( defined RAIN_EVAP_TO_COARSE_AERO ) )
+#elif ( ( defined MODAL_AERO_4MODE_MOM ||  defined MODAL_AERO_4MODE_SOA_MOM || defined MODAL_AERO_5MODE ) && ( defined RAIN_EVAP_TO_COARSE_AERO ) )
        xname_massptr(:nspec_amode(3),3)   = (/ 'dst_a3  ', 'ncl_a3  ', 'so4_a3  ', &
                                                'bc_a3   ', 'pom_a3  ', 'soa_a3  ', &
                                                'mom_a3  ' /)
@@ -242,14 +248,14 @@ contains
        xname_spectype(:nspec_amode(3),3)  = (/ 'dust      ', 'seasalt   ', 'sulfate   ', &
                                                'black-c   ', 'p-organic ', 's-organic ', &
                                                'm-organic ' /)
-#elif ( defined MODAL_AERO_4MODE_MOM )
+#elif ( defined MODAL_AERO_4MODE_MOM || defined MODAL_AERO_4MODE_SOA_MOM )
        xname_massptr(:nspec_amode(3),3)   = (/ 'dst_a3  ', 'ncl_a3  ', 'so4_a3  ' /)
        xname_massptrcw(:nspec_amode(3),3) = (/ 'dst_c3  ', 'ncl_c3  ', 'so4_c3  ' /)
        xname_spectype(:nspec_amode(3),3)  = (/ 'dust      ', 'seasalt   ', 'sulfate   ' /)
 #endif
 
 
-#if ( defined MODAL_AERO_4MODE_MOM || defined MODAL_AERO_5MODE)
+#if ( defined MODAL_AERO_4MODE_MOM || defined MODAL_AERO_5MODE ||  defined MODAL_AERO_4MODE_SOA_MOM)
        ! mode 4 (primary carbon) species
        xname_massptr(:nspec_amode(4),4)   = (/ 'pom_a4  ', 'bc_a4   ', 'mom_a4  ' /)
        xname_massptrcw(:nspec_amode(4),4) = (/ 'pom_c4  ', 'bc_c4   ', 'mom_c4  ' /)
