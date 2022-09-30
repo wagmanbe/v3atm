@@ -226,8 +226,9 @@ subroutine set_srf_wetdep(aerdepwetis, aerdepwetcw, cam_out)
                              0.289_r8*(aerdepwetis(i,idx_dst3)+aerdepwetcw(i,idx_dst3)))
 
 #endif
+!QZR added || (defined MODAL_AERO_4MODE_SOA_MOM)
 !kzm ++
-#if( (defined MODAL_AERO_4MODE) || (defined MODAL_AERO_4MODE_MOM) || (defined MODAL_AERO_7MODE_S) || (defined MODAL_AERO_5MODE))
+#if( (defined MODAL_AERO_4MODE) || (defined MODAL_AERO_4MODE_MOM) || (defined MODAL_AERO_4MODE_SOA_MOM) || (defined MODAL_AERO_7MODE_S) || (defined MODAL_AERO_5MODE))
 !kzm --
       ! MAM4
 
@@ -441,8 +442,9 @@ subroutine set_srf_drydep(aerdepdryis, aerdepdrycw, cam_out)
                             0.289_r8*(aerdepdryis(i,idx_dst3)+aerdepdrycw(i,idx_dst3)))
 
 #endif
+!QZR added || (defined MODAL_AERO_4MODE_SOA_MOM)
 !kzm ++
-#if( (defined MODAL_AERO_4MODE) || (defined MODAL_AERO_4MODE_MOM) || (defined MODAL_AERO_7MODE_S) || (defined MODAL_AERO_5MODE))
+#if( (defined MODAL_AERO_4MODE) || (defined MODAL_AERO_4MODE_MOM) || (defined MODAL_AERO_4MODE_SOA_MOM) || (defined MODAL_AERO_7MODE_S) || (defined MODAL_AERO_5MODE))
 !kzm --
       ! MAM4
 
