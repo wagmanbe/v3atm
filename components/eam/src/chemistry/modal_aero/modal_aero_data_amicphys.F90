@@ -30,7 +30,7 @@ module modal_aero_data_amicphys
   ! the +3 in max_aer are dst, ncl, so4
   integer, parameter, public :: max_aer = nsoa + npoa + nbc + 3
 #elif ( ( defined MODAL_AERO_4MODE_MOM || defined MODAL_AERO_4MODE_SOA_MOM ) && ( defined MOSAIC_SPECIES ) )
-  integer, parameter, public :: max_gas = nsoa + 10 !4 !QZR to match ngas=11
+  integer, parameter, public :: max_gas = nsoa + 10 !4 !QZR to match ngas=11, can be nsoag+4? 
   ! the +9 in max_aer are dst, ncl, so4, mom, nh4, no3, cl, ca, co3
   integer, parameter, public :: max_aer = nsoa + npoa + nbc + 9
 #elif ( defined MODAL_AERO_4MODE_MOM || defined MODAL_AERO_4MODE_SOA_MOM )
@@ -38,6 +38,11 @@ module modal_aero_data_amicphys
   !integer, parameter, public, public :: max_gas = nsoag + 1
   ! the +4 in max_aer are dst, ncl, so4, mom
   integer, parameter, public :: max_aer = nsoa + npoa + nbc + 4
+#elif ( defined MODAL_AERO_5MODE)
+  integer, parameter, public :: max_gas = nsoag + 1
+  ! the +4 in max_aer are dst, ncl, so4, mom
+  integer, parameter, public :: max_aer = nsoa + npoa + nbc + 4
+  ! QZR ++ latest addition (from kzm++) for MODAL_AERO_5MODE consistent with modal_aero_amicphys in NGD_v3atm
 #elif ( ( defined MODAL_AERO_7MODE ) && ( defined MOSAIC_SPECIES ) )
   integer, parameter, public :: max_gas = nsoag + 4
   integer, parameter, public :: max_aer = nsoa + npoa + nbc + 8
@@ -54,6 +59,10 @@ module modal_aero_data_amicphys
 
 #if (( defined MODAL_AERO_8MODE ) || ( defined MODAL_AERO_4MODE ) || ( defined MODAL_AERO_4MODE_MOM )|| (defined MODAL_AERO_4MODE_SOA_MOM))
   integer, parameter, public :: ntot_amode_extd = ntot_amode
+!kzm ++
+#elif (defined MODAL_AERO_5MODE)
+  integer, parameter, public :: ntot_amode_extd = ntot_amode
+!kzm --
 #else
   integer, parameter, public :: ntot_amode_extd = ntot_amode + 1
 #endif
