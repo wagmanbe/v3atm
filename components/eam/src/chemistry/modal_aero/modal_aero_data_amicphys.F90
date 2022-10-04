@@ -30,7 +30,7 @@ module modal_aero_data_amicphys
   ! the +3 in max_aer are dst, ncl, so4
   integer, parameter, public :: max_aer = nsoa + npoa + nbc + 3
 #elif ( ( defined MODAL_AERO_4MODE_MOM || defined MODAL_AERO_4MODE_SOA_MOM ) && ( defined MOSAIC_SPECIES ) )
-  integer, parameter, public :: max_gas = nsoa + 10 !4 !QZR to match ngas=11, can be nsoag+4? 
+  integer, parameter, public :: max_gas = nsoag+4 !nsoa + 10 !4 !QZR to match ngas=11, can be nsoag+4 or nsoa+10? 
   ! the +9 in max_aer are dst, ncl, so4, mom, nh4, no3, cl, ca, co3
   integer, parameter, public :: max_aer = nsoa + npoa + nbc + 9
 #elif ( defined MODAL_AERO_4MODE_MOM || defined MODAL_AERO_4MODE_SOA_MOM )
