@@ -1384,7 +1384,7 @@ if (($chem_pkg ne 'none') || ($prog_species)) {
 if ($chem_pkg =~ '_mam3') {
     $chem_cppdefs = ' -DMODAL_AERO -DMODAL_AERO_3MODE ';
 } elsif ($chem_pkg =~ '_mam4_mom' || $chem_pkg =~ '_mam4_resus_mom' || $chem_pkg =~ '_mam4_resus_mom_soag' ) {
-    $chem_cppdefs = ' -DMODAL_AERO -DMODAL_AERO_4MODE_MOM ';
+    $chem_cppdefs = ' -DMODAL_AERO -DMODAL_AERO_4MODE_SOA_MOM ';
 # kzm ++  set the modal configure
 } elsif ($chem_pkg =~ '_mam5_resus_mom' ) {
     $chem_cppdefs = ' -DMODAL_AERO -DMODAL_AERO_5MODE ';
