@@ -197,14 +197,16 @@
                       ! early versions of mam neglected the seasalt contribution
 
   ! species indices for various qgas_--- arrays
-  integer :: igas_soa, igas_h2so4, igas_nh3, igas_hno3, igas_hcl
+  !integer :: igas_soa, igas_h2so4, igas_nh3, igas_hno3, igas_hcl !QZR--
+  integer :: igas_h2so4, igas_nh3, igas_hno3, igas_hcl !QZR++
   ! species indices for various qaer_--- arrays
   !QZR++    when nsoag > 1, igas_soag is index of the first soag species in qgas arrays
   !    when nsoa > 1, igas_soa and iaer_soa are indices of the first soa species
   !    when nbc  > 1, iaer_bc  is index of the first bc  species
   !    when npom > 1, iaer_pom is index of the first pom species
   ! QZR++ igas_soagzz, iaer_soazz, iaer_bczz, iaer_pomzz are indicies of the last ... species
-  integer :: iaer_bc, iaer_dst, iaer_ncl, iaer_nh4, iaer_pom, iaer_soa, iaer_so4, &
+  !integer :: iaer_bc, iaer_dst, iaer_ncl, iaer_nh4, iaer_pom, iaer_soa, iaer_so4, & !QZR--
+  integer :: iaer_bc, iaer_dst, iaer_ncl, iaer_nh4, iaer_so4, &
              iaer_mpoly, iaer_mprot, iaer_mlip, iaer_mhum, iaer_mproc, iaer_mom, &
              iaer_no3, iaer_cl, iaer_ca, iaer_co3
   integer :: iaer_bczz, iaer_pomzz, iaer_soazz  !QZR++
@@ -220,7 +222,8 @@
   integer :: naer_cond   !QZR++ number of aerosol species directly involved in gas/aerosol exchange (condensation)
   integer :: ngas        ! number of gas     species in qgas arrays !QZR++
   integer :: ngas_cond   !QZR++ number of gas     species directly involved in gas/aerosol exchange (condensation)
-  integer :: nacc, nait, npca, nufi, nmacc, nmait
+  !integer :: nacc, nait, npca, nufi, nmacc, nmait !QZR--
+  integer :: nacc, nait, nmacc, nmait !QZR++
 
   integer :: n_agepair, n_coagpair
   integer :: modefrm_agepair(max_agepair), modetoo_agepair(max_agepair)
@@ -244,8 +247,9 @@
 
   real(r8) :: fcvt_gas(max_gas), fcvt_aer(max_aer), fcvt_num, fcvt_wtr
   real(r8) :: fcvt_dgnum_dvolmean(max_mode)
-  real(r8) :: hygro_aer(max_aer)
-  real(r8) :: mw_gas(max_gas), mw_aer(max_aer)
+  !real(r8) :: hygro_aer(max_aer) !QZR--
+  !real(r8) :: mw_gas(max_gas), mw_aer(max_aer) !QZR--
+  real(r8) :: hygro_aer(max_aer), mw_aer(max_aer) !QZR++
   real(r8) :: mwhost_gas(max_gas), mwhost_aer(max_aer), mwhost_num
   real(r8) :: mw_nh4a_host, mw_so4a_host
   real(r8) :: mwuse_soag(nsoag), mwuse_soa(nsoa), mwuse_poa(npoa) !QZR++ nsoag
@@ -3519,16 +3523,16 @@ do_newnuc_if_block50: &
             accom_coef_gas(igas), gas_diffus(igas), gas_freepath(igas), &
             0.0_r8, ntot_amode, dgn_awet, alnsg_aer, uptkrate )
 
-         !iaer = igas  !QZR --
+         iaer = igas  !QZR -- uncommented Test
          do n = 1, ntot_amode
-            !if ( lmap_aer(iaer,n) > 0 .or. &  !QZR--
-            !     mode_aging_optaa(n) > 0 ) then !QZR--
+            if ( lmap_aer(iaer,n) > 0 .or. &  !QZR-- Uncommented Test
+                 mode_aging_optaa(n) > 0 ) then !QZR-- Uncommented Test
                ! uptkrate is for number = 1 #/m3, so mult. by number conc. (#/m3)
                uptkaer(igas,n) = uptkrate(n) * (qnum_cur(n) * aircon)
-            !else !QZR--
+            else !QZR-- Uncommneted Test
                ! mode does not contain this species
-               !uptkaer(igas,n) = 0.0_r8 !QZR--
-            !end if !QZR--
+               uptkaer(igas,n) = 0.0_r8 !QZR-- Uncommneted Test
+            end if !QZR-- Uncommneted Test
          end do
       end do ! igas
 
@@ -7058,22 +7062,22 @@ implicit none
 
 
 ! gas-->aer condensation and resulting aging
-      !do igas = 1, ngas  !QZR--
+      do igas = 1, ngas  !QZR-- Uncommneted Test
       !QZR++
-      do igas = 1, ngas_cond
+      !do igas = 1, ngas_cond !Commented Test
          lmz = lmap_gas(igas)
          if (lmz <= 0) cycle
          do_q_coltendaa(lmz,iqtend_cond) = .true.
-      end do ! igas !QZR++
-      do iaer = 1, naer_cond !QZR++
-         !iaer = igas !QZR--
+      !end do ! igas !QZR++ Commented Test
+      !do iaer = 1, naer_cond !QZR++ Commented Test
+         iaer = igas !QZR-- Uncommneted Test
          do n = 1, ntot_amode
             lmz = lmap_aer(iaer,n)
             if (lmz <= 0) cycle
             do_q_coltendaa(lmz,iqtend_cond) = .true.
          end do ! n
-      !end do ! igas !QZR--
-      end do ! iaer !QZR++
+      end do ! igas !QZR-- Uncommented Test
+      !end do ! iaer !QZR++ Commented Test
 
 #if ( defined MOSAIC_SPECIES )
       if (iaer_co3 > 0) then
