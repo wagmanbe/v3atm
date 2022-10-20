@@ -130,7 +130,7 @@ module zm_conv
    real(r8) :: accr_fac = unset_r8
    real(r8) :: micro_dcs= unset_r8
 
-   logical :: MCSP
+   logical  :: MCSP
    real(r8) :: MCSP_heat_coeff = unset_r8
    real(r8) :: MCSP_moisture_coeff = unset_r8
    real(r8) :: MCSP_uwind_coeff = unset_r8
@@ -199,7 +199,11 @@ subroutine zmconv_readnl(nlfile)
       MCSP_uwind_coeff = zmconv_MCSP_uwind_coeff
       MCSP_vwind_coeff = zmconv_MCSP_vwind_coeff     
  
-      if( abs(MCSP_heat_coeff)+abs(MCSP_moisture_coeff)+abs(MCSP_uwind_coeff)+abs(MCSP_vwind_coeff) > 0._r8 ) MCSP = .true.
+      if( abs(MCSP_heat_coeff)+abs(MCSP_moisture_coeff)+abs(MCSP_uwind_coeff)+abs(MCSP_vwind_coeff) > 0._r8 ) then
+           MCSP = .true.
+      else
+           MCSP = .false.
+      end if 
 
       if ( zmconv_alfa /= unset_r8 ) then
            alfa_scalar = zmconv_alfa
