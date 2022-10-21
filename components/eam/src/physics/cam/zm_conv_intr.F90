@@ -19,7 +19,8 @@ module zm_conv_intr
    use perf_mod
    use cam_logfile,  only: iulog 
    use zm_conv,      only: MCSP, MCSP_heat_coeff, MCSP_moisture_coeff, MCSP_uwind_coeff, MCSP_vwind_coeff
-
+   use physconst,        only: pi
+   
    implicit none
    private
    save
@@ -268,6 +269,7 @@ subroutine zm_conv_tend(pblh    ,mcon    ,cme     , &
    use phys_control,  only: cam_physpkg_is
    use time_manager,       only: get_curr_date
    use interpolate_data, only: vertinterp
+   use physconst,        only: pi
 
 
    ! Arguments
