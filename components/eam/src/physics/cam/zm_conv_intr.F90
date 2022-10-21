@@ -24,7 +24,6 @@ module zm_conv_intr
 
    use ndrop_bam,        only: ndrop_bam_init
    use cam_abortutils,   only: endrun
-   use physconst,        only: pi
 
    use spmd_utils,       only: masterproc
    use cam_history,  only: outfld, addfld, horiz_only, add_default
@@ -747,6 +746,7 @@ subroutine zm_conv_tend(pblh    ,mcon    ,cme     , &
    use phys_control,  only: cam_physpkg_is
    use time_manager,       only: get_curr_date
    use interpolate_data, only: vertinterp
+   use physconst,     only: pi
 
 
    ! Arguments
