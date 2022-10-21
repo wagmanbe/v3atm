@@ -2273,6 +2273,7 @@ subroutine cldprp(lchnk   , &
    real(r8), intent(out) :: sd(pcols,pver)       ! normalized dry stat energy of downdraft
    real(r8), intent(out) :: su(pcols,pver)       ! normalized dry stat energy of updraft
 
+   real(r8) rd                   ! gas constant for dry air
    real(r8) grav                 ! gravity
    real(r8) cp                   ! heat capacity of dry air
 

@@ -158,6 +158,7 @@ subroutine zm_conv_init(pref_edge)
     call addfld ('MAXI',horiz_only , 'A','level'    ,'model level of launching parcel')
 
     call addfld ('CAPE',       horiz_only, 'A',   'J/kg', 'Convectively available potential energy')
+    call addfld ('DCAPE',      horiz_only, 'A',   'J/kg', 'change rate of Convectively available potential energy')
     call addfld ('FREQZM',horiz_only  ,'A','fraction', 'Fractional occurance of ZM convection') 
 
     call addfld ('ZMMTT',     (/ 'lev' /), 'A', 'K/s', 'T tendency - ZM convective momentum transport')
