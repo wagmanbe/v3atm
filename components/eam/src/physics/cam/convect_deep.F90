@@ -270,10 +270,6 @@ subroutine convect_deep_tend( &
     evapcdp = 0
     prec=0
     snow=0
-    mudpcu     = 0.0_r8
-    lambdadpcu = 0.0_r8
-    qi = 0._r8
-
 
     jctop = pver
     jcbot = 1._r8
