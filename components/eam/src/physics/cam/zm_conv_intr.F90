@@ -10,13 +10,12 @@ module zm_conv_intr
 ! Author: D.B. Coleman
 ! January 2010 modified by J. Kay to add COSP simulator fields to physics buffer
 ! July 2015 B. Singh Added code for unified convective trasport
-! April 2021 X. Song added code for the initialization of convective microphysics
-!            and aerosol object, and the output of microphysical properties and tendencies
 !---------------------------------------------------------------------------------
    use shr_kind_mod, only: r8=>shr_kind_r8
    use physconst,    only: cpair                              
    use ppgrid,       only: pver, pcols, pverp, begchunk, endchunk
    use zm_conv,      only: zm_conv_evap, zm_convr, convtran, momtran, trigdcape_ull, trig_dcape_only
+!<songxl---------------
    use zm_conv,      only: zm_microp
    use zm_microphysics,  only: zm_aero_t, zm_microp_st
    use rad_constituents, only: rad_cnst_get_info, rad_cnst_get_mode_num, rad_cnst_get_aer_mmr, &
@@ -27,6 +26,7 @@ module zm_conv_intr
    use physconst,        only: pi
 
    use spmd_utils,       only: masterproc
+!>songxl---------------
    use cam_history,  only: outfld, addfld, horiz_only, add_default
    use perf_mod
    use cam_logfile,  only: iulog 
@@ -50,12 +50,14 @@ module zm_conv_intr
       dp_flxsnw_idx, &
       dp_cldliq_idx, &
       dp_cldice_idx, &
+!<songxl 2014-11-20------------
       dlfzm_idx,     &     ! detrained convective cloud water mixing ratio.
       difzm_idx,     &     ! detrained convective cloud ice mixing ratio.
       dsfzm_idx,     &     ! detrained convective snow mixing ratio. 
       dnlfzm_idx,    &     ! detrained convective cloud water num concen.
       dnifzm_idx,    &     ! detrained convective cloud ice num concen.
       dnsfzm_idx,    &     ! detrained convective snow num concen.
+!>songxl 2014-11-20------------
       prec_dp_idx,   &
       snow_dp_idx
 
@@ -73,7 +75,7 @@ module zm_conv_intr
    logical  ::    convproc_do_gas 
    logical  ::    clim_modal_aero
 
-   ! Convective microphysics
+!<songxl 2014-11-20-----------
    integer  ::    dgnum_idx        = 0
    integer  ::    lambdadpcu_idx   = 0
    integer  ::    mudpcu_idx       = 0
@@ -126,8 +128,7 @@ subroutine zm_conv_register
     call pbuf_add_field('Q_STAR','global',dtype_r8,(/pcols,pver/), q_star_idx)
    endif
 
-! Convective microphysics
-
+!<songxl 2014-11-20---------
    ! detrained convective cloud water mixing ratio.
    call pbuf_add_field('DLFZM', 'physpkg', dtype_r8, (/pcols,pver/), dlfzm_idx)
    ! detrained convective cloud ice mixing ratio.
@@ -146,6 +147,8 @@ subroutine zm_conv_register
       call pbuf_add_field('DSFZM', 'physpkg', dtype_r8, (/pcols,pver/), dsfzm_idx)
        
    end if
+
+!>songxl 2014-11-20---------
 
 
 end subroutine zm_conv_register
@@ -167,7 +170,9 @@ subroutine zm_conv_init(pref_edge)
   use phys_control,   only: phys_deepconv_pbl, phys_getopts, cam_physpkg_is
   use physics_buffer, only: pbuf_get_index
   use rad_constituents, only: rad_cnst_get_info 
+!<songxl 2014-11-20------
   use zm_microphysics, only: zm_mphyi
+!>songxl 2014-11-20------
 
   implicit none
 
@@ -181,10 +186,13 @@ subroutine zm_conv_init(pref_edge)
                             ! temperature, water vapor, cloud ice and cloud
                             ! liquid budgets.
   integer :: history_budget_histfile_num ! output history file number for budget fields
+!<songxl 2014-11-20----------
+!  integer :: nmodes 
 
   ! Aerosols
   integer :: i
   character(len=*), parameter :: routine = 'zm_conv_init'
+!>songxl 2014-11-20----------
 
 ! 
 ! Register fields with the output buffer
@@ -246,7 +254,7 @@ subroutine zm_conv_init(pref_edge)
        call addfld ('MCSP_shear',horiz_only,'A','m/s','vertical zonal wind shear')
     end if
 
-!Convective microphysics
+!<songxl 2014-11-20---------
 
     if (zm_microp) then
 
@@ -369,7 +377,9 @@ subroutine zm_conv_init(pref_edge)
        call add_default ('QNGZM',    1, ' ')
        call add_default ('FRZZM',   1, ' ')
 
-    end if  ! zm_microp
+    end if
+
+!>songxl 2014-11-20---------
 
     
     call phys_getopts( history_budget_out = history_budget, &
@@ -426,7 +436,7 @@ subroutine zm_conv_init(pref_edge)
     prec_dp_idx     = pbuf_get_index('PREC_DP')
     snow_dp_idx     = pbuf_get_index('SNOW_DP')
 
-! Convective microphysics
+!<songxl 2014-11-20----------
     lambdadpcu_idx  = pbuf_get_index('LAMBDADPCU')
     mudpcu_idx      = pbuf_get_index('MUDPCU')
     icimrdp_idx     = pbuf_get_index('ICIMRDP')
@@ -478,7 +488,7 @@ subroutine zm_conv_init(pref_edge)
        integer,         intent(in)  :: nbulk
        type(zm_aero_t), intent(out) :: aero
 
-       integer :: iaer, l, m, n
+       integer :: iaer, l, m
        integer :: nspecmx   ! max number of species in a mode
 
        character(len=20), allocatable :: aername(:)
@@ -514,26 +524,9 @@ subroutine zm_conv_init(pref_edge)
                 aero%mode_aitken_idx = m
              case ('coarse')
                 aero%mode_coarse_idx = m
-             case ('coarse_dust')
-                aero%mode_coarse_dst_idx = m
-             case ('coarse_seasalt')
-                aero%mode_coarse_slt_idx = m
              end select
 
           end do
-
-          ! check if coarse dust is in separate mode
-          aero%separate_dust = aero%mode_coarse_dst_idx > 0
-
-          ! for 3-mode
-          if (aero%mode_coarse_dst_idx < 0) then 
-             aero%mode_coarse_dst_idx = aero%mode_coarse_idx
-             aero%nspec(aero%mode_coarse_dst_idx) = aero%nspec(aero%mode_coarse_idx)
-          end if
-          if (aero%mode_coarse_slt_idx < 0) then 
-             aero%mode_coarse_slt_idx = aero%mode_coarse_idx     
-             aero%nspec(aero%mode_coarse_slt_idx) = aero%nspec(aero%mode_coarse_idx)
-          end if
 
           ! Check that required mode types were found
           if (aero%mode_accum_idx == -1 .or. aero%mode_aitken_idx == -1 .or. aero%mode_coarse_idx == -1) then
@@ -543,122 +536,21 @@ subroutine zm_conv_init(pref_edge)
           end if
 
           ! find indices for the dust and seasalt species in the coarse mode
-#if ( MOSAIC_SPECIES )
-          do n = 1, aero%nspec(aero%mode_coarse_dst_idx)
-             call rad_cnst_get_info(0, aero%mode_coarse_dst_idx, n, spec_type=str32)
+          do l = 1, aero%nspec(aero%mode_coarse_idx)
+             call rad_cnst_get_info(0, aero%mode_coarse_idx, l, spec_type=str32)
              select case (trim(str32))
              case ('dust')
-               aero%coarse_dust_idx = n
-             case ('ammonium')
-               aero%coarse_nh4_idx  = n
-             case ('nitrate')
-               aero%coarse_no3_idx  = n
-             case ('calcium')
-               aero%coarse_ca_idx   = n
-             case ('carbonate')
-               aero%coarse_co3_idx  = n
-             case ('chloride')
-               aero%coarse_cl_idx   = n
-             end select
-          end do
-#else
-
-          do n = 1, aero%nspec(aero%mode_coarse_dst_idx)
-             call rad_cnst_get_info(0, aero%mode_coarse_dst_idx, n, spec_type=str32)
-             select case (trim(str32))
-             case ('dust')
-                aero%coarse_dust_idx = n
-!             case ('seasalt')
-!                aero%coarse_nacl_idx = l
-             end select
-          end do
-#endif
-
-          do n = 1, aero%nspec(aero%mode_coarse_slt_idx)
-             call rad_cnst_get_info(0, aero%mode_coarse_slt_idx, n, spec_type=str32)
-             select case (trim(str32))
+                aero%coarse_dust_idx = l
              case ('seasalt')
-               aero%coarse_nacl_idx = n
+                aero%coarse_nacl_idx = l
              end select
           end do
-
-#if ( defined MOSAIC )
-          if ( aero%coarse_dust_idx == -1 .or. aero%coarse_nacl_idx == -1 .or. aero%coarse_nh4_idx == -1 .or. &
-             aero%coarse_no3_idx == -1 .or. aero%coarse_ca_idx == -1 .or. aero%coarse_co3_idx == -1 .or.    &
-             aero%coarse_cl_idx == -1 ) then
-             write(iulog,*) routine//': ERROR required mode-species type not found - indicies:', &
-                aero%coarse_dust_idx, aero%coarse_nacl_idx, aero%coarse_nh4_idx, &
-                aero%coarse_no3_idx, aero%coarse_ca_idx, aero%coarse_co3_idx, aero%coarse_cl_idx
-             call endrun(routine//': ERROR required mode-species type not found')
-          end if
-#else
           ! Check that required modal specie types were found
           if (aero%coarse_dust_idx == -1 .or. aero%coarse_nacl_idx == -1) then
              write(iulog,*) routine//': ERROR required mode-species type not found - indicies:', &
                 aero%coarse_dust_idx, aero%coarse_nacl_idx
              call endrun(routine//': ERROR required mode-species type not found')
           end if
-#endif
-
-
-          if (aero%mode_coarse_idx > 0) then
-            do n = 1, aero%nspec(aero%mode_coarse_idx)
-               call rad_cnst_get_info(0, aero%mode_coarse_idx, n, spec_type=str32)
-               select case (trim(str32))
-               case ('sulfate')
-                  aero%coarse_so4_idx = n
-               end select
-            end do
-          end if
-
-          ! Check that required mode specie types were found
-          if (aero%mode_coarse_idx > 0) then
-             if ( aero%coarse_so4_idx == -1) then
-                write(iulog,*) routine//': ERROR required mode-species type not found - indicies:', &
-                  aero%coarse_so4_idx
-                call endrun(routine//': ERROR required mode-species type not found')
-             end if
-          end if
-
-#if (defined MODAL_AERO_4MODE_MOM  || defined MODAL_AERO_5MODE )
-         do n = 1, aero%nspec(aero%mode_coarse_idx)
-            call rad_cnst_get_info(0, aero%mode_coarse_idx, n, spec_type=str32)
-            select case (trim(str32))
-            case ('m-organic')
-              aero%coarse_mom_idx = n
-            end select
-         end do
-
-         ! Check that required mode specie types were found
-         if ( aero%coarse_mom_idx == -1) then
-            write(iulog,*) routine//': ERROR required mode-species type not found - indicies:', &
-               aero%coarse_mom_idx
-            call endrun(routine//': ERROR required mode-species type not found')
-         end if
-#endif
-
-#if (defined RAIN_EVAP_TO_COARSE_AERO )
-         do n = 1, aero%nspec(aero%mode_coarse_idx)
-            call rad_cnst_get_info(0, aero%mode_coarse_idx, n, spec_type=str32)
-            select case (trim(str32))
-            case ('black-c')
-               aero%coarse_bc_idx = n
-            case ('p-organic')
-               aero%coarse_pom_idx = n
-            case ('s-organic')
-               aero%coarse_soa_idx = n
-            end select
-         end do
-
-
-         ! Check that required mode specie types were found
-         if ( aero%coarse_bc_idx == -1 .or. aero%coarse_pom_idx == -1 .or. aero%coarse_soa_idx == -1 ) then
-            write(iulog,*) routine//': ERROR required mode-species type not found - indicies:', &
-              aero%coarse_bc_idx, aero%coarse_pom_idx, aero%coarse_soa_idx
-            call endrun(routine//': ERROR required mode-species type not found')
-         end if
-#endif
-
 
           allocate( &
              aero%num_a(nmodes), &
@@ -720,13 +612,17 @@ subroutine zm_conv_init(pref_edge)
        end if
 
     end subroutine zm_aero_init
+!>songxl 2014-11-20-------------
 
 end subroutine zm_conv_init
 !=========================================================================================
+!subroutine zm_conv_tend(state, ptend, tdt)
 
 subroutine zm_conv_tend(pblh    ,mcon    ,cme     , &
+!<songxl 2014-11-20---
      tpert   ,dlftot  ,pflx    ,zdu      , &
      rliq    ,rice    ,&
+!>songxl 2014-11-20---
      ztodt   , &
      jctop   ,jcbot , &
      state   ,ptend_all   ,landfrac,  pbuf, mu, eu, &
@@ -750,8 +646,10 @@ subroutine zm_conv_tend(pblh    ,mcon    ,cme     , &
 
 
    ! Arguments
+!<songxl 2014-11-20--------
 !   type(physics_state), intent(in )   :: state          ! Physics state variables
    type(physics_state), target, intent(in ) :: state      ! Physics state variables
+!>songxl 2014-11-20---------
    type(physics_ptend), intent(out)   :: ptend_all      ! individual parameterization tendencies
    type(physics_buffer_desc), pointer :: pbuf(:)
 
@@ -767,7 +665,9 @@ subroutine zm_conv_tend(pblh    ,mcon    ,cme     , &
    real(r8), intent(out) :: zdu(pcols,pver)    ! detraining mass flux
 
    real(r8), intent(out) :: rliq(pcols) ! reserved liquid (not yet in cldliq) for energy integrals
+!<songxl 11-20---------
    real(r8), intent(out) :: rice(pcols) ! reserved ice (not yet in cldice) for energy integrals
+!>songxl 11-20--------
    real(r8), intent(out):: mu(pcols,pver) 
    real(r8), intent(out):: eu(pcols,pver) 
    real(r8), intent(out):: du(pcols,pver) 
@@ -792,9 +692,12 @@ subroutine zm_conv_tend(pblh    ,mcon    ,cme     , &
 
    ! Local variables
 
-   type(zm_microp_st)        :: microp_st 
+!<songxl 11-20---------
+    type(zm_microp_st)        :: microp_st 
 
+!   integer :: i,k,m
    integer :: i,k,l,m
+!>songxl 11-20--------
    integer :: ilon                      ! global longitude index of a column
    integer :: ilat                      ! global latitude index of a column
    integer :: nstep
@@ -812,7 +715,10 @@ subroutine zm_conv_tend(pblh    ,mcon    ,cme     , &
 
    ! physics types
    type(physics_state) :: state1        ! locally modify for evaporation to use, not returned
+!<songxl 11-20---------
+!   type(physics_ptend) :: ptend_loc     ! package tendencies
    type(physics_ptend),target :: ptend_loc     ! package tendencies
+!>songxl 11-20--------
    ! physics buffer fields
    real(r8), pointer, dimension(:)   :: prec         ! total precipitation
    real(r8), pointer, dimension(:)   :: snow         ! snow from ZM convection 
@@ -832,6 +738,7 @@ subroutine zm_conv_tend(pblh    ,mcon    ,cme     , &
    real(r8) :: dcape(pcols)                    ! dynamical cape
    real(r8) :: maxgsav(pcols)                  ! tmp array for recording and outfld to MAXI
 
+!<songxl 2014-11-20-----
    real(r8), pointer :: dlf(:,:)    ! detrained convective cloud water mixing ratio.
    real(r8), pointer :: dif(:,:)    ! detrained convective cloud ice mixing ratio.
    real(r8), pointer :: dsf(:,:)    ! detrained convective snow mixing ratio.
@@ -842,6 +749,7 @@ subroutine zm_conv_tend(pblh    ,mcon    ,cme     , &
    real(r8), pointer :: lambdadpcu(:,:) ! slope of cloud liquid size distr
    real(r8), pointer :: mudpcu(:,:)     ! width parameter of droplet size distr
    real(r8), pointer :: qi(:,:)         ! wg grid slice of cloud ice.
+!>songxl 2014-11-20-----
 
    real(r8) :: jctop(pcols)  ! o row of top-of-deep-convection indices passed out.
    real(r8) :: jcbot(pcols)  ! o row of base of cloud indices passed out.
@@ -886,7 +794,7 @@ subroutine zm_conv_tend(pblh    ,mcon    ,cme     , &
    logical  :: doslop_vwind
 
 
-   ! Convective microphysics
+!<songxl 2014-11-20-----------
    real(r8) :: sprd(pcols,pver)
    real(r8) :: frz(pcols,pver)
    real(r8)  precz_snum(pcols)
@@ -967,6 +875,7 @@ subroutine zm_conv_tend(pblh    ,mcon    ,cme     , &
        microp_st%fhmrm (pcols,pver) )    ! mass tendency due to homogeneous freezing of rain
     end if
 
+!>songxl 2014-11-20-----------
 
    doslop          = .false.
    doslop_heat     = .false.
@@ -1045,7 +954,7 @@ subroutine zm_conv_tend(pblh    ,mcon    ,cme     , &
      end if
    end if
 
-   ! Convective microphysics
+!<songxl 2014-11-20------------------
    call pbuf_get_field(pbuf, icimrdp_idx,     qi )
    call pbuf_get_field(pbuf, dlfzm_idx,  dlf)
    call pbuf_get_field(pbuf, difzm_idx,  dif)
@@ -1087,6 +996,10 @@ subroutine zm_conv_tend(pblh    ,mcon    ,cme     , &
       end if
    end if
 
+
+!>songxl 2014-11-20------------------
+
+
 !
 ! Begin with Zhang-McFarlane (1996) convection parameterization
 !
@@ -1101,6 +1014,7 @@ subroutine zm_conv_tend(pblh    ,mcon    ,cme     , &
                     dp ,dsubcld ,jt,maxg,ideep   , &
                     lengath ,ql      ,rliq  ,landfrac,  &
                     t_star, q_star, dcape, &  
+!<songxl 2014-11-20----------------------------
                     aero(lchnk), qi, dif, dnlf, dnif, dsf, dnsf, sprd, rice, frz, mudpcu, &
                     lambdadpcu,  microp_st)
 
@@ -1110,6 +1024,7 @@ subroutine zm_conv_tend(pblh    ,mcon    ,cme     , &
      dlftot(:,:) = dlf(:,:)  
    end if
 
+!>songxl 2014-11-20-------------
    
    call t_stopf ('zm_convr')
 
@@ -1267,7 +1182,9 @@ subroutine zm_conv_tend(pblh    ,mcon    ,cme     , &
 !
    mcon(:ncol,:pver) = mcon(:ncol,:pver) * 100._r8/gravit
 
+!<songxl 2014-11-20-------
    call outfld('CMFMCDZM', mcon, pcols, lchnk)
+!>songxl 2014-11-20-------
 
    ! Store upward and downward mass fluxes in un-gathered arrays
    ! + convert from mb/s to kg/m^2/s
@@ -1292,8 +1209,10 @@ subroutine zm_conv_tend(pblh    ,mcon    ,cme     , &
    call outfld('ZMDT    ',ftem           ,pcols   ,lchnk   )
    call outfld('ZMDQ    ',ptend_loc%q(1,1,1) ,pcols   ,lchnk   )
 
+!<songxl 2014-11-20--------
    if (zm_microp) call zm_conv_micro_outfld(microp_st, dlf, dif, dnlf, dnif, frz, lchnk, ncol)
 
+!>songxl 2014-11-20--------
 
    maxgsav(:) = 0._r8 ! zero if no convection. true mean to be MAXI/FREQZM
    pcont(:ncol) = state%ps(:ncol)
@@ -1343,7 +1262,10 @@ subroutine zm_conv_tend(pblh    ,mcon    ,cme     , &
          state1%t,state1%pmid,state1%pdel,state1%q(:pcols,:pver,1), &
          ptend_loc%s, tend_s_snwprd, tend_s_snwevmlt, ptend_loc%q(:pcols,:pver,1), &
          rprd, cld, ztodt, &
+!<songxl 2014-11-20--------- 
+!        prec, snow, ntprprd, ntsnprd , flxprec, flxsnow)
          prec, snow, ntprprd, ntsnprd , flxprec, flxsnow, sprd, old_snow)
+!>songxl 2014-11-20----------
     call t_stopf ('zm_conv_evap')
 
     evapcdp(:ncol,:pver) = ptend_loc%q(:ncol,:pver,1)
@@ -1362,11 +1284,13 @@ subroutine zm_conv_tend(pblh    ,mcon    ,cme     , &
    call outfld('ZMNTPRPD', ntprprd, pcols, lchnk)
    call outfld('ZMNTSNPD', ntsnprd, pcols, lchnk)
    call outfld('ZMEIHEAT', ptend_loc%s, pcols, lchnk)
+!songxl 2014-11-20   call outfld('CMFMCDZM   ',mcon ,  pcols   ,lchnk   )
    call outfld('PRECCDZM   ',prec,  pcols   ,lchnk   )
 
 
 
    call outfld('PRECZ   ', prec   , pcols, lchnk)
+!<songxl 2014-11-20 -----------------
    if (zm_microp) then
       do i = 1,ncol
          if (prec(i) .gt. 0.0_r8) then
@@ -1377,6 +1301,7 @@ subroutine zm_conv_tend(pblh    ,mcon    ,cme     , &
       end do
       call outfld('PRECZ_SN', precz_snum, pcols, lchnk)
    end if
+!>songxl 2014-11-20 -------------------
 
   ! add tendency from this process to tend from other processes here
   call physics_ptend_sum(ptend_loc,ptend_all, ncol)
@@ -1451,7 +1376,7 @@ subroutine zm_conv_tend(pblh    ,mcon    ,cme     , &
                   ptend_loc%lq,state1%q, pcnst,  mu, md,   &
                   du, eu, ed, dp, dsubcld,  &
                   jt,maxg, ideep, 1, lengath,  &
-                  nstep,   fracis,  ptend_loc%q, fake_dpdry, ztodt)  
+                  nstep,   fracis,  ptend_loc%q, fake_dpdry, ztodt)  !songxl 2014-11-20
    call t_stopf ('convtran1')
 
    call outfld('ZMDICE ',ptend_loc%q(1,1,ixcldice) ,pcols   ,lchnk   )
@@ -1637,7 +1562,7 @@ subroutine zm_conv_tend_2( state,  ptend,  ztodt, pbuf,mu, eu, &
                      ptend%lq,state%q, pcnst,  mu, md,   &
                      du, eu, ed, dp, dsubcld,  &
                      jt,maxg,ideep, 1, lengath,  &
-                     nstep,   fracis,  ptend%q, dpdry,  ztodt)  
+                     nstep,   fracis,  ptend%q, dpdry,  ztodt)  !songxl 2014-11-20
       call t_stopf ('convtran2')
    end if
 
