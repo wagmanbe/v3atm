@@ -3118,6 +3118,7 @@ do_newnuc_if_block50: &
         !         arg list:
         !         gam_ratio, iter_mesa, aH2O_a,jaerosolstate, mass_dry_a_bgn, mass_dry_a, 
         !         dens_dry_a_bgn, dens_dry_a, water_a_hyst, jaerosolstate_bgn
+        call t_startf ('mosaic_box_aerchemistry')
         call mosaic_box_aerchemistry(               aH2O,               T_K,            &!Intent-ins
              P_atm,                   RH_pc,        dtchem,                             &
              mcall_load_mosaic_parameters,          mcall_print_aer_in, sigmag_a,       &
@@ -3130,9 +3131,10 @@ do_newnuc_if_block50: &
              mass_dry_a_bgn,          mass_dry_a,                                       &!Intent-outs
              dens_dry_a_bgn,          dens_dry_a,   water_a_hyst,       aH2O_a,         &
              uptkrate_h2so4,          gam_ratio,    jaerosolstate_bgn,  Hconc_sav       ) ! to save aerosol pH (dsj+zlu)
-
+        call t_stopf ('mosaic_box_aerchemistry') 
 ! temporarily couple the SOA partition in this way, need to change later
 #if ( defined VBS_SOA )
+        call t_startf ('mam_soaexch_vbs_1subarea')
         call mam_soaexch_vbs_1subarea(                                   &
                 nstep,             lchnk,                                  &
                 i_in,              k_in,             jsub_in,              &
@@ -3145,6 +3147,7 @@ do_newnuc_if_block50: &
                 qnum_cur,                                                  &
                 qwtr_cur,                                                  &
                 uptkaer                                                    )
+        call t_stopf ('mam_soaexch_vbs_1subarea')
 #endif
 
         if (mosaic_vars_aa%flag_itr_kel) then
