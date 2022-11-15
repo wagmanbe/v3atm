@@ -20,7 +20,7 @@
   use modal_aero_data, only:  ntot_aspectype, ntot_amode, nsoag, nsoa, npoa, nbc
 ! use ref_pres,        only:  top_lev => clim_modal_aero_top_lev  ! this is for gg02a
   use ref_pres,        only:  top_lev => trop_cloud_top_lev       ! this is for ee02c
-
+  use perf_mod,       only: t_startf, t_stopf !kzm
   implicit none
   private
   save

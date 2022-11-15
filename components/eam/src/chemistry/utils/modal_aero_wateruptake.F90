@@ -18,6 +18,7 @@ use phys_control,     only: phys_getopts
 use cam_abortutils,       only: endrun
 !kzm ++
 use modal_aero_calcsize,  only: modal_strat_sulfate_aod
+use perf_mod,       only: t_startf, t_stopf
 !kzm
 implicit none
 private
