@@ -970,7 +970,7 @@ main_i_loop: &
          misc_vars_aa,                            &
          Hconc_sav, awater,         & !!MW: to save aerosol pH (dsj+zlu)
          troplev(i)          ) !kzm: troplev for stratospheric aerosol cal.
-      call t_startf ('mam_amicphys_1gridcell')
+      call t_stopf ('mam_amicphys_1gridcell')
 !
 ! form new grid-mean mix-ratios
 !
