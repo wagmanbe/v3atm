@@ -78,11 +78,11 @@ subroutine modal_aero_wateruptake_reg()
 
    ! 1st order rate for direct conversion of strat. cloud water to precip (1/s)
    call pbuf_add_field('QAERWAT',    'physpkg', dtype_r8, (/pcols, pver, nmodes/), qaerwat_idx)  
-   if (modal_strat_sulfate_aod) then
+   !if (modal_strat_sulfate_aod) then
       !write(iulog,*)'kzm_wateruptake_reg_1'
       !call pbuf_add_field('MAMH2SO4EQ', 'global',  dtype_r8, (/pcols, pver, nmodes/), sulfeq_idx)
       ! write(iulog,*)'kzm_wateruptake_reg_2'
-   end if
+   !end if
 end subroutine modal_aero_wateruptake_reg
 
 !===============================================================================
@@ -558,18 +558,21 @@ subroutine modal_aero_wateruptake_dr(state, pbuf, list_idx_in, dgnumdry_m, dgnum
    ! compute aerosol wet radius and aerosol water
    !kzm ++
    if (modal_strat_sulfate_aod ) then
+      call t_startf ('wateruptake_strat_sub')    
       call modal_aero_wateruptake_strat_sub( &
            ncol, nmodes, rhcrystal, rhdeliques, dryrad, &
            hygro, rh, dryvol, wetrad, wetvol, &
            wtrvol,                            &
            so4dryvol, so4specdens, tropLev, &          !kzm++
            sulden, wtpct)                              !kzm++
-
+      call t_stopf ('wateruptake_strat_sub')
    else
+      call t_startf ('wateruptake_sub')     
       call modal_aero_wateruptake_sub( &
            ncol, nmodes, rhcrystal, rhdeliques, dryrad, &
            hygro, rh, dryvol, wetrad, wetvol,           &
            wtrvol)
+      call t_stopf ('wateruptake_sub')
    end if
    !call modal_aero_wateruptake_sub( &
    !   ncol, nmodes, rhcrystal, rhdeliques, dryrad, &
