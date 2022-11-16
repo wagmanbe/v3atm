@@ -1505,7 +1505,7 @@ main_jsub_loop: &
          misc_vars_aa_sub(jsub),                     & 
          Hconc_sav , awater,                          & !MW: to save aerosol pH (dsj+zlu)
          troplev_i) !kzm:for strat. aerosol cal.
-      call t_startf ('amicphys_1subarea_clear')
+      call t_stopf ('amicphys_1subarea_clear')
       end if
 
       if ((nsubarea == 1) .or. (iscldy_subarea(jsub) .eqv. .false.)) then
