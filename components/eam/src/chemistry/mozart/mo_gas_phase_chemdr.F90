@@ -42,7 +42,8 @@ module mo_gas_phase_chemdr
   integer :: ch3o2_ndx, no_ndx, ho2_ndx, c2h5o2_ndx, ch3co3_ndx, roho2_ndx, isopo2_ndx, mvko2_ndx
   integer :: h2_ndx, ch4_ndx, c2h4_ndx, isop_ndx, oh_ndx, mvkmacr_ndx
   integer :: no2_ndx, no3_ndx, n2o5_ndx
-  integer :: lo3_no_ndx, lo3_no2_ndx 
+  integer :: lo3_no_ndx, lo3_no2_ndx
+  integer :: c10h16_ndx, visop_o3_ndx, vc10h16_o3_ndx 
 
   character(len=fieldname_len),dimension(rxntot-phtcnt) :: rxn_names
   character(len=fieldname_len),dimension(phtcnt)        :: pht_names
@@ -133,6 +134,7 @@ contains
     isop_ndx       = get_spc_ndx('ISOP')
     oh_ndx         = get_spc_ndx('OH')
     mvkmacr_ndx    = get_spc_ndx('MVKMACR')
+    c10h16_ndx     = get_spc_ndx('C10H16')
     lo3_no_ndx     = get_rxt_ndx('lo3_no')
     lo3_no2_ndx    = get_rxt_ndx('lo3_no2')
     jo1dU_ndx      = get_rxt_ndx('jo1dU')
@@ -140,6 +142,8 @@ contains
     jno3_a_ndx     = get_rxt_ndx('jno3_a')
     jn2o5_b_ndx    = get_rxt_ndx('jn2o5_b')
     po3_oh_ndx     = get_rxt_ndx('po3_oh')
+    visop_o3_ndx     = get_rxt_ndx('visop_o3')
+    vc10h16_o3_ndx   = get_rxt_ndx('vc10h16_o3')
 
     call cnst_get_ind( 'CLDICE', cldice_ndx )
 
@@ -1025,12 +1029,13 @@ contains
          + reaction_rates(i,k,uci2_ndx) &
          + reaction_rates(i,k,uci3_ndx) * vmr(i,k,ch4lnz_ndx) &
          + reaction_rates(i,k,lc2h4_o3_ndx)*vmr(i,k,c2h4_ndx) &
-         + reaction_rates(i,k,lisop_o3_ndx)*vmr(i,k,isop_ndx)  &
+         + (reaction_rates(i,k,lisop_o3_ndx)+reaction_rates(i,k,visop_o3_ndx))*vmr(i,k,isop_ndx)  &
          + reaction_rates(i,k,lo3_oh_ndx)*vmr(i,k,oh_ndx)  &
          + reaction_rates(i,k,lo3_ho2_ndx)*vmr(i,k,ho2_ndx)  &
          + reaction_rates(i,k,lo3_no_ndx)*vmr(i,k,no_ndx)  &
          + reaction_rates(i,k,lo3_no2_ndx)*vmr(i,k,no2_ndx)  &
          + reaction_rates(i,k,lmvkmacr_o3_ndx)*vmr(i,k,mvkmacr_ndx)  &
+         + reaction_rates(i,k,vc10h16_o3_ndx)*vmr(i,k,c10h16_ndx)  &
          + het_rates(i,k,o3_ndx)) *vmr(i,k,o3_ndx)  
 
       end do column0_loop
@@ -1125,12 +1130,13 @@ contains
          + diags_reaction_rates(i,k,uci2_ndx) &
          + diags_reaction_rates(i,k,uci3_ndx) * vmr(i,k,ch4lnz_ndx) &
          + diags_reaction_rates(i,k,lc2h4_o3_ndx)*vmr(i,k,c2h4_ndx) &
-         + diags_reaction_rates(i,k,lisop_o3_ndx)*vmr(i,k,isop_ndx)  &
+         + (diags_reaction_rates(i,k,lisop_o3_ndx)+diags_reaction_rates(i,k,visop_o3_ndx))*vmr(i,k,isop_ndx)  &
          + diags_reaction_rates(i,k,lo3_oh_ndx)*vmr(i,k,oh_ndx)  &
          + diags_reaction_rates(i,k,lo3_ho2_ndx)*vmr(i,k,ho2_ndx)  &
          + diags_reaction_rates(i,k,lo3_no_ndx)*vmr(i,k,no_ndx)  &
          + diags_reaction_rates(i,k,lo3_no2_ndx)*vmr(i,k,no2_ndx)  &
          + diags_reaction_rates(i,k,lmvkmacr_o3_ndx)*vmr(i,k,mvkmacr_ndx)  &
+         + diags_reaction_rates(i,k,vc10h16_o3_ndx)*vmr(i,k,c10h16_ndx)  &
          + het_rates(i,k,o3_ndx)) *vmr(i,k,o3_ndx)  
 
       end do column_loop
