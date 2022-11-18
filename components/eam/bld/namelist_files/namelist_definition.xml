@@ -3988,6 +3988,13 @@ Indicates whether to use a hybrid 2-4 stream radiative transfer in longwave radi
 Default: FALSE
 </entry>
 
+<entry id="surf_emis_file" type="char*256"  category="radiation"
+       group="radiation_nl" valid_values="" >
+Surface emissivity data file name required when surface spectral emissivity is used.
+This is part of the Univ. of Michigan LW radiation transfer treatment package
+Default: share/rad/surface_emissivity_1x1_RRTMG_53deg.nc
+</entry>
+
 <entry id="raytau0" type="real"  category="physc_test"
        group="cam_inparm" valid_values="" >
 Approximate value of decay time at model top (days);

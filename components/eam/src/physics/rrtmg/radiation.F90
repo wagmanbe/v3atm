@@ -97,6 +97,9 @@ logical,public :: flag_mc6   = .false. ! Use MC6 (MODIS Collection 6) LW ice opt
 logical,public :: flag_emis  = .false. ! Use surface emissivit.
 logical,public :: flag_rtr2  = .false. ! Use 2/4-stream LW radiation transfer solver.
 logical,public :: flag_scat  = .false. ! Use MC6 (MODIS Collection 6) LW ice scattering.
+
+integer, parameter  :: nlen = 256     ! Length of character strings
+character(len=nlen), public :: surf_emis_file    ! surface emissivity filename
 ! <--- end add.
 
 !===============================================================================
@@ -126,7 +129,8 @@ subroutine radiation_readnl(nlfile, dtime_in)
    ! Variables defined in namelist
    namelist /radiation_nl/ iradsw, iradlw, irad_always, &
                            use_rad_dt_cosz, spectralflux, &
-                           flag_mc6, flag_emis, flag_rtr2, flag_scat
+                           flag_mc6, flag_emis, flag_rtr2, flag_scat, &
+                           surf_emis_file
 
    ! Read the namelist, only if called from master process
    ! TODO: better documentation and cleaner logic here?
@@ -156,6 +160,7 @@ subroutine radiation_readnl(nlfile, dtime_in)
    call mpibcast(flag_emis, 1, mpi_logical, mstrid, mpicom, ierr)
    call mpibcast(flag_rtr2, 1, mpi_logical, mstrid, mpicom, ierr)
    call mpibcast(flag_scat, 1, mpi_logical, mstrid, mpicom, ierr)   
+   call mpibcast(surf_emis_file, len(surf_emis_file), mpi_character, mstrid, mpicom, ierr)
 #endif
 
    ! Convert iradsw, iradlw and irad_always from hours to timesteps if necessary
@@ -171,10 +176,6 @@ subroutine radiation_readnl(nlfile, dtime_in)
    ! Print runtime options to log.
    if (masterproc) then
       call radiation_printopts()
-      ! Write U-MICH swithces to log file -->
-      write(iulog,*) 'RRTMG U-MICH LW radiation scheme parameters:'
-      write(iulog,*) 'flag_mc6=',flag_mc6,', flag_emis=', flag_emis,&
-                   ', flag_rtr2=',flag_rtr2,', flag_scat=', flag_scat
    end if
 
 end subroutine radiation_readnl
@@ -297,6 +298,13 @@ subroutine radiation_printopts
 10 format(' Execute SW/LW radiation continuously for the first ',i5, ' timestep(s) of this run')
 20 format(' Frequency of Shortwave Radiation calc. (IRADSW)     ',i5/, &
           ' Frequency of Longwave Radiation calc. (IRADLW)      ',i5)
+
+   write(iulog,*)'--- flag_emis = ',flag_emis
+   write(iulog,*)'--- flag_rtr2 = ',flag_rtr2
+   write(iulog,*)'--- flag_mc6 = ',flag_mc6
+   write(iulog,*)'--- flag_scat = ',flag_scat
+   if (flag_emis) &
+      write(iulog,*)'--- surf_emis_file = ',surf_emis_file
 
 end subroutine radiation_printopts
 
