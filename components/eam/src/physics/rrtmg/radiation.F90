@@ -1470,6 +1470,9 @@ end function radiation_nextsw_cday
          cld_lw_abs_mc6(:,1:ncol,:) = liq_lw_abs(:,1:ncol,:) + ice_lw_abs_mc6(:,1:ncol,:)
          cld_lw_ext_mc6(:,1:ncol,:) = liq_lw_abs(:,1:ncol,:) + ice_lw_ext_mc6(:,1:ncol,:)
 
+         ! assign to the old variables for COSP
+         cld_lw_abs(:,1:ncol,:) = cld_lw_abs_mc6(:,1:ncol,:)
+
          ! U-MICH output for value check
          tau_liq(:,:)=liq_lw_abs(2,:,:)
          tau_ice(:,:)=ice_lw_ext_mc6(2,:,:)
