@@ -1870,6 +1870,7 @@ do_cond_if_block10: &
 
 #if ( defined MOSAIC_SPECIES )
       if ( mosaic ) then
+         if (k > troplev_i) then
          tmp_relhum = min( relhum, 0.98_r8 )
          call mosaic_gasaerexch_1subarea_intr(     nstep,                &!Intent(ins)
               lchnk,             i,                k,           jsub,    &
@@ -1885,7 +1886,7 @@ do_cond_if_block10: &
 ! pH dsj+zlu
 ! output water_a here before rename and aging
          awater(:)=qwtr_cur(:)*  mwh2o * aircon
-
+         end if
       else
 #endif
          call mam_gasaerexch_1subarea(                                &
@@ -2343,6 +2344,7 @@ do_cond_if_block10: &
 #if ( defined MOSAIC_SPECIES )
       
       if ( mosaic ) then
+         if (k > troplev_i) then
          call t_startf ('mosaic_exch_1sub_intr')     
          call mosaic_gasaerexch_1subarea_intr(     nstep,                &!Intent(ins)
               lchnk,             i,                k,           jsub,    &
@@ -2358,7 +2360,8 @@ do_cond_if_block10: &
 ! pH dsj+zlu
 ! output water_a here before rename and aging
       awater(:)=qwtr_cur(:)*  mwh2o * aircon
-         call t_stopf ('mosaic_exch_1sub_intr') 
+         call t_stopf ('mosaic_exch_1sub_intr')
+         end if 
       else
 #endif
          call t_startf ('mam_exch_1sub_intr')
