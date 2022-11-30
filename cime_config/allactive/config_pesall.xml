@@ -365,7 +365,7 @@
   <!-- 2000_DATM%JRA_ELM%SPBC_MPASSI_MPASO%DATMFORCED_MOSART_SGLC_SWAV_SIAC_SESP -->
   <!-- ATM_GRID is ne30np4.pg2  ICE_GRID is EC30to60E2r2 -->
   <grid name="a%ne30np4">
-    <mach name="pm-cpu">
+    <mach name="pm-cpu|alvarez">
       <pes compset="JRA_ELM.+MPASSI.+MPASO.+MOSART.+SGLC.+SWAV" pesize="any">
         <comment>"pm-cpu 4 nodes, 256 partition"</comment>
         <ntasks>
@@ -2130,14 +2130,12 @@
         <MAX_MPITASKS_PER_NODE>64</MAX_MPITASKS_PER_NODE>
         <MAX_TASKS_PER_NODE>128</MAX_TASKS_PER_NODE>
         <ntasks>
-          <ntasks_atm>128</ntasks_atm>
-          <ntasks_lnd>128</ntasks_lnd>
-          <ntasks_rof>128</ntasks_rof>
-          <ntasks_ice>128</ntasks_ice>
+          <ntasks_atm>320</ntasks_atm>
+          <ntasks_lnd>320</ntasks_lnd>
+          <ntasks_rof>320</ntasks_rof>
+          <ntasks_ice>320</ntasks_ice>
           <ntasks_ocn>128</ntasks_ocn>
-          <ntasks_glc>128</ntasks_glc>
-          <ntasks_wav>128</ntasks_wav>
-          <ntasks_cpl>128</ntasks_cpl>
+          <ntasks_cpl>320</ntasks_cpl>
         </ntasks>
         <nthrds>
           <nthrds_atm>2</nthrds_atm>
@@ -2154,11 +2152,40 @@
           <rootpe_lnd>0</rootpe_lnd>
           <rootpe_rof>0</rootpe_rof>
           <rootpe_ice>0</rootpe_ice>
-          <rootpe_ocn>0</rootpe_ocn>
-          <rootpe_glc>0</rootpe_glc>
-          <rootpe_wav>0</rootpe_wav>
+          <rootpe_ocn>320</rootpe_ocn>
           <rootpe_cpl>0</rootpe_cpl>
         </rootpe>
+      </pes>
+      <pes compset=".*EAM.+ELM.+MPASSI.+MPASO.+MOSART.+" pesize="L">
+        <comment> -compset A_WCYCL* -res ne30pg2_oECv3 with MPASO on 58 nodes, ~20 sypd</comment>
+        <MAX_MPITASKS_PER_NODE>128</MAX_MPITASKS_PER_NODE>
+        <ntasks>
+          <ntasks_atm>5504</ntasks_atm>
+          <ntasks_lnd>5248</ntasks_lnd>
+          <ntasks_rof>256</ntasks_rof>
+          <ntasks_ice>5248</ntasks_ice>
+          <ntasks_ocn>1920</ntasks_ocn>
+          <ntasks_cpl>688</ntasks_cpl>
+        </ntasks>
+        <nthrds>
+          <nthrds_atm>1</nthrds_atm>
+          <nthrds_lnd>1</nthrds_lnd>
+          <nthrds_rof>1</nthrds_rof>
+          <nthrds_ice>1</nthrds_ice>
+          <nthrds_ocn>1</nthrds_ocn>
+          <nthrds_cpl>1</nthrds_cpl>
+        </nthrds>
+        <rootpe>
+          <rootpe_atm>0</rootpe_atm>
+          <rootpe_lnd>0</rootpe_lnd>
+          <rootpe_rof>5248</rootpe_rof>
+          <rootpe_ice>0</rootpe_ice>
+          <rootpe_ocn>5504</rootpe_ocn>
+          <rootpe_cpl>0</rootpe_cpl>
+        </rootpe>
+        <pstrid>
+          <pstrid_cpl>8</pstrid_cpl>
+        </pstrid>
       </pes>
     </mach>
   </grid>
@@ -9962,7 +9989,7 @@
         </ntasks>
       </pes>
     </mach>
-    <mach name="pm-cpu">
+    <mach name="pm-cpu|alvarez">
       <pes compset="any" pesize="any">
         <comment>"pm-gpu ne30np4 2 nodes 2 threads"</comment>
         <ntasks>
@@ -10449,7 +10476,60 @@
           <rootpe_ocn>4864</rootpe_ocn>
           <rootpe_cpl>0</rootpe_cpl>
         </rootpe>
-      </pes>      
+      </pes>
+    </mach>
+    <mach name="pm-cpu|alvarez">
+      <pes compset=".*EAM.+ELM.+MPASSI.+MPASO.+MOSART.+" pesize="any">
+        <comment> 8 nodes, 64x2 </comment>
+        <MAX_MPITASKS_PER_NODE>64</MAX_MPITASKS_PER_NODE>
+        <MAX_TASKS_PER_NODE>256</MAX_TASKS_PER_NODE>
+        <ntasks>
+          <ntasks_atm>320</ntasks_atm>
+          <ntasks_lnd>320</ntasks_lnd>
+          <ntasks_rof>320</ntasks_rof>
+          <ntasks_ice>360</ntasks_ice>
+          <ntasks_ocn>192</ntasks_ocn>
+          <ntasks_cpl>320</ntasks_cpl>
+        </ntasks>
+        <rootpe>
+          <rootpe_atm>0</rootpe_atm>
+          <rootpe_lnd>0</rootpe_lnd>
+          <rootpe_rof>0</rootpe_rof>
+          <rootpe_ice>0</rootpe_ice>
+          <rootpe_ocn>320</rootpe_ocn>
+          <rootpe_cpl>0</rootpe_cpl>
+        </rootpe>
+        <nthrds>
+          <nthrds_atm>2</nthrds_atm>
+          <nthrds_lnd>2</nthrds_lnd>
+          <nthrds_rof>2</nthrds_rof>
+          <nthrds_ice>2</nthrds_ice>
+          <nthrds_ocn>2</nthrds_ocn>
+          <nthrds_cpl>1</nthrds_cpl>
+        </nthrds>
+      </pes>
+    </mach>
+  </grid>
+  <grid name="a%ne30np4_l%.+oi%oEC60to30.+w%wQU225EC60to30">
+    <mach name="anvil|chrysalis">
+      <pes compset=".*EAM.+ELM.+MPASSI.+MPASO.+MOSART.+SGLC.+WW3" pesize="any">
+        <comment>none</comment>
+        <ntasks>
+          <ntasks_atm>1350</ntasks_atm>
+          <ntasks_lnd>72</ntasks_lnd>
+          <ntasks_rof>72</ntasks_rof>
+          <ntasks_ice>1296</ntasks_ice>
+          <ntasks_cpl>1296</ntasks_cpl>
+          <ntasks_ocn>216</ntasks_ocn>
+          <ntasks_wav>612</ntasks_wav>
+        </ntasks>
+        <rootpe>
+          <rootpe_lnd>1296</rootpe_lnd>
+          <rootpe_rof>1296</rootpe_rof>
+          <rootpe_ocn>1368</rootpe_ocn>
+          <rootpe_wav>1584</rootpe_wav>
+        </rootpe>
+      </pes>
     </mach>
   </grid>
   <grid name="oi%EC30to60E2r2|oi%oEC60to30v3">
