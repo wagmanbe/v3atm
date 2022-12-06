@@ -1134,7 +1134,7 @@ end function bfb_expm1
               tmp1,tmp2)
 !<shanyp 07112022
        if (mincdnc.gt.0._rtype) nc_incld = max(nc_incld,mincdnc/rho(k))
-       write(iulog, *) "LLILY", mincdnc
+!       write(iulog, *) "LLILY", mincdnc
 !<shanyp 11212022
 
 
