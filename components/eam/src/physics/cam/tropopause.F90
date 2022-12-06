@@ -1143,6 +1143,9 @@ contains
     ! initialize
     tropLevB = NOTFOUND
     tropLevU = NOTFOUND
+    ! initialize E90 index
+    e90_ndx = -1 
+    e90_ndx2 = -1 
 
     ! default to tropospheric box
     tropFlag(:,:) = .true.
@@ -1151,7 +1154,7 @@ contains
     ! Information about the chunk.
     lchnk = pstate%lchnk
     ncol  = pstate%ncol
-
+    
     ! get index in the chemistry tracer list
     e90_ndx2 = get_spc_ndx( 'E90' ) !kzm
     if ( e90_ndx2 > 0 ) then
