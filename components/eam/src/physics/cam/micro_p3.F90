@@ -58,7 +58,10 @@ module micro_p3
        T_rainfrz, T_icenuc, T_homogfrz, iulog=>iulog_e3sm, &
        masterproc=>masterproc_e3sm, calculate_incloud_mixingratios, mu_r_constant, &
        lookup_table_1a_dum1_c, rho_h2o, &
-       do_Cooper_inP3
+       do_Cooper_inP3, &
+!<shanyp 07072022
+       mincdnc
+!shanyp 07072022>
 
    use wv_sat_scream, only:qv_sat
 
@@ -1129,6 +1132,11 @@ end function bfb_expm1
          nc_incld = nc(k)/cld_frac_l(k)
          call get_cloud_dsd2(qc_incld,nc_incld,mu_c(k),rho(k),nu(k),dnu,lamc(k),  &
               tmp1,tmp2)
+!<shanyp 07112022
+       if (mincdnc.gt.0._rtype) nc_incld = max(nc_incld,mincdnc/rho(k))
+!       write(iulog, *) "LLILY", mincdnc
+!<shanyp 11212022
+
 
          diag_eff_radius_qc(k) = 0.5_rtype*(mu_c(k)+3._rtype)/lamc(k)
          nc(k) = nc_incld*cld_frac_l(k) !limiters in dsd2 may change nc_incld. Enforcing consistency here.
@@ -1252,7 +1260,7 @@ end function bfb_expm1
   SUBROUTINE p3_main(qc,nc,qr,nr,th_atm,qv,dt,qi,qm,ni,bm,                                                                                                               &
        pres,dz,nc_nuceat_tend,nccn_prescribed,ni_activated,frzimm,frzcnt,frzdep,inv_qc_relvar,it,precip_liq_surf,precip_ice_surf,its,ite,kts,kte,diag_eff_radius_qc,     &
        diag_eff_radius_qi,rho_qi,do_predict_nc, do_prescribed_CCN,p3_autocon_coeff,p3_accret_coeff,p3_qc_autocon_expon,p3_nc_autocon_expon,p3_qc_accret_expon,           &
-       p3_wbf_coeff,p3_max_mean_rain_size,p3_embryonic_rain_size,                                                                                                        &
+       p3_wbf_coeff,p3_max_mean_rain_size,p3_embryonic_rain_size,                                                                                             &
        dpres,exner,qv2qi_depos_tend,precip_total_tend,nevapr,qr_evap_tend,precip_liq_flux,precip_ice_flux,rflx,sflx,cflx,cld_frac_r,cld_frac_l,cld_frac_i,               &
        p3_tend_out,mu_c,lamc,liq_ice_exchange,vap_liq_exchange,                                                                                                          &
        vap_ice_exchange,qv_prev,t_prev,col_location,diag_equiv_reflectivity,diag_ze_rain,diag_ze_ice                                                                     &
@@ -1404,6 +1412,9 @@ end function bfb_expm1
     logical(btype), parameter :: debug_ABORT  = .false.  !.true. will result in forced abort in s/r 'check_values'
 
     real(rtype),dimension(its:ite,kts:kte) :: qc_old, nc_old, qr_old, nr_old, qi_old, ni_old, qv_old, th_atm_old
+!<shanyp 07102022
+    integer :: knc
+!shanyp 07102022>
 
 #ifdef SCREAM_CONFIG_IS_CMAKE
     integer :: clock_count1, clock_count_rate, clock_count_max, clock_count2, clock_count_diff
@@ -1618,6 +1629,14 @@ end function bfb_expm1
        ! Instantenous melting of ice/snow at T = t_snow_melt = 2c    
        call ice_complete_melting(kts,kte,ktop,kbot,kdir,qi(i,:),ni(i,:),qm(i,:),latent_heat_fusion(i,:),exner(i,:),th_atm(i,:), & 
             qr(i,:),nr(i,:),qc(i,:),nc(i,:))
+!<shanyp 07112022
+         do knc=kbot,ktop,kdir
+          if ((mincdnc.gt.0._rtype).and.(qc(i,knc).ge.qsmall)) then
+           nc(i,knc) = max(nc(i,knc),mincdnc*cld_frac_l(i,knc)/rho(i,knc))
+           nc_incld(i,knc) = max(nc_incld(i,knc),mincdnc/rho(i,knc))
+          end if
+         end do
+!shanyp 07112022>
 
        !...................................................
        ! final checks to ensure consistency of mass/number
@@ -1629,6 +1648,7 @@ end function bfb_expm1
             mu_c(i,:), nu(i,:), lamc(i,:), mu_r(i,:), lamr(i,:), vap_liq_exchange(i,:),                                       &
             ze_rain(i,:), ze_ice(i,:), diag_vm_qi(i,:), diag_eff_radius_qi(i,:), diag_diam_qi(i,:), rho_qi(i,:), diag_equiv_reflectivity(i,:), diag_eff_radius_qc(i,:), &
             diag_ze_rain(i,:),diag_ze_ice(i,:))
+
 
        !   if (debug_ON) call check_values(qv,Ti,it,debug_ABORT,800,col_location)
 
@@ -2875,7 +2895,12 @@ subroutine cloud_rain_accretion(rho,inv_rho,qc_incld,nc_incld,qr_incld,inv_qc_re
      elseif (iparam.eq.3) then
         !Khroutdinov and Kogan (2000)
         !print*,'p3_qc_accret_expon = ',p3_qc_accret_expon
-        sbgrd_var_coef = subgrid_variance_scaling(inv_qc_relvar, 1.15_rtype ) !p3_qc_accret_expon
+!<shanyp 10132022
+!        sbgrd_var_coef = subgrid_variance_scaling(inv_qc_relvar, 1.15_rtype )
+!        !p3_qc_accret_expon
+        sbgrd_var_coef = subgrid_variance_scaling(inv_qc_relvar, p3_qc_accret_expon ) !p3_qc_accret_expon
+!shanyp 10132022>
+
         !qc2qr_accret_tend = sbgrd_var_coef*67._rtype*bfb_pow(qc_incld*qr_incld, 1.15_rtype) !p3_qc_accret_expon
 ! +++ E3SMv2 tuning +++        
         !qc2qr_accret_tend = 1.75_rtype*sbgrd_var_coef*67._rtype*bfb_pow(qc_incld*qr_incld, 1.15_rtype) !p3_qc_accret_expon
@@ -2964,7 +2989,11 @@ subroutine cloud_water_autoconversion(rho,qc_incld,nc_incld,inv_qc_relvar,      
       !qc2qr_autoconv_tend = sbgrd_var_coef*1350._rtype*bfb_pow(qc_incld,2.47_rtype)*bfb_pow(nc_incld*1.e-6_rtype*rho,-1.79_rtype)
 
 ! +++ E3SMv2 tunning +++
-      sbgrd_var_coef = subgrid_variance_scaling(inv_qc_relvar, 3.19_rtype)
+!<shanyp 10132022
+!      sbgrd_var_coef = subgrid_variance_scaling(inv_qc_relvar, 3.19_rtype)
+      sbgrd_var_coef = subgrid_variance_scaling(inv_qc_relvar, p3_qc_autocon_expon)
+!shanyp 10132022>
+
       !qc2qr_autoconv_tend = sbgrd_var_coef*30500.0_rtype*bfb_pow(qc_incld,3.19_rtype)*bfb_pow(nc_incld*1.e-6_rtype*rho,-1.40_rtype)
       qc2qr_autoconv_tend = sbgrd_var_coef*p3_autocon_coeff*bfb_pow(qc_incld,p3_qc_autocon_expon)*bfb_pow(nc_incld*1.e-6_rtype*rho,p3_nc_autocon_expon)
       
