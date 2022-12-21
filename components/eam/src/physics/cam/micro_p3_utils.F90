@@ -70,7 +70,7 @@ module micro_p3_utils
     ! Minimum average mass of particles.
     real(rtype), parameter :: min_mean_mass_liq = 1.e-20_rtype
     real(rtype), parameter :: min_mean_mass_ice = 1.e-20_rtype
-!<shanyp 07072022
+!<shanyp-LowNc 07072022
     real(rtype), parameter,public :: mincdnc = 10.*1.e6_rtype ! #/m3
 !shanyp 07072022>
 

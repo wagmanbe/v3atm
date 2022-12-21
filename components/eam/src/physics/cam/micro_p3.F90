@@ -59,7 +59,7 @@ module micro_p3
        masterproc=>masterproc_e3sm, calculate_incloud_mixingratios, mu_r_constant, &
        lookup_table_1a_dum1_c, rho_h2o, &
        do_Cooper_inP3, &
-!<shanyp 07072022
+!<shanyp-LowNc 07072022
        mincdnc
 !shanyp 07072022>
 
@@ -1132,7 +1132,7 @@ end function bfb_expm1
          nc_incld = nc(k)/cld_frac_l(k)
          call get_cloud_dsd2(qc_incld,nc_incld,mu_c(k),rho(k),nu(k),dnu,lamc(k),  &
               tmp1,tmp2)
-!<shanyp 07112022
+!<shanyp-LowNc 07112022
        if (mincdnc.gt.0._rtype) nc_incld = max(nc_incld,mincdnc/rho(k))
 !       write(iulog, *) "LLILY", mincdnc
 !<shanyp 11212022
@@ -1412,7 +1412,7 @@ end function bfb_expm1
     logical(btype), parameter :: debug_ABORT  = .false.  !.true. will result in forced abort in s/r 'check_values'
 
     real(rtype),dimension(its:ite,kts:kte) :: qc_old, nc_old, qr_old, nr_old, qi_old, ni_old, qv_old, th_atm_old
-!<shanyp 07102022
+!<shanyp-LowNc 07102022
     integer :: knc
 !shanyp 07102022>
 
@@ -1629,7 +1629,7 @@ end function bfb_expm1
        ! Instantenous melting of ice/snow at T = t_snow_melt = 2c    
        call ice_complete_melting(kts,kte,ktop,kbot,kdir,qi(i,:),ni(i,:),qm(i,:),latent_heat_fusion(i,:),exner(i,:),th_atm(i,:), & 
             qr(i,:),nr(i,:),qc(i,:),nc(i,:))
-!<shanyp 07112022
+!<shanyp-LowNc 07112022
          do knc=kbot,ktop,kdir
           if ((mincdnc.gt.0._rtype).and.(qc(i,knc).ge.qsmall)) then
            nc(i,knc) = max(nc(i,knc),mincdnc*cld_frac_l(i,knc)/rho(i,knc))
