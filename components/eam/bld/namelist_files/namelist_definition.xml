@@ -2211,6 +2211,12 @@ Specify if ice nucleation is done using the Cooper scheme within p3.
 Default: FALSE
 </entry>
 
+<entry id="p3_mincdnc" type="real" category="microphys"
+       group="micro_nl" valid_values="" >
+Minimum droplet number conc (#/m3) imposed when p3_mincdnc > 0.
+Default: -999.
+</entry>
+
 <!-- micro_mg -->
 <entry id="micro_do_nccons" type="logical" category="microphys"
        group="micro_mg_nl" valid_values="" >
@@ -2241,14 +2247,6 @@ Default: set by build-namelist
 Minimum droplet number conc (#/m3) imposed when micro_mincdnc > 0. 
 Default: -999.
 </entry>
-
-<!-- shanyp-LowNc add min_cdnc for P3-->
-<entry id="p3_mincdnc" type="real" category="microphys"
-       group="micro_nl" valid_values="" >
-Minimum droplet number conc (#/m3) imposed when p3_mincdnc > 0.
-Default: -999.
-</entry>
-<!-- shanyp add min_cdnc for P3-->
 
 
 <entry id="micro_mg_version" type="integer" category="microphys"
