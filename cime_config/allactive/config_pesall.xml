@@ -974,7 +974,92 @@
           <rootpe_lnd>0</rootpe_lnd>
           <rootpe_rof>0</rootpe_rof>
           <rootpe_ice>0</rootpe_ice>
-          <rootpe_ocn>0</rootpe_ocn>
+          <rootpe_ocn>5400</rootpe_ocn>
+          <rootpe_cpl>0</rootpe_cpl>
+        </rootpe>
+      </pes>
+    </mach>
+  </grid>
+  <grid name="a%ne120np4_l%ne120np4_oi%oRRS15to5_r%r0.+_m%oRRS15to5_g%null_w%null">
+    <mach name="cori-haswell">
+      <pes compset="EAM.+ELM.+MPASSI.+MPASO.+MOSART.+SGLC.+SWAV" pesize="any">
+        <comment>none</comment>
+        <ntasks>
+          <ntasks_atm>9600</ntasks_atm>
+          <ntasks_lnd>9600</ntasks_lnd>
+          <ntasks_rof>9600</ntasks_rof>
+          <ntasks_ice>9600</ntasks_ice>
+          <ntasks_ocn>9600</ntasks_ocn>
+          <ntasks_glc>9600</ntasks_glc>
+          <ntasks_wav>1</ntasks_wav>
+          <ntasks_cpl>9600</ntasks_cpl>
+        </ntasks>
+      </pes>
+    </mach>
+  </grid>
+  <grid name="a%ne120np4">
+    <mach name="pm-cpu|alvarez">
+      <pes compset=".*EAM.+ELM.+MPASSI.+MPASO.+MOSART.+SWAV.*" pesize="any">
+        <comment>ne120-wcycl on 42 nodes 128x1c8 ~0.7 sypd</comment>
+        <MAX_MPITASKS_PER_NODE>128</MAX_MPITASKS_PER_NODE>
+        <MAX_TASKS_PER_NODE>256</MAX_TASKS_PER_NODE>
+        <ntasks>
+          <ntasks_atm>3072</ntasks_atm>
+          <ntasks_cpl>384</ntasks_cpl>
+          <ntasks_ice>3072</ntasks_ice>
+          <ntasks_lnd>2560</ntasks_lnd>
+          <ntasks_rof>512</ntasks_rof>
+          <ntasks_ocn>2304</ntasks_ocn>
+          <ntasks_glc>1</ntasks_glc>
+          <ntasks_wav>1</ntasks_wav>
+        </ntasks>
+        <nthrds>
+          <nthrds_atm>1</nthrds_atm>
+          <nthrds_cpl>1</nthrds_cpl>
+          <nthrds_ice>1</nthrds_ice>
+          <nthrds_lnd>1</nthrds_lnd>
+          <nthrds_rof>1</nthrds_rof>
+          <nthrds_ocn>1</nthrds_ocn>
+          <nthrds_glc>1</nthrds_glc>
+          <nthrds_wav>1</nthrds_wav>
+        </nthrds>
+        <rootpe>
+          <rootpe_atm>0</rootpe_atm>
+          <rootpe_cpl>0</rootpe_cpl>
+          <rootpe_ice>0</rootpe_ice>
+          <rootpe_lnd>0</rootpe_lnd>
+          <rootpe_rof>2560</rootpe_rof>
+          <rootpe_ocn>3072</rootpe_ocn>
+          <rootpe_glc>0</rootpe_glc>
+          <rootpe_wav>0</rootpe_wav>
+        </rootpe>
+        <pstrid>
+          <pstrid_cpl>8</pstrid_cpl>
+        </pstrid>
+      </pes>
+    </mach>
+    <mach name="theta">
+      <pes compset=".*EAM.+ELM.+MPASSI.+MPASO.+MOSART.+SWAV.*" pesize="any">
+        <comment>ne120-wcycl on 145 nodes, MPI-only</comment>
+        <MAX_TASKS_PER_NODE>64</MAX_TASKS_PER_NODE>
+        <MAX_MPITASKS_PER_NODE>64</MAX_MPITASKS_PER_NODE>
+        <ntasks>
+          <ntasks_atm>7200</ntasks_atm>
+          <ntasks_cpl>7200</ntasks_cpl>
+          <ntasks_ice>6400</ntasks_ice>
+          <ntasks_lnd>832</ntasks_lnd>
+          <ntasks_rof>832</ntasks_rof>
+          <ntasks_ocn>2048</ntasks_ocn>
+          <ntasks_glc>1</ntasks_glc>
+          <ntasks_wav>1</ntasks_wav>
+        </ntasks>
+        <rootpe>
+          <rootpe_atm>0</rootpe_atm>
+          <rootpe_cpl>0</rootpe_cpl>
+          <rootpe_ice>0</rootpe_ice>
+          <rootpe_lnd>6400</rootpe_lnd>
+          <rootpe_rof>6400</rootpe_rof>
+          <rootpe_ocn>7232</rootpe_ocn>
           <rootpe_glc>0</rootpe_glc>
           <rootpe_wav>0</rootpe_wav>
           <rootpe_cpl>0</rootpe_cpl>
