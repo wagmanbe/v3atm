@@ -20,7 +20,6 @@
   use modal_aero_data, only:  ntot_aspectype, ntot_amode, nsoag, nsoa, npoa, nbc
 ! use ref_pres,        only:  top_lev => clim_modal_aero_top_lev  ! this is for gg02a
   use ref_pres,        only:  top_lev => trop_cloud_top_lev       ! this is for ee02c
-!  use perf_mod,       only: t_startf, t_stopf 
   implicit none
   private
   save
@@ -950,7 +949,7 @@ main_i_loop: &
 !        qsub3, qqcwsub3,                         &
 !        qsub4, qqcwsub4,                         &
 !        qsub_tendaa, qqcwsub_tendaa              )
-!      call t_startf ('mam_amicphys_1gridcell')
+
       call mam_amicphys_1gridcell(                &
          do_cond,             do_rename,          &
          do_newnuc,           do_coag,            &
@@ -970,7 +969,7 @@ main_i_loop: &
          misc_vars_aa,                            &
          Hconc_sav, awater,         & !!MW: to save aerosol pH (dsj+zlu)
          troplev(i)          ) !kzm: troplev for stratospheric aerosol cal.
-!      call t_stopf ('mam_amicphys_1gridcell')
+
 !
 ! form new grid-mean mix-ratios
 !
@@ -1456,8 +1455,7 @@ main_jsub_loop: &
       end if
 
 
-      if ( iscldy_subarea(jsub) .eqv. .true. ) then
-!      call t_startf ('amicphys_1subarea_cloudy')        
+      if ( iscldy_subarea(jsub) .eqv. .true. ) then      
       call mam_amicphys_1subarea_cloudy(             &
          do_cond_sub,            do_rename_sub,      &
          do_newnuc_sub,          do_coag_sub,        &
@@ -1483,9 +1481,9 @@ main_jsub_loop: &
          misc_vars_aa_sub(jsub),                     &
          Hconc_sav , awater,                         & ! to save aerosol pH (dsj+zlu)
          troplev_i) !kzm:for strat. aerosol cal.
-!      call t_stopf ('amicphys_1subarea_cloudy')
+
       else
-!      call t_startf ('amicphys_1subarea_clear')
+      
       call mam_amicphys_1subarea_clear(              &
          do_cond_sub,            do_rename_sub,      &
          do_newnuc_sub,          do_coag_sub,        &
@@ -1505,7 +1503,7 @@ main_jsub_loop: &
          misc_vars_aa_sub(jsub),                     & 
          Hconc_sav , awater,                          & !MW: to save aerosol pH (dsj+zlu)
          troplev_i) !kzm:for strat. aerosol cal.
-!      call t_stopf ('amicphys_1subarea_clear')
+
       end if
 
       if ((nsubarea == 1) .or. (iscldy_subarea(jsub) .eqv. .false.)) then
@@ -2343,7 +2341,7 @@ do_cond_if_block10: &
 #if ( defined MOSAIC_SPECIES )
       
       if ( mosaic ) then
-!         call t_startf ('mosaic_exch_1sub_intr')     
+   
          call mosaic_gasaerexch_1subarea_intr(     nstep,                &!Intent(ins)
               lchnk,             i,                k,           jsub,    &
               latndx,            lonndx,           lund,                 &
@@ -2358,10 +2356,10 @@ do_cond_if_block10: &
 ! pH dsj+zlu
 ! output water_a here before rename and aging
       awater(:)=qwtr_cur(:)*  mwh2o * aircon
-!         call t_stopf ('mosaic_exch_1sub_intr') 
+
       else
 #endif
-!         call t_startf ('mam_exch_1sub_intr')
+
          call mam_gasaerexch_1subarea(                                &
            nstep,             lchnk,                                  &
            i,                 k,                jsub,                 &
@@ -2377,7 +2375,7 @@ do_cond_if_block10: &
            qwtr_cur,                                                  &
            dgn_a,             dgn_awet,         wetdens,              &
            uptkaer,           uptkrate_h2so4                          )
-!         call t_stopf ('mam_exch_1sub_intr') 
+
 #if ( defined( MOSAIC_SPECIES ) )
       end if
 #endif
@@ -2430,7 +2428,7 @@ do_rename_if_block30: &
 
 
       if (strat_sulfate_xfer) then
-!         call t_startf ('mam_rename_1subarea_strat')     
+
          call mam_rename_1subarea_strat(                                &
               nstep,             lchnk,                                 &
                i,                 k,                jsub,               &
@@ -2441,9 +2439,9 @@ do_rename_if_block30: &
               qnum_cur,                                                 &
               qaer_cur,          qaer_delsub_grow4rnam,                 &
               qwtr_cur)                                                     !kzm switch to new rename scheme
-!         call t_stopf ('mam_rename_1subarea_strat')
+
       else
-!         call t_startf ('mam_rename_1subarea')     
+  
            call mam_rename_1subarea(                                    &
                               nstep,             lchnk,                 &
                i,                 k,                jsub,               &
@@ -2454,7 +2452,7 @@ do_rename_if_block30: &
               qnum_cur,                                                 &
               qaer_cur,          qaer_delsub_grow4rnam,                 &
               qwtr_cur)
-!         call t_stopf ('mam_rename_1subarea')
+
       end if
 
 
@@ -2475,7 +2473,7 @@ do_newnuc_if_block50: &
       qgas_sv1 = qgas_cur
       qnum_sv1 = qnum_cur
       qaer_sv1 = qaer_cur
-!      call t_startf ('mam_newnuc_1subarea') 
+
       call mam_newnuc_1subarea(                                     &
          nstep,             lchnk,                                  &
          i,                 k,                jsub,                 &
@@ -2491,7 +2489,7 @@ do_newnuc_if_block50: &
          qwtr_cur,                                                  &
          dnclusterdt_substep,                                        &
          troplev_i                                        )!kzm++
-!      call t_stopf ('mam_newnuc_1subarea')
+
       qgas_del_nnuc = qgas_del_nnuc + (qgas_cur - qgas_sv1)
       qnum_del_nnuc = qnum_del_nnuc + (qnum_cur - qnum_sv1)
       qaer_del_nnuc = qaer_del_nnuc + (qaer_cur - qaer_sv1)
@@ -2509,7 +2507,7 @@ do_newnuc_if_block50: &
 
       qnum_sv1 = qnum_cur
       qaer_sv1 = qaer_cur
-!      call t_startf ('mam_coag_1subarea')
+
       call mam_coag_1subarea(                                       &
          nstep,             lchnk,                                  &
          i,                 k,                jsub,                 &
@@ -2521,7 +2519,7 @@ do_newnuc_if_block50: &
          qnum_cur,                                                  &
          qaer_cur,          qaer_delsub_coag_in,                    &
          qwtr_cur                                                   )
-!      call t_stopf ('mam_coag_1subarea')
+
       qnum_delsub_coag = qnum_cur - qnum_sv1
       qaer_delsub_coag = qaer_cur - qaer_sv1
 
@@ -2534,7 +2532,7 @@ do_newnuc_if_block50: &
 !
 !
       if ( n_agepair > 0 ) then
-!      call t_startf ('mam_pcarbon_aging_1subarea')
+
       call mam_pcarbon_aging_1subarea(                              &
          nstep,             lchnk,                                  &
          i,                 k,                jsub,                 &
@@ -2545,7 +2543,7 @@ do_newnuc_if_block50: &
          qaer_cur,          qaer_delsub_cond, qaer_delsub_coag,     &
          qaer_delsub_coag_in,                                       &
          qwtr_cur                                                   )
-!      call t_stopf ('mam_pcarbon_aging_1subarea') 
+
       end if
 
 
@@ -3118,7 +3116,7 @@ do_newnuc_if_block50: &
         !         arg list:
         !         gam_ratio, iter_mesa, aH2O_a,jaerosolstate, mass_dry_a_bgn, mass_dry_a, 
         !         dens_dry_a_bgn, dens_dry_a, water_a_hyst, jaerosolstate_bgn
-!        call t_startf ('mosaic_box_aerchemistry')
+
         call mosaic_box_aerchemistry(               aH2O,               T_K,            &!Intent-ins
              P_atm,                   RH_pc,        dtchem,                             &
              mcall_load_mosaic_parameters,          mcall_print_aer_in, sigmag_a,       &
@@ -3131,10 +3129,10 @@ do_newnuc_if_block50: &
              mass_dry_a_bgn,          mass_dry_a,                                       &!Intent-outs
              dens_dry_a_bgn,          dens_dry_a,   water_a_hyst,       aH2O_a,         &
              uptkrate_h2so4,          gam_ratio,    jaerosolstate_bgn,  Hconc_sav       ) ! to save aerosol pH (dsj+zlu)
-!        call t_stopf ('mosaic_box_aerchemistry') 
+
 ! temporarily couple the SOA partition in this way, need to change later
 #if ( defined VBS_SOA )
-!        call t_startf ('mam_soaexch_vbs_1subarea')
+
         call mam_soaexch_vbs_1subarea(                                   &
                 nstep,             lchnk,                                  &
                 i_in,              k_in,             jsub_in,              &
@@ -3147,7 +3145,7 @@ do_newnuc_if_block50: &
                 qnum_cur,                                                  &
                 qwtr_cur,                                                  &
                 uptkaer                                                    )
-!        call t_stopf ('mam_soaexch_vbs_1subarea')
+
 #endif
 
         if (mosaic_vars_aa%flag_itr_kel) then
@@ -3490,7 +3488,7 @@ do_newnuc_if_block50: &
 
 ! do soa
 #if ( defined VBS_SOA )
-!      call t_startf ('mam_soaexch_vbs_1subarea')
+
       call mam_soaexch_vbs_1subarea(                                &
          nstep,             lchnk,                                  &
          i,                 k,                jsub,                 &
@@ -3503,7 +3501,7 @@ do_newnuc_if_block50: &
          qnum_cur,                                                  &
          qwtr_cur,                                                  &
          uptkaer                                                    )
-!      call t_stopf ('mam_soaexch_vbs_1subarea')
+
 #else
       call mam_soaexch_1subarea(                                    &
          nstep,             lchnk,                                  &
