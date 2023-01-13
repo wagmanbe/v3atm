@@ -195,7 +195,7 @@ subroutine ma_convproc_intr( state, ptend, pbuf, ztodt,             &
                            jt, maxg, ideep, lengath, species_class, &
                            mam_prevap_resusp_optaa,                 &
                            history_aero_prevap_resusp, &
-                           dcondt_resusp3d,wuc  )
+                           dcon_resusp3d,wuc  )
 !----------------------------------------------------------------------- 
 ! 
 ! Purpose: 
@@ -263,7 +263,7 @@ subroutine ma_convproc_intr( state, ptend, pbuf, ztodt,             &
    integer,  intent(in)    :: mam_prevap_resusp_optaa
    logical,  intent(in)    :: history_aero_prevap_resusp
    real(r8), intent(in),optional :: wuc(pcols,pver)
-   real(r8), intent(inout),optional :: dcondt_resusp3d(2*pcnst,pcols,pver)
+   real(r8), intent(inout),optional :: dcon_resusp3d(2*pcnst,pcols,pver)
 
 
 ! Local variables
@@ -294,7 +294,7 @@ subroutine ma_convproc_intr( state, ptend, pbuf, ztodt,             &
 !
 ! Initialize
 !
-   dcondt_resusp3d(:,:,:) = 0._r8
+   dcon_resusp3d(:,:,:) = 0._r8
 
 ! apply this minor fix when doing resuspend to coarse mode
    if (mam_prevap_resusp_optaa >= 30) convproc_prevap_resusp_fixaa = .true.
@@ -369,7 +369,7 @@ subroutine ma_convproc_intr( state, ptend, pbuf, ztodt,             &
      jt, maxg, ideep, lengath,                 &
      qb, dqdt, dotend, nsrflx, qsrflx,         &
      species_class, mam_prevap_resusp_optaa,   &
-     dcondt_resusp3d=dcondt_resusp3d,wuc=wuc   )
+     dcon_resusp3d=dcon_resusp3d,wuc=wuc   )
 
 ! apply deep conv processing tendency and prepare for shallow conv processing
   do l = 1, pcnst
@@ -505,7 +505,7 @@ subroutine ma_convproc_dp_intr(                &
      jt, maxg, ideep, lengath,                 &
      q, dqdt, dotend, nsrflx, qsrflx,          &
      species_class, mam_prevap_resusp_optaa,   &
-     dcondt_resusp3d,wuc )
+     dcon_resusp3d,wuc )
 !----------------------------------------------------------------------- 
 ! 
 ! Purpose: 
@@ -569,7 +569,7 @@ subroutine ma_convproc_dp_intr(                &
    integer,  intent(in)    :: species_class(:)
    integer,  intent(in)    :: mam_prevap_resusp_optaa
    real(r8), intent(in),optional :: wuc(pcols,pver)
-   real(r8), intent(inout),optional :: dcondt_resusp3d(pcnst*2,pcols,pver)
+   real(r8), intent(inout),optional :: dcon_resusp3d(pcnst*2,pcols,pver)
 !  real(r8), intent(in)    :: concld(pcols,pver) ! Convective cloud cover
 
 ! Local variables
@@ -848,7 +848,7 @@ subroutine ma_convproc_dp_intr(                &
                      species_class, mam_prevap_resusp_optaa,         & ! REASTER 08/05/2015
                      xx_mfup_max, xx_wcldbase, xx_kcldbase,          &
                      lun,        itmpveca,                           &
-                     dcondt_resusp3d=dcondt_resusp3d,wuc=wuc )
+                     dcon_resusp3d=dcon_resusp3d,wuc=wuc )
 !                    ed,         dp,         dsubcld,    jt,         &   
 
 
@@ -1478,7 +1478,7 @@ subroutine ma_convproc_tend(                                           &
                      species_class, mam_prevap_resusp_optaa,         & ! REASTER 08/05/2015
                      xx_mfup_max, xx_wcldbase, xx_kcldbase,          &
                      lun,        idiag_in,                           &
-                     dcondt_resusp3d,wuc)
+                     dcon_resusp3d,wuc)
 !----------------------------------------------------------------------- 
 ! 
 ! Purpose: 
@@ -1589,7 +1589,7 @@ subroutine ma_convproc_tend(                                           &
    integer,  intent(in) :: lun               ! unit number for diagnostic output
    integer,  intent(in) :: idiag_in(pcols)   ! flag for diagnostic output
    real(r8), intent(in), optional :: wuc(pcols,pver)
-   real(r8), intent(inout),optional :: dcondt_resusp3d(pcnst*2,pcols,pver)
+   real(r8), intent(inout),optional :: dcon_resusp3d(pcnst*2,pcols,pver)
 
 
 !--------------------------Local Variables------------------------------
@@ -2452,7 +2452,7 @@ k_loop_main_cc: &
 !    pairs to account any (or total) resuspension of convective-cloudborne aerosol
       call ma_resuspend_convproc( dcondt, dcondt_resusp,   &
                                   const, dp_i, ktop, kbot_prevap, pcnst_extd ) ! REASTER 08/05/2015
-     dcondt_resusp3d(pcnst+1:pcnst_extd,icol,:) = dcondt_resusp3d(pcnst+1:pcnst_extd,icol,:) &
+     dcon_resusp3d(pcnst+1:pcnst_extd,icol,:) = dcon_resusp3d(pcnst+1:pcnst_extd,icol,:) &
                                                 + dcondt(pcnst+1:pcnst_extd,:)*dtsub
 !     dcondt_resusp(pcnst+1:pcnst_extd,:) = 0._r8
 
