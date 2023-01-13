@@ -1807,7 +1807,7 @@ contains
                                                                ! that gets passed to modal_aero_wateruptake_dr
 
    real(r8),intent(in),optional :: wuc(pcols,pver)
-   real(r8) :: dcondt_resusp3d(2*pcnst,pcols, pver)
+   real(r8) :: dcon_resusp3d(2*pcnst,pcols, pver)
 
     ! local vars
 
@@ -1913,7 +1913,7 @@ contains
 
     lchnk = state%lchnk
     ncol  = state%ncol
-    dcondt_resusp3d(:,:,:) = 0._r8
+    dcon_resusp3d(:,:,:) = 0._r8
 
 
     call physics_ptend_init(ptend, state%psetcols, 'aero_model_wetdep_ma', lq=wetdep_lq)
@@ -2058,7 +2058,7 @@ contains
             mu, md, du, eu, ed, dp, dsubcld, jt, maxg, ideep, lengath,  &
             species_class, mam_prevap_resusp_optaa,                     &
             history_aero_prevap_resusp, &
-            dcondt_resusp3d=dcondt_resusp3d,wuc=wuc)
+            dcon_resusp3d=dcon_resusp3d,wuc=wuc)
 
     do m = 1, ntot_amode ! main loop over aerosol modes
      do lphase = strt_loop,end_loop, stride_loop
@@ -2079,10 +2079,10 @@ contains
        endif
        if (lphase .eq. 2) then
         fldcw => qqcw_get_field(pbuf, mm,lchnk)
-        fldcw(:,:) = fldcw(:,:) + dcondt_resusp3d(mm+pcnst,:,:) !*dt
-!The dcondt_resusp3d is detrained aerosol AMOUNT (i.e., both mass
+        fldcw(:,:) = fldcw(:,:) + dcon_resusp3d(mm+pcnst,:,:) !*dt
+!The dcon_resusp3d is detrained aerosol AMOUNT (i.e., both mass
 !and number for four modals).
-!For dcondt_resusp3d(idx,:,:), idx=16,...,40 -> interstial aerosols
+!For dcon_resusp3d(idx,:,:), idx=16,...,40 -> interstial aerosols
 !                              idx=56,...,80 -> cloud-borne aerosols
 ! Currently, we assume that no aerosol resuspension occurrs during convective
 ! cloud water detrainment. So, 100% of cloud-borne aerosols will be added to
