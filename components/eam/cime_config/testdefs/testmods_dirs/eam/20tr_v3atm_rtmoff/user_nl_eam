@@ -15,6 +15,3 @@
  dust_emis_fact         =  11.8D0
  seasalt_emis_scale     =  0.55D0
 
- cosp_lite = .true.
- nhtfrq    = 5
- mfilt     = 1
