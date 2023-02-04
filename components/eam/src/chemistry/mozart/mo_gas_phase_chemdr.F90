@@ -237,14 +237,14 @@ contains
      inv_ndx_cnst_no3       = get_inv_ndx( 'cnst_NO3' )
      inv_ndx_cnst_oh       = get_inv_ndx( 'cnst_OH' )
      inv_ndx_cnst_ch4      = get_inv_ndx( 'CH4' )
-     write(iulog,*), 'kzm_inv_ndx_no3 ', inv_ndx_cnst_no3
-     write(iulog,*), 'kzm_inv_ndx_oh', inv_ndx_cnst_oh
-     write(iulog,*), 'kzm_inv_ndx_ch4', inv_ndx_cnst_ch4
-     write(iulog,*), 'kzm_oh_ndx', oh_ndx
-     write(iulog,*), 'kzm_no3_ndx', no3_ndx
-     if ((inv_ndx_cnst_oh .gt. 0.0_r8) .and. (inv_ndx_cnst_no3 .gt. 0.0_r8)) then
-        write(iulog,*) 'kzm_prescribed_NO3_OH '
-     endif
+     !write(iulog,*), 'kzm_inv_ndx_no3 ', inv_ndx_cnst_no3
+     !write(iulog,*), 'kzm_inv_ndx_oh', inv_ndx_cnst_oh
+     !write(iulog,*), 'kzm_inv_ndx_ch4', inv_ndx_cnst_ch4
+     !write(iulog,*), 'kzm_oh_ndx', oh_ndx
+     !write(iulog,*), 'kzm_no3_ndx', no3_ndx
+     !if ((inv_ndx_cnst_oh .gt. 0.0_r8) .and. (inv_ndx_cnst_no3 .gt. 0.0_r8)) then
+     !   write(iulog,*) 'kzm_prescribed_NO3_OH '
+     !endif
      !kzm--
      
      if ( chem_name == 'linoz_mam3'.or.chem_name == 'linoz_mam4_resus'.or.chem_name == 'linoz_mam4_resus_mom' &
