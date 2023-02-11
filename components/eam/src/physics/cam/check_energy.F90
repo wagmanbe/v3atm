@@ -602,10 +602,13 @@ end subroutine check_energy_get_integrals
     integer :: ncol                      ! number of active columns
     integer :: lchnk                     ! chunk index
 
-    real(r8) :: te(pcols,begchunk:endchunk,3)   
+    real(r8) :: te(pcols,begchunk:endchunk,7)   
                                          ! total energy of input/output states (copy)
-    real(r8) :: te_glob(3)               ! global means of total energy
+    real(r8) :: te_glob(7)               ! global means of total energy
     real(r8), pointer :: teout(:)
+
+
+    real(r8) :: twbefore, twafter, dflux, dstep
 !-----------------------------------------------------------------------
 
     ! Copy total energy out of input and output states
@@ -622,6 +625,11 @@ end subroutine check_energy_get_integrals
        te(:ncol,lchnk,2) = teout(1:ncol)
        ! surface pressure for heating rate
        te(:ncol,lchnk,3) = state(lchnk)%pint(:ncol,pver+1)
+
+       te(:ncol,lchnk,4) = state(lchnk)%tw_before(:ncol)
+       te(:ncol,lchnk,5) = state(lchnk)%tw_after(:ncol)
+       te(:ncol,lchnk,6) = state(lchnk)%deltaw_flux(:ncol)
+       te(:ncol,lchnk,7) = state(lchnk)%deltaw_step(:ncol)
     end do
 
     ! Compute global means of input and output energies and of
@@ -632,6 +640,12 @@ end subroutine check_energy_get_integrals
        teinp_glob = te_glob(1)
        teout_glob = te_glob(2)
        psurf_glob = te_glob(3)
+
+       twbefore = te_glob(4)
+       twafter = te_glob(5)
+       dflux = te_glob(6)
+       dstep = te_glob(7)
+
        ptopb_glob = state(begchunk)%pint(1,1)
 
        ! Global mean total energy difference
@@ -640,6 +654,9 @@ end subroutine check_energy_get_integrals
 
        if (masterproc) then
           write(iulog,'(1x,a9,1x,i8,4(1x,e25.17))') "nstep, te", nstep, teinp_glob, teout_glob, heat_glob, psurf_glob
+
+          write(iulog,'(1x,a19,1x,i8,3(1x,e25.17))') "nstep, tw b, a, a-b", nstep, twbefore, twafter, twbefore-twafter
+          write(iulog,'(1x,a19,1x,i8,3(1x,e25.17))') "nstep, dflux, dstep", nstep, dflux, dstep, dflux-dstep
        end if
     else
        heat_glob = 0._r8

@@ -103,6 +103,10 @@ module physics_types
           te_ini,  &! vertically integrated total (kinetic + static) energy of initial state
           te_cur,  &! vertically integrated total (kinetic + static) energy of current state
           tw_ini,  &! vertically integrated total water of initial state
+          tw_before,  &! vertically integrated total water of initial state
+          tw_after,   &! vertically integrated total water of initial state
+          deltaw_flux,  &! vertically integrated total water of initial state
+          deltaw_step,  &! vertically integrated total water of initial state
           tw_cur    ! vertically integrated total water of new state
      integer :: count ! count of values with significant energy or water imbalances
      integer, dimension(:),allocatable           :: &
@@ -568,6 +572,19 @@ contains
     call shr_assert_in_domain(state%tw_cur(:ncol),      is_nan=.false., &
          varname="state%tw_cur",    msg=msg)
 
+
+    call shr_assert_in_domain(state%tw_before(:ncol),      is_nan=.false., &
+         varname="state%tw_cur",    msg=msg)
+    call shr_assert_in_domain(state%tw_after(:ncol),      is_nan=.false., &
+         varname="state%tw_cur",    msg=msg)
+    call shr_assert_in_domain(state%deltaw_flux(:ncol),      is_nan=.false., &
+         varname="state%tw_cur",    msg=msg)
+    call shr_assert_in_domain(state%deltaw_step(:ncol),      is_nan=.false., &
+         varname="state%tw_cur",    msg=msg)
+
+
+
+
     ! 2-D variables (at midpoints)
     call shr_assert_in_domain(state%t(:ncol,:),         is_nan=.false., &
          varname="state%t",         msg=msg)
@@ -641,6 +658,18 @@ contains
          varname="state%tw_ini",    msg=msg)
     call shr_assert_in_domain(state%tw_cur(:ncol),      lt=posinf_r8, gt=neginf_r8, &
          varname="state%tw_cur",    msg=msg)
+
+
+    call shr_assert_in_domain(state%tw_before(:ncol),      lt=posinf_r8, gt=neginf_r8, &
+         varname="state%tw_cur",    msg=msg)
+    call shr_assert_in_domain(state%tw_after(:ncol),      lt=posinf_r8, gt=neginf_r8, &
+         varname="state%tw_cur",    msg=msg)
+    call shr_assert_in_domain(state%deltaw_flux(:ncol),      lt=posinf_r8, gt=neginf_r8, &
+         varname="state%tw_cur",    msg=msg)
+    call shr_assert_in_domain(state%deltaw_step(:ncol),      lt=posinf_r8, gt=neginf_r8, &
+         varname="state%tw_cur",    msg=msg)
+
+
 
     ! 2-D variables (at midpoints)
     call shr_assert_in_domain(state%t(:ncol,:),         lt=posinf_r8, gt=0._r8, &
@@ -1319,6 +1348,11 @@ end subroutine physics_ptend_copy
        state_out%te_cur(i) = state_in%te_cur(i) 
        state_out%tw_ini(i) = state_in%tw_ini(i) 
        state_out%tw_cur(i) = state_in%tw_cur(i) 
+
+       state_out%tw_before(i) = state_in%tw_before(i) 
+       state_out%tw_after(i) = state_in%tw_after(i) 
+       state_out%deltaw_flux(i) = state_in%deltaw_flux(i) 
+       state_out%deltaw_step(i) = state_in%deltaw_step(i) 
     end do
 
     do k = 1, pver
@@ -1645,6 +1679,20 @@ subroutine physics_state_alloc(state,lchnk,psetcols)
   allocate(state%te_cur(psetcols), stat=ierr)
   if ( ierr /= 0 ) call endrun('physics_state_alloc error: allocation error for state%te_cur')
   
+
+
+  allocate(state%tw_before(psetcols), stat=ierr)
+  if ( ierr /= 0 ) call endrun('physics_state_alloc error: allocation error for state%te_cur')
+  allocate(state%tw_after(psetcols), stat=ierr)
+  if ( ierr /= 0 ) call endrun('physics_state_alloc error: allocation error for state%te_cur')
+  allocate(state%deltaw_flux(psetcols), stat=ierr)
+  if ( ierr /= 0 ) call endrun('physics_state_alloc error: allocation error for state%te_cur')
+  allocate(state%deltaw_step(psetcols), stat=ierr)
+  if ( ierr /= 0 ) call endrun('physics_state_alloc error: allocation error for state%te_cur')
+
+
+
+
   allocate(state%tw_ini(psetcols), stat=ierr)
   if ( ierr /= 0 ) call endrun('physics_state_alloc error: allocation error for state%tw_ini')
   
@@ -1694,6 +1742,11 @@ subroutine physics_state_alloc(state,lchnk,psetcols)
   state%te_cur(:) = inf
   state%tw_ini(:) = inf
   state%tw_cur(:) = inf
+
+  state%deltaw_step(:) = 0.0
+  state%deltaw_flux(:) = 0.0
+  state%tw_before(:) = 0.0
+  state%tw_after(:) = 0.0
 
 end subroutine physics_state_alloc
 
@@ -1795,7 +1848,23 @@ subroutine physics_state_dealloc(state)
   
   deallocate(state%te_cur, stat=ierr)
   if ( ierr /= 0 ) call endrun('physics_state_dealloc error: deallocation error for state%te_cur')
-  
+ 
+
+
+  deallocate(state%tw_before, stat=ierr)
+  if ( ierr /= 0 ) call endrun('physics_state_dealloc error: deallocation error for state%te_cur')
+  deallocate(state%tw_after, stat=ierr)
+  if ( ierr /= 0 ) call endrun('physics_state_dealloc error: deallocation error for state%te_cur')
+  deallocate(state%deltaw_flux, stat=ierr)
+  if ( ierr /= 0 ) call endrun('physics_state_dealloc error: deallocation error for state%te_cur')
+  deallocate(state%deltaw_step, stat=ierr)
+  if ( ierr /= 0 ) call endrun('physics_state_dealloc error: deallocation error for state%te_cur')
+
+
+
+
+
+ 
   deallocate(state%tw_ini, stat=ierr)
   if ( ierr /= 0 ) call endrun('physics_state_dealloc error: deallocation error for state%tw_ini')
   
