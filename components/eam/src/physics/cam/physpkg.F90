@@ -2356,6 +2356,11 @@ end if
     ! Since the PBL doesn't pass constituent perturbations, they
     ! are zeroed here for input to the moist convection routine
     !
+
+!save water mass here
+state%tw_before(:ncol) = state%tw_cur(:ncol)
+
+
     call t_startf ('convect_deep_tend')
     call convect_deep_tend(  &
          cmfmc,      cmfcme,             &
@@ -2420,6 +2425,10 @@ if (l_tracer_aero) then
     call sslt_rebin_adv(pbuf,  state)
     
 end if
+
+
+
+print *, 'OG before clubb cflx ',  cam_in%cflx(:ncol,1)
 
 
     !========================================================================================
@@ -2670,6 +2679,9 @@ end if
 
      end if !microp_scheme
 
+!save water after
+state%tw_after(:ncol) = state%tw_cur(:ncol)
+
    if (l_tracer_aero) then
       if ( .not. deep_scheme_does_scav_trans() ) then
 
@@ -2776,6 +2788,31 @@ end if ! l_rad
     call t_startf('diag_export')
     call diag_export(cam_out)
     call t_stopf('diag_export')
+
+
+!now fluxes: cflx(1) is kg/m2/sec
+!      cam_out%precc (i) = prec_dp(i)  + prec_sh(i)
+!      cam_out%precl (i) = prec_sed(i) + prec_pcw(i)
+!      cam_out%precsc(i) = snow_dp(i)  + snow_sh(i)
+!      cam_out%precsl(i) = snow_sed(i) + snow_pcw(i)
+! units [qflx] = [liquid water]
+! [1000.0  *( cam_out%precc(1:ncol)+cam_out%precl(1:ncol) - cam_out%precsc(1:ncol) - cam_out%precsl(1:ncol) ) )]
+
+
+!this is going to be after-before
+state%deltaw_flux(:ncol) = cam_in%cflx(:ncol,1) - &
+1000.0*(cam_out%precc(:ncol)+cam_out%precl(:ncol)+cam_out%precsc(:ncol)+cam_out%precsl(:ncol))
+
+state%deltaw_flux(:ncol) = state%deltaw_flux(:ncol) * ztodt
+
+state%deltaw_step(:ncol) = state%tw_after(:ncol) - state%tw_before(:ncol)
+
+
+
+
+
+
+
 
     call check_tracers_fini(tracerint)
 
