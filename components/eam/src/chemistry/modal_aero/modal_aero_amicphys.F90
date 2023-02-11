@@ -14,6 +14,7 @@
   use shr_kind_mod,    only:  r8 => shr_kind_r8
   use cam_abortutils,  only:  endrun
   use cam_logfile,     only:  iulog
+  use spmd_utils,      only:  masterproc
   use chem_mods,       only:  gas_pcnst
   use physconst,       only:  pi
   use ppgrid,          only:  pcols, pver
