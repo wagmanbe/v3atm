@@ -1948,7 +1948,7 @@ do_rename_if_block30: &
           !mtoo_renamexf(ncrsf) = nacc !kzm reanme shrink ncrsf --> acc
           strat_sulfate_xfer = .true.
           !write(iulog,*)'kzm_strat_sulfate_xfer_mam5 ', strat_sulfate_xfer
-          if (is_first_step()) then
+          if (masterproc .and. is_first_step()) then
              write(iulog,*)'kzm_strat_sulfate_renaming_mam5_activated'
           end if
 
@@ -6777,12 +6777,16 @@ dr_so4_monolayers_pcage = n_so4_monolayers_pcage * 4.76e-10
 !kzm ++
 #if (defined MODAL_AERO_5MODE)
       ncrsf = modeptr_coarsulf
-      write(iulog,*) 'kzm_ncrsf ', ncrsf
-      write(iulog,*) 'kzm MAM5 for aerosol microphysics'
+      if ( masterproc ) then
+         write(iulog,*) 'kzm_ncrsf ', ncrsf
+         write(iulog,*) 'kzm MAM5 for aerosol microphysics'
+      endif
 #else
       ncrsf = big_neg_int
-      write(iulog,*) 'kzm_ncrsf ', ncrsf
-      write(iulog,*) 'kzm MAM5 is NOT for aerosol microphysics'
+      if ( masterproc ) then
+         write(iulog,*) 'kzm_ncrsf ', ncrsf
+         write(iulog,*) 'kzm MAM5 is NOT for aerosol microphysics'
+      endif
 #endif
 
 !kzm --

@@ -264,9 +264,12 @@ end subroutine check_energy_get_integrals
     real(r8) :: te(state%ncol)       
     real(r8) :: tw(state%ncol)
 
+    real(r8),allocatable :: cpairv_loc(:,:,:)
+
     integer lchnk                                  ! chunk identifier
     integer ncol                                   ! number of atmospheric columns
     integer  i,k                                   ! column, level indices
+    integer :: ixcldice, ixcldliq                  ! CLDICE and CLDLIQ indices
     real(r8) :: wr(state%ncol)                     ! vertical integral of rain
     real(r8) :: ws(state%ncol)                     ! vertical integral of snow
     integer :: ixrain
@@ -405,10 +408,13 @@ end subroutine check_energy_get_integrals
 
     real(r8) :: te(state%ncol)                     ! vertical integral of total energy
     real(r8) :: tw(state%ncol)                     ! vertical integral of total water
+ 
+    real(r8),allocatable :: cpairv_loc(:,:,:)
 
     integer lchnk                                  ! chunk identifier
     integer ncol                                   ! number of atmospheric columns
     integer  i,k                                   ! column, level indices
+    integer :: ixcldice, ixcldliq                  ! CLDICE and CLDLIQ indices
     real(r8) :: wr(state%ncol)                     ! vertical integral of rain
     real(r8) :: ws(state%ncol)                     ! vertical integral of snow
     integer :: ixrain

@@ -114,6 +114,8 @@
       <value compset="SSP585(?:SOI)?_EAM.*CMIP6.*_BGC%B">SSP585_cam5_CMIP6_bgc</value>
       <value compset="20TR(?:SOI)?_EAM.*AR5sf"          >20TR_E3SMv1_superfast_ar5-emis</value>
       <value compset="20TRS_EAM.*AR5sf"                 >20TRS_E3SMv1_superfast_ar5-emis</value>
+      <value compset="20TR(?:SOI)?_EAM.*CHEMUCI.*LINOZ"  >20TR_eam_chemUCI-Linoz</value>
+      <value compset="20TR(?:SOI)?_EAM.*CHEMMZT"  >20TR_eam_chemMZT</value>
       <value compset="ARM95_EAM"                        >scam_arm95</value>
       <value compset="ARM97_EAM"                        >scam_arm97</value>
       <value compset="SCM_EAM"                          >scam_generic</value>

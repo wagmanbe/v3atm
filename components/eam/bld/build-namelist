@@ -1437,7 +1437,6 @@ if ($aer_model eq 'mam' ) {
             );
         }
 	else {
->>>>>>> 5090b2705d... implement MOSAIC in mingxuanwupnnl/atm/chemUCI-chemMZT_AMIP branch
 	@mode_spec     = (
             [qw(so4_a1 pom_a1 soa_a1 bc_a1 dst_a1 ncl_a1 mom_a1)],
             [qw(so4_a2 soa_a2 ncl_a2 mom_a2)],

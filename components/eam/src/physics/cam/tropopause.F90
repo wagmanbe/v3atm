@@ -39,7 +39,6 @@ module tropopause
   private
   
   public  :: tropopause_readnl, tropopause_init, tropopause_find, tropopause_output
-  public  :: tropopause_findChemTrop
   public  :: TROP_ALG_NONE, TROP_ALG_ANALYTIC, TROP_ALG_CLIMATE
   public  :: TROP_ALG_STOBIE, TROP_ALG_HYBSTOB, TROP_ALG_TWMO, TROP_ALG_WMO
   public  :: TROP_ALG_E90
@@ -185,13 +184,6 @@ contains
     call addfld('TROPP_PD', (/ 'lev' /), 'A', 'probability', 'Tropopause Distribution (primary)')
     call addfld('TROPP_FD', horiz_only,    'A', 'probability', 'Tropopause Found (primary)')
 
-    call addfld('TROPF_P',         horiz_only,  'A',  'Pa',         'Tropopause Pressure (cold point)',    flag_xyfill=.True.)
-    call addfld('TROPF_T',         horiz_only,  'A',  'K',          'Tropopause Temperature (cold point)', flag_xyfill=.True.)
-    call addfld('TROPF_Z',         horiz_only,  'A',  'm',          'Tropopause Height (cold point)',      flag_xyfill=.True.)
-    call addfld('TROPF_DZ',        (/ 'lev' /),  'A', 'm',          'Relative Tropopause Height (cold point)', flag_xyfill=.True.)
-    call addfld('TROPF_PD',        (/ 'lev' /), 'A', 'probability', 'Tropopause Distribution (cold point)')
-    call addfld('TROPF_FD',        horiz_only,  'A', 'probability', 'Tropopause Found (cold point)')
-    
     call addfld( 'hstobie_trop', (/ 'lev' /), 'I',   'fraction of model time', 'Lowest level with stratospheric chemsitry' )
     call addfld( 'hstobie_linoz', (/ 'lev' /), 'I',  'fraction of model time', 'Lowest possible Linoz level' )
     call addfld( 'hstobie_tropop', (/ 'lev' /), 'I', 'fraction of model time', &
@@ -1281,63 +1273,6 @@ contains
     return
   end subroutine tropopause_find
   
-  ! Searches all the columns in the chunk and attempts to identify the "chemical"
-  ! tropopause. This is the lapse rate tropopause, backed up by the climatology
-  ! if the lapse rate fails to find the tropopause at pressures higher than a certain
-  ! threshold. This pressure threshold depends on latitude. Between 50S and 50N, 
-  ! the climatology is used if the lapse rate tropopause is not found at P > 75 hPa. 
-  ! At high latitude (poleward of 50), the threshold is increased to 125 hPa to 
-  ! eliminate false events that are sometimes detected in the cold polar stratosphere.
-  !
-  ! NOTE: This routine was adapted from code in chemistry.F90 and mo_gasphase_chemdr.F90.
-  subroutine tropopause_findChemTrop(pstate, tropLev, primary, backup)
-
-    implicit none
-
-    type(physics_state), intent(in)     :: pstate 
-    integer, optional, intent(in)       :: primary                   ! primary detection algorithm
-    integer, optional, intent(in)       :: backup                    ! backup detection algorithm
-    integer,            intent(out)     :: tropLev(pcols)            ! tropopause level index   
-
-    ! Local Variable
-    real(r8), parameter :: rad2deg = 180._r8/pi                      ! radians to degrees conversion factor
-    real(r8)            :: dlats(pcols)
-    integer             :: i
-    integer             :: ncol
-    integer             :: backAlg
-
-    ! First use the lapse rate tropopause.
-    ncol = pstate%ncol
-    call tropopause_find(pstate, tropLev, primary=primary, backup=TROP_ALG_NONE)
-   
-    ! Now check high latitudes (poleward of 50) and set the level to the
-    ! climatology if the level was not found or is at P <= 125 hPa.
-    dlats(:ncol) = pstate%lat(:ncol) * rad2deg ! convert to degrees
-
-    if (present(backup)) then
-      backAlg = backup
-    else
-      backAlg = default_backup
-    end if
-    
-    do i = 1, ncol
-      if (abs(dlats(i)) > 50._r8) then
-        if (tropLev(i) .ne. NOTFOUND) then
-          if (pstate%pmid(i, tropLev(i)) <= 12500._r8) then
-            tropLev(i) = NOTFOUND
-          end if
-        end if
-      end if
-    end do
-        
-    ! Now use the backup algorithm
-    if ((backAlg /= TROP_ALG_NONE) .and. any(tropLev(:) == NOTFOUND)) then
-      call tropopause_findUsing(pstate, backAlg, tropLev)
-    end if
-    
-    return
-  end subroutine tropopause_findChemTrop
-  
   ! Call the appropriate tropopause detection routine based upon the algorithm
   ! specifed.
   !
@@ -1384,49 +1319,6 @@ contains
     
     return
   end subroutine tropopause_findUsing
-
-  ! This routine interpolates the pressures in the physics state to
-  ! find the pressure at the specified tropopause altitude.
-  function tropopause_interpolateP(pstate, icol, tropLev, tropZ)
- 
-    implicit none
-
-    type(physics_state), intent(in)     :: pstate 
-    integer, intent(in)                 :: icol               ! column being processed
-    integer, intent(in)                 :: tropLev            ! tropopause level index   
-    real(r8), optional, intent(in)      :: tropZ              ! tropopause pressure (m)
-    real(r8)                            :: tropopause_interpolateP
-    
-    ! Local Variables
-    real(r8)   :: tropP              ! tropopause pressure (Pa)
-    real(r8)   :: dlogPdZ            ! dlog(p)/dZ
-    
-    ! Interpolate the temperature linearly against log(P)
-    
-    ! Is the tropopause at the midpoint?
-    if (tropZ == pstate%zm(icol, tropLev)) then
-      tropP = pstate%pmid(icol, tropLev)
-    
-    else if (tropZ > pstate%zm(icol, tropLev)) then
-    
-      ! It is above the midpoint? Make sure we aren't at the top.
-      if (tropLev > 1) then
-        dlogPdZ = (log(pstate%pmid(icol, tropLev)) - log(pstate%pmid(icol, tropLev - 1))) / &
-          (pstate%zm(icol, tropLev) - pstate%zm(icol, tropLev - 1)) 
-        tropP = pstate%pmid(icol, tropLev) + exp((tropZ - pstate%zm(icol, tropLev)) * dlogPdZ)
-      end if
-    else
-      
-      ! It is below the midpoint. Make sure we aren't at the bottom.
-      if (tropLev < pver) then
-        dlogPdZ =  (log(pstate%pmid(icol, tropLev + 1)) - log(pstate%pmid(icol, tropLev))) / &
-          (pstate%zm(icol, tropLev + 1) - pstate%zm(icol, tropLev))
-        tropP = pstate%pmid(icol, tropLev) + exp((tropZ - pstate%zm(icol, tropLev)) * dlogPdZ)
-      end if
-    end if
-    
-    tropopause_interpolateP = tropP
-  end function tropopause_interpolateP
 
   ! This routine interpolates the temperatures in the physics state to
   ! find the temperature at the specified tropopause pressure.
@@ -1583,28 +1475,6 @@ contains
     call outfld('TROPP_DZ',  tropDZ(:ncol, :), ncol, lchnk)
     call outfld('TROPP_PD',  tropPdf(:ncol, :), ncol, lchnk)
     call outfld('TROPP_FD',  tropFound(:ncol),  ncol, lchnk)
-    
-    ! Find the tropopause using just the cold point algorithm.
-    call tropopause_find(pstate, tropLev, tropP=tropP, tropT=tropT, tropZ=tropZ, primary=TROP_ALG_CPP, backup=TROP_ALG_NONE)
-
-    tropPdf(:,:) = 0._r8
-    tropFound(:) = 0._r8
-    tropDZ(:,:) = fillvalue
-
-    do i = 1, ncol
-      if (tropLev(i) /= NOTFOUND) then
-        tropPdf(i, tropLev(i)) = 1._r8
-        tropFound(i) = 1._r8
-        tropDZ(i,:) = pstate%zm(i,:) - tropZ(i)
-      end if
-    end do
-
-    call outfld('TROPF_P',   tropP(:ncol),      ncol, lchnk)
-    call outfld('TROPF_T',   tropT(:ncol),      ncol, lchnk)
-    call outfld('TROPF_Z',   tropZ(:ncol),      ncol, lchnk)
-    call outfld('TROPF_DZ',  tropDZ(:ncol, :), ncol, lchnk)
-    call outfld('TROPF_PD',  tropPdf(:ncol, :), ncol, lchnk)
-    call outfld('TROPF_FD',  tropFound(:ncol),  ncol, lchnk)
     
     ! If requested, do all of the algorithms.
     if (output_all) then
