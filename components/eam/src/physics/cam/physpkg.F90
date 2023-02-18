@@ -2104,7 +2104,9 @@ subroutine tphysbc (ztodt,               &
                              ! For chemical gases, different versions of EAM 
                              ! might use different process ordering.
     real(r8):: wuc(pcols,pver)
-
+!<shanyp 02172023
+    wuc(:,:) = 0._r8
+!shanyp 02172023>
     call phys_getopts( microp_scheme_out      = microp_scheme, &
                        macrop_scheme_out      = macrop_scheme, &
                        use_subcol_microp_out  = use_subcol_microp, &
