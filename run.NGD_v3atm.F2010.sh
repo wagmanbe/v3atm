@@ -292,9 +292,6 @@ nhtfrq =   0,-24,-6,-6,-3,-24,0
 
  soil_erod_file         = '\$DIN_LOC_ROOT/atm/cam/dst/dst_1.9x2.5_c090203.nc'
 
- megan_factors_file = '\$DIN_LOC_ROOT/atm/cam/chem/trop_mozart/emis/megan21_emis_factors_c20130304.nc'
- megan_specifier = 'C10H16 = myrcene + sabinene + limonene + carene_3 + ocimene_t_b + pinene_b + pinene_a + 2met_styrene + cymene_p + cymene_o + phellandrene_a + thujene_a + terpinene_a + terpinene_g + terpinolene + phellandrene_b + camphene + bornene + fenchene_a + ocimene_al + ocimene_c_b'
-
 EOF
 
 cat << EOF >> user_nl_elm
