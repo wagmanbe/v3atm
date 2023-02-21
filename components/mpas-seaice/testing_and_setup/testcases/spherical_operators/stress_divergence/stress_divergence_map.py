@@ -98,7 +98,7 @@ def plot_subfigure(axes, fig, nVertices, vertexDegree, cellsOnVertex, xCell, yCe
 def stress_divergence_map():
 
     # grid
-    fileGrid = Dataset("x1.40962.grid.nc","r")
+    fileGrid = Dataset("grid.40962.nc","r")
 
     nCells = len(fileGrid.dimensions["nCells"])
     nVertices = len(fileGrid.dimensions["nVertices"])
@@ -283,7 +283,7 @@ def stress_divergence_map():
     plt.hist(stressDivergenceUPWLDiffHist,  50, range=[0.0,0.08], histtype='step', lw=1, color='red',   label='PWL')
     plt.hist(stressDivergenceUWeakDiffHist, 50, range=[0.0,0.08], histtype='step', lw=1, color='green', label='Weak')
 
-    plt.yscale('log', nonpositive='clip')
+    plt.yscale('log')
 
     plt.xlabel("Error")
     plt.ylabel("Frequency")
