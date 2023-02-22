@@ -75,6 +75,16 @@
 </compset>
 
 <compset>
+  <alias>WCYCL20TR_chemUCI-Linozv2</alias>
+  <lname>20TRSOI_EAM%CHEMUCI-LINOZV2_ELM%SPBC_MPASSI_MPASO_MOSART_SGLC_SWAV</lname>
+</compset>
+
+<compset>
+  <alias>WCYCL20TR_chemUCI-Linozv3</alias>
+  <lname>20TRSOI_EAM%CHEMUCI-LINOZV3_ELM%SPBC_MPASSI_MPASO_MOSART_SGLC_SWAV</lname>
+</compset>
+
+<compset>
   <alias>WCYCL20TR_chemMZT</alias>
   <lname>20TRSOI_EAM%CHEMMZT_ELM%SPBC_MPASSI_MPASO_MOSART_SGLC_SWAV</lname>
 </compset>
