@@ -142,8 +142,8 @@ contains
     jno3_a_ndx     = get_rxt_ndx('jno3_a')
     jn2o5_b_ndx    = get_rxt_ndx('jn2o5_b')
     po3_oh_ndx     = get_rxt_ndx('po3_oh')
-    visop_o3_ndx     = 97 !get_rxt_ndx('r0097')
-    vc10h16_o3_ndx   = 98 !get_rxt_ndx('r0098')
+    visop_o3_ndx     = get_rxt_ndx('visop_o3')
+    vc10h16_o3_ndx   = get_rxt_ndx('vc10h16_o3')
 
     call cnst_get_ind( 'CLDICE', cldice_ndx )
 
