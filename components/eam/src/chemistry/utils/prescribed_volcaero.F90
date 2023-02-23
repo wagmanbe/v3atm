@@ -212,6 +212,13 @@ end subroutine prescribed_volcaero_readnl
     is_cmip6_volc = .false.
     if (trim(adjustl(file_type))== 'VOLC_CMIP6') then
        is_cmip6_volc = .true.
+#if (defined MODAL_AERO_5MODE)
+       if ( masterproc ) write(iulog,*)'kzm_prescribed_volcaero_mam5_flag '
+       is_cmip6_volc = .false.
+#else
+       if ( masterproc ) write(iulog,*)'kzm_prescribed_volcaero_flag '
+#endif
+      
        ispf = 1
        specifier_sw(ispf) = trim(adjustl(ext_sun_name))
        ispf = ispf + 1
@@ -245,7 +252,7 @@ end subroutine prescribed_volcaero_readnl
     else
        call endrun('prescribed_volcaero_init: Invalid volcanic file type')
     endif
-    write(iulog,*)'kzm_volcano_is_cmip6_volc ', is_cmip6_volc 
+    if ( masterproc ) write(iulog,*)'kzm_volcano_is_cmip6_volc ', is_cmip6_volc 
   end subroutine prescribed_volcaero_init
 
 !-------------------------------------------------------------------

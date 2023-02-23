@@ -730,7 +730,7 @@ subroutine zm_conv_tend(pblh    ,mcon    ,cme     , &
      ztodt   , &
      jctop   ,jcbot , &
      state   ,ptend_all   ,landfrac,  pbuf, mu, eu, &
-     du, md, ed, dp, dsubcld, jt, maxg, ideep, lengath) 
+     du, md, ed, dp, dsubcld, jt, maxg, ideep, lengath, wuc) 
 
    use cam_history,   only: outfld
    use physics_types, only: physics_state, physics_ptend
@@ -789,6 +789,7 @@ subroutine zm_conv_tend(pblh    ,mcon    ,cme     , &
    
    ! w holds position of gathered points vs longitude index   
    integer, intent(out)  :: lengath
+   real(r8), intent(inout),optional :: wuc(pcols,pver)
 
    ! Local variables
 
@@ -973,6 +974,8 @@ subroutine zm_conv_tend(pblh    ,mcon    ,cme     , &
    doslop_moisture = .false.
    doslop_uwind    = .false.
    doslop_vwind    = .false.
+   alphau = 0.0_r8
+   alphav = 0.0_r8
    if( MCSP ) then
         if( MCSP_heat_coeff > 0._r8 ) then
                 doslop_heat = .true.
@@ -1102,7 +1105,7 @@ subroutine zm_conv_tend(pblh    ,mcon    ,cme     , &
                     lengath ,ql      ,rliq  ,landfrac,  &
                     t_star, q_star, dcape, &  
                     aero(lchnk), qi, dif, dnlf, dnif, dsf, dnsf, sprd, rice, frz, mudpcu, &
-                    lambdadpcu,  microp_st)
+                    lambdadpcu,  microp_st, wuc)
 
    if (zm_microp) then
      dlftot(:,:) = dlf(:,:) + dif(:,:) + dsf(:,:)
@@ -1248,8 +1251,8 @@ subroutine zm_conv_tend(pblh    ,mcon    ,cme     , &
       MCSP_DT(:ncol,:pver) = MCSP_DT(:ncol,:pver)/cpair
       call outfld('MCSP_DT    ',MCSP_DT           ,pcols   ,lchnk   )
       call outfld('MCSP_freq    ',MCSP_freq           ,pcols   ,lchnk   )
-      call outfld('MCSP_DU    ',ptend_loc%u*86400._r8           ,pcols   ,lchnk   )
-      call outfld('MCSP_DV    ',ptend_loc%v*86400._r8           ,pcols   ,lchnk   )
+      if (doslop_uwind) call outfld('MCSP_DU    ',ptend_loc%u*86400._r8           ,pcols   ,lchnk   )
+      if (doslop_vwind) call outfld('MCSP_DV    ',ptend_loc%v*86400._r8           ,pcols   ,lchnk   )
       call outfld('ZM_depth   ',ZM_depth                        ,pcols   ,lchnk   )
       call outfld('MCSP_shear ',MCSP_shear                      ,pcols   ,lchnk   )
 

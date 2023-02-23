@@ -3880,6 +3880,8 @@ add_default($nl, 'convproc_do_gas');
 add_default($nl, 'demott_ice_nuc');
 #BSINGH - ENDS
 
+add_default($nl, 'modal_strat_sulfate_aod_treatment');
+
 add_default($nl, 'mam_amicphys_optaa'); #for enabling amicphys code in eam
 add_default($nl, 'n_so4_monolayers_pcage'); #number of so4(+nh4) monolayers needed to "age" a carbon particle
 
@@ -3923,6 +3925,7 @@ if ($cfg->get('microphys') =~ /^p3/) {
     add_default($nl, 'p3_accret_coeff');
     add_default($nl, 'p3_qc_accret_expon');
     add_default($nl, 'p3_wbf_coeff');
+    add_default($nl, 'p3_mincdnc');
     add_default($nl, 'p3_max_mean_rain_size');
     add_default($nl, 'p3_embryonic_rain_size');
     add_default($nl, 'do_prescribed_CCN');

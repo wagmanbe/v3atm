@@ -770,7 +770,7 @@ contains
     enddo
 
     ! Add sum of mass mixing ratios for each aerosol class
-    if (history_aerosol .and. .not. history_verbose) then
+    if (history_aerosol) then
        call addfld( 'Mass_bc',   (/ 'lev' /), 'A', 'kg/kg ', &
             'sum of bc mass concentration bc_a1+bc_c1+bc_a3+bc_c3+bc_a4+bc_c4')
        call add_default( 'Mass_bc', 1, ' ' )
@@ -989,8 +989,8 @@ contains
     ! Mass_soa = soa_a1 + soa_c1 + soa_a2 + soa_c2 + soa_a3 + soa_c3
 
     !initialize the mass arrays
-    if (history_aerosol .and. .not. history_verbose) then
-       mass_bc(:ncol,:) = 0._r8
+    if (history_aerosol) then
+       mass_bc(:ncol,:)  = 0._r8
        mass_dst(:ncol,:) = 0._r8
        mass_mom(:ncol,:) = 0._r8
        mass_ncl(:ncol,:) = 0._r8
@@ -1172,7 +1172,7 @@ contains
           call outfld( solsym(m), mmr(:ncol,:,m), ncol ,lchnk )
           call outfld( trim(solsym(m))//'_SRF', mmr(:ncol,pver,m), ncol ,lchnk )
 #ifdef MODAL_AERO
-          if (history_aerosol .and. .not. history_verbose) then
+          if (history_aerosol) then
              select case (trim(solsym(m)))
              case ('bc_a1','bc_a3','bc_a4')
                   mass_bc(:ncol,:) = mass_bc(:ncol,:) + mmr(:ncol,:,m)
@@ -1184,7 +1184,11 @@ contains
                   mass_ncl(:ncol,:) = mass_ncl(:ncol,:) + mmr(:ncol,:,m)
              case ('pom_a1','pom_a3','pom_a4')
                   mass_pom(:ncol,:) = mass_pom(:ncol,:) + mmr(:ncol,:,m)
+#if (defined MODAL_AERO_5MODE)
+             case ('so4_a1','so4_a2','so4_a3','so4_a5')
+#else
              case ('so4_a1','so4_a2','so4_a3')
+#endif
                   mass_so4(:ncol,:) = mass_so4(:ncol,:) + mmr(:ncol,:,m)
              case ('soa_a1','soa_a2','soa_a3')
                   mass_soa(:ncol,:) = mass_soa(:ncol,:) + mmr(:ncol,:,m)
@@ -1220,7 +1224,7 @@ contains
 
 #ifdef MODAL_AERO
     ! diagnostics for cloud-borne aerosols, then add to corresponding mass accumulators
-    if (history_aerosol .and. .not. history_verbose) then
+    if (history_aerosol) then
 
 
        do n = 1,pcnst
@@ -1237,7 +1241,11 @@ contains
                      mass_ncl(:ncol,:) = mass_ncl(:ncol,:) + fldcw(:ncol,:)
                 case ('pom_c1','pom_c3','pom_c4')
                      mass_pom(:ncol,:) = mass_pom(:ncol,:) + fldcw(:ncol,:)
+#if (defined MODAL_AERO_5MODE)
+                case ('so4_c1','so4_c2','so4_c3','so4_c5')
+#else
                 case ('so4_c1','so4_c2','so4_c3')
+#endif
                      mass_so4(:ncol,:) = mass_so4(:ncol,:) + fldcw(:ncol,:)
                 case ('soa_c1','soa_c2','soa_c3')
                      mass_soa(:ncol,:) = mass_soa(:ncol,:) + fldcw(:ncol,:)
@@ -1549,47 +1557,48 @@ contains
              
             !if (len(flag) >= 6 .and. flag(6:8) == '_LL') then
             if (len(flag) >= 8) then
-                    if (flag(6:8) == '_LL') then
-                    !this change is to let code not got to flag(6:8) when length is 5
-                    !this change is to avoid debug run issue                
-                           
-                        wrk_sum(:ncol) = 0.0_r8
-                        do k = gaschmbudget_2D_L1_s, gaschmbudget_2D_L1_e
-                          wrk_sum(:ncol) = wrk_sum(:ncol) + wrk(:ncol,k)
-                        enddo
-                        call outfld( trim(solsym(m))//'_'//flag(1:5)//'_L1', wrk_sum(:ncol), ncol ,lchnk )
-          
-                        wrk_sum(:ncol) = 0.0_r8
-                        do k = gaschmbudget_2D_L2_s, gaschmbudget_2D_L2_e
-                           wrk_sum(:ncol) = wrk_sum(:ncol) + wrk(:ncol,k)
-                        enddo
-                        call outfld( trim(solsym(m))//'_'//flag(1:5)//'_L2', wrk_sum(:ncol), ncol ,lchnk )
-         
-                        wrk_sum(:ncol) = 0.0_r8
-                        do k = gaschmbudget_2D_L3_s, gaschmbudget_2D_L3_e
-                           wrk_sum(:ncol) = wrk_sum(:ncol) + wrk(:ncol,k)
-                        enddo
-                        call outfld( trim(solsym(m))//'_'//flag(1:5)//'_L3', wrk_sum(:ncol), ncol ,lchnk )
-        
-                       wrk_sum(:ncol) = 0.0_r8
-                       do k = gaschmbudget_2D_L4_s, gaschmbudget_2D_L4_e
-                          wrk_sum(:ncol) = wrk_sum(:ncol) + wrk(:ncol,k)
-                       enddo
-                       call outfld( trim(solsym(m))//'_'//flag(1:5)//'_L4', wrk_sum(:ncol), ncol ,lchnk )
+               if (flag(6:8) == '_LL') then
+               !this change is to let code not got to flag(6:8) when length is 5
+               !to avoid debug built issue
 
-                    elseif (flag(6:10) == '_trop') then
-                    !this change is to let code not got to flag(6:8) when length is 5
-                    !this change is to avoid debug run issue        
-                           
-                       wrk_sum(:ncol) = 0.0_r8
-                       if (trim(solsym(m))=='O3' .or. trim(solsym(m))=='O3LNZ' .or. &
-                            trim(solsym(m))=='N2OLNZ' .or. trim(solsym(m))=='CH4LNZ') then
-                            do k = 1, pver
-                               wrk_sum(:ncol) = wrk_sum(:ncol) + wrk(:ncol,k) * tropFlagInt(:ncol,k)
-                            enddo
-                            call outfld( trim(solsym(m))//'_'//flag, wrk_sum(:ncol), ncol ,lchnk )
-                       endif
-                    endif     
+                   wrk_sum(:ncol) = 0.0_r8
+                   do k = gaschmbudget_2D_L1_s, gaschmbudget_2D_L1_e
+                     wrk_sum(:ncol) = wrk_sum(:ncol) + wrk(:ncol,k)
+                   enddo
+                   call outfld( trim(solsym(m))//'_'//flag(1:5)//'_L1', wrk_sum(:ncol), ncol ,lchnk )
+          
+                   wrk_sum(:ncol) = 0.0_r8
+                   do k = gaschmbudget_2D_L2_s, gaschmbudget_2D_L2_e
+                      wrk_sum(:ncol) = wrk_sum(:ncol) + wrk(:ncol,k)
+                   enddo
+                   call outfld( trim(solsym(m))//'_'//flag(1:5)//'_L2', wrk_sum(:ncol), ncol ,lchnk )
+         
+                   wrk_sum(:ncol) = 0.0_r8
+                   do k = gaschmbudget_2D_L3_s, gaschmbudget_2D_L3_e
+                      wrk_sum(:ncol) = wrk_sum(:ncol) + wrk(:ncol,k)
+                   enddo
+                   call outfld( trim(solsym(m))//'_'//flag(1:5)//'_L3', wrk_sum(:ncol), ncol ,lchnk )
+
+                   wrk_sum(:ncol) = 0.0_r8
+                   do k = gaschmbudget_2D_L4_s, gaschmbudget_2D_L4_e
+                      wrk_sum(:ncol) = wrk_sum(:ncol) + wrk(:ncol,k)
+                   enddo
+                   call outfld( trim(solsym(m))//'_'//flag(1:5)//'_L4', wrk_sum(:ncol), ncol ,lchnk )
+
+               elseif (flag(6:10) == '_trop') then
+               !this change is to let code not got to flag(6:8) when length is 5
+               !to avoid debug built issue
+
+                   wrk_sum(:ncol) = 0.0_r8
+                   if (trim(solsym(m))=='O3' .or. trim(solsym(m))=='O3LNZ' .or. &
+                        trim(solsym(m))=='N2OLNZ' .or. trim(solsym(m))=='CH4LNZ') then
+                      do k = 1, pver
+                            wrk_sum(:ncol) = wrk_sum(:ncol) + wrk(:ncol,k) * tropFlagInt(:ncol,k)
+                      enddo
+                      call outfld( trim(solsym(m))//'_'//flag, wrk_sum(:ncol), ncol ,lchnk )
+                   endif
+               endif
+
             else
                do k=2,pver
                   wrk(:ncol,1) = wrk(:ncol,1) + wrk(:ncol,k)
