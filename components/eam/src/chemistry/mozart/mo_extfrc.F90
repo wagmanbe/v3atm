@@ -11,6 +11,7 @@ module mo_extfrc
   use cam_history,  only : addfld, horiz_only, outfld, add_default
   use cam_logfile,  only : iulog
   use tracer_data,  only : trfld,trfile
+  use mo_constants, only : avogadro
 
   implicit none
 
@@ -361,9 +362,8 @@ contains
           !frcing_col(:ncol) = frcing_col(:ncol) + frcing(:ncol,k,n)*(zint(:ncol,k)-zint(:ncol,k+1))*km_to_cm
 
           if (trim(forcings(m)%species) == 'NO2' .and. history_gaschmbudget_2D) then
-          !kgn per m2 per second: * 14.00674 * 1.65979e-24 * 1.e-3 * 1.e4
-          !             nb: 1.65979e-24 = 1/avo
-               no2_tdacf(:ncol,k) = frcing_tmp(:ncol,k) * 14.00674_r8 * 1.65979e-24_r8 * 10._r8 
+          !kgn per m2 per second: 1/avogadro * 14.00674 * 1.e-3 * 1.e4
+               no2_tdacf(:ncol,k) = frcing_tmp(:ncol,k)/avogadro * 14.00674_r8  * 10._r8 
 
           endif
        enddo

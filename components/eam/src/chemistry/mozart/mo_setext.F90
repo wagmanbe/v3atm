@@ -106,6 +106,7 @@ contains
     use mo_solarproton, only : spe_prod 
     use physics_buffer, only : physics_buffer_desc
     use phys_control, only : phys_getopts
+    use mo_constants, only : avogadro
 
     implicit none
 
@@ -189,7 +190,7 @@ contains
     if (history_gaschmbudget_2D) then
        do k = 1, pver
           !kgn per m2 per second
-          no_tdlgt(:ncol,k) = prod_no(:ncol,k,lchnk)*(zint_rel(:ncol,k)-zint_rel(:ncol,k+1)) * 1.e6_r8 * 14.00674_r8 * 1.65979e-24_r8 
+          no_tdlgt(:ncol,k) = prod_no(:ncol,k,lchnk)*(zint_rel(:ncol,k)-zint_rel(:ncol,k+1)) * 1.e6_r8 * 14.00674_r8 / avogadro 
        end do
 
        call outfld('NO_TDLgt', no_tdlgt(:ncol,:), ncol, lchnk )
