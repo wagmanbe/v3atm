@@ -301,6 +301,9 @@ subroutine convect_deep_tend( &
      call pbuf_get_field(pbuf, pblh_idx,  pblh)
      call pbuf_get_field(pbuf, tpert_idx, tpert)
 
+call pbuf_get_field(pbuf, prec_dp_idx,     prec )
+call pbuf_get_field(pbuf, snow_dp_idx,     snow )
+
      call t_startf('zm_conv_tend')
      call zm_conv_tend( pblh    ,mcon    ,cme     , &
           tpert   ,dlf     ,pflx    ,zdu      , &
@@ -313,6 +316,18 @@ subroutine convect_deep_tend( &
 
 
   end select
+
+#if 0
+ptend%s= 0
+ptend%q= 0
+ptend%u= 0
+ptend%v= 0
+
+rliq=0
+rice=0
+prec(:state%ncol)=0
+snow(:state%ncol)=0
+#endif
 
   ! If we added this, set it.
   if (ttend_dp_idx > 0) then

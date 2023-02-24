@@ -344,16 +344,23 @@ contains
              state%q(:ncol,k,m) = state%q(:ncol,k,m) + ptend%q(:ncol,k,m) * dt
           end do
 
+
+#if 1
           ! now test for mixing ratios which are too small
           ! don't call qneg3 for number concentration variables
           if (m /= ixnumice  .and.  m /= ixnumliq .and. &
               m /= ixnumrain .and.  m /= ixnumsnow ) then
              name = trim(ptend%name) // '/' // trim(cnst_name(m))
 !!== KZ_WATCON 
-             if(use_mass_borrower) then 
+!             if(use_mass_borrower) then 
+             if(.true.) then 
+!not active in default run
+!print *, 'OG use_mass_borrow'
                 call qneg3(trim(name), state%lchnk, ncol, state%psetcols, pver, m, m, qmin(m), state%q(1,1,m),.False.)
                 call massborrow(trim(name), state%lchnk, ncol, state%psetcols, m, m, qmin(m), state%q(1,1,m), state%pdel)
              else
+!this code is active in default run
+!print *, 'OG no mass borrow'
                 call qneg3(trim(name), state%lchnk, ncol, state%psetcols, pver, m, m, qmin(m), state%q(1,1,m),.True.)
              end if 
 !!== KZ_WATCON 
@@ -364,6 +371,8 @@ contains
                 state%q(:ncol,k,m) = min(1.e10_r8,state%q(:ncol,k,m))
              end do
           end if
+#endif
+
 
        end if
 
@@ -1743,10 +1752,10 @@ subroutine physics_state_alloc(state,lchnk,psetcols)
   state%tw_ini(:) = inf
   state%tw_cur(:) = inf
 
-  state%deltaw_step(:) = 0.0
-  state%deltaw_flux(:) = 0.0
-  state%tw_before(:) = 0.0
-  state%tw_after(:) = 0.0
+  state%deltaw_step(:) = -1.0
+  state%deltaw_flux(:) = -2.0
+  state%tw_before(:) = -3.0
+  state%tw_after(:) = -4.0
 
 end subroutine physics_state_alloc
 

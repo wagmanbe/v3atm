@@ -557,12 +557,12 @@ end subroutine check_energy_get_integrals
           end do
        end if
 
-       if (any(abs(tw_rer(1:ncol)) > 1.E-10_r8)) then
+       if (any(abs(tw_rer(1:ncol)) > 1.E-14_r8)) then
           write(iulog,"(a,a,i8,i5)") "significant w_conservation errors from process, nstep, chunk ", &
                name, nstep, lchnk
           write(iulog,"(a5,2a10,6a15)") ' i', 'lat', 'lon', 'tw', 'tw_from_flux', 'diff', 'exptd diff', 'rerr', 'cum_diff'
           do i = 1, ncol
-             if ( abs(tw_rer(i)) > 1.E-10_r8) then
+             if ( abs(tw_rer(i)) > 1.E-14_r8) then
                 state%count = state%count + 1
                 write(iulog,"(i5,2f10.2,6e15.7)") i, state%lat(i), state%lon(i),tw(i),tw_xpd(i),tw_dif(i), &
                      tw_tnd(i)*ztodt, tw_rer(i), tend%tw_tnd(i)*ztodt
@@ -630,11 +630,15 @@ end subroutine check_energy_get_integrals
        te(:ncol,lchnk,5) = state(lchnk)%tw_after(:ncol)
        te(:ncol,lchnk,6) = state(lchnk)%deltaw_flux(:ncol)
        te(:ncol,lchnk,7) = state(lchnk)%deltaw_step(:ncol)
+ 
+
+!print *, "OG in globint deltaw_step", state(lchnk)%deltaw_step(:ncol)
+
     end do
 
     ! Compute global means of input and output energies and of
     ! surface pressure for heating rate (assume uniform ptop)
-    call gmean(te, te_glob, 3)
+    call gmean(te, te_glob, 7)
 
     if (begchunk .le. endchunk) then
        teinp_glob = te_glob(1)

@@ -1642,6 +1642,7 @@ if (l_tracer_aero) then
     call co2_cycle_set_ptend(state, pbuf, ptend)
     call physics_update(state, ptend, ztodt, tend)
 
+#if 0
     ! Chemistry calculation
     if (chem_is_active()) then
        call chem_timestep_tend(state, ptend, cam_in, cam_out, ztodt, &
@@ -1652,6 +1653,7 @@ if (l_tracer_aero) then
        call check_tracers_chng(state, tracerint, "chem_timestep_tend", nstep, ztodt, &
             cam_in%cflx)
     end if
+#endif
     call t_stopf('adv_tracer_src_snk')
 
 end if ! l_tracer_aero
@@ -2360,7 +2362,6 @@ end if
 !save water mass here
 state%tw_before(:ncol) = state%tw_cur(:ncol)
 
-
     call t_startf ('convect_deep_tend')
     call convect_deep_tend(  &
          cmfmc,      cmfcme,             &
@@ -2428,7 +2429,8 @@ end if
 
 
 
-print *, 'OG before clubb cflx ',  cam_in%cflx(:ncol,1)
+print *, 'OG before clubb cflx, nstep ', nstep, cam_in%cflx(:ncol,1)
+print *, 'OG tw_cur, nstep ', nstep, state%tw_cur(:ncol)
 
 
     !========================================================================================
@@ -2809,6 +2811,9 @@ state%deltaw_step(:ncol) = state%tw_after(:ncol) - state%tw_before(:ncol)
 
 
 
+!print *, 'OG end BC cam_out prect ', 1000.0*(cam_out%precc(:ncol)+cam_out%precl(:ncol)+cam_out%precsc(:ncol)+cam_out%precsl(:ncol))
+!print *, 'OG end BC deltaw_flux ',  state%deltaw_flux(:ncol)
+!print *, 'OG end BC deltaw_step ',  state%deltaw_step(:ncol)
 
 
 
