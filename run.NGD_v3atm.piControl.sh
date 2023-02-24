@@ -307,9 +307,11 @@ cat << EOF >> user_nl_elm
  fsurdat = '\${DIN_LOC_ROOT}/lnd/clm2/surfdata_map/surfdata_ne30pg2_simyr1850_c210402.nc'
 
  !comment out finidat if running hybrid type
-
  finidat = '\${DIN_LOC_ROOT}/lnd/clm2/initdata/NGD_v3atm.ne30pg2_EC30to60E2r2.elm.r.0001-01-01-00000.c20230106.nc'
- flanduse_timeseries = '\${DIN_LOC_ROOT}/lnd/clm2/surfdata_map/landuse.timeseries_ne30np4.pg2_hist_simyr1850-2015_c210113.nc'
+
+ ! If using the above finidat for 1850, also set the following, esp. the 2nd one
+  check_finidat_fsurdat_consistency = .false.
+  check_finidat_pct_consistency   = .false.
 EOF
 
 }
