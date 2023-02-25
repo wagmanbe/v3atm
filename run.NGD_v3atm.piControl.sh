@@ -30,14 +30,14 @@ readonly CHERRY=( )
 readonly DEBUG_COMPILE=false
 
 # Run options
-readonly MODEL_START_TYPE="initial"  # 'initial', 'continue', 'branch', 'hybrid'
+readonly MODEL_START_TYPE="hybrid"  # 'initial', 'continue', 'branch', 'hybrid'
 readonly START_DATE="0001-01-01"
 
 # Additional options for 'branch' and 'hybrid'
 readonly GET_REFCASE=TRUE
-readonly RUN_REFDIR="/lcrc/group/e3sm/ac.mwu/archive/20220504.v2.LR.bi-grid.amip.chemMZT.chrysalis/archive/rest/1985-01-01-00000"
-readonly RUN_REFCASE="20220504.v2.LR.bi-grid.amip.chemMZT.chrysalis"
-readonly RUN_REFDATE="1985-01-01"
+readonly RUN_REFDIR="/lcrc/group/e3sm/ac.golaz/E3SMv2_1/v2_1.LR.piControl/init"
+readonly RUN_REFCASE="20221012.submeso.piControl.ne30pg2_EC30to60E2r2.chrysalis"
+readonly RUN_REFDATE="0301-01-01"
 
 # Set paths
 readonly CODE_ROOT="/home/ac.wlin/E3SM/integration/v3atm-work"
