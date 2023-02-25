@@ -19,28 +19,28 @@ readonly MACHINE=chrysalis
 readonly PROJECT="e3sm"
 
 # Simulation
-readonly COMPSET="F2010_chemUCI-Linozv3"
+readonly COMPSET="WCYCL1850_chemUCI-Linozv3"
 readonly RESOLUTION="ne30pg2_EC30to60E2r2"
-readonly CASE_NAME="20230218.NGD_v3atm.F2010"  
+readonly CASE_NAME="20230223.NGD_v3atm.piControl"  
 
 # Code and compilation
-readonly CHECKOUT="20230215"
-readonly BRANCH="NGD_v3atm" 
+readonly CHECKOUT="20230223"
+readonly BRANCH="NGD_v3atm_v2.1ocnice_alt" 
 readonly CHERRY=( )
 readonly DEBUG_COMPILE=false
 
 # Run options
-readonly MODEL_START_TYPE="initial"  # 'initial', 'continue', 'branch', 'hybrid'
+readonly MODEL_START_TYPE="hybrid"  # 'initial', 'continue', 'branch', 'hybrid'
 readonly START_DATE="0001-01-01"
 
 # Additional options for 'branch' and 'hybrid'
 readonly GET_REFCASE=TRUE
-readonly RUN_REFDIR="/lcrc/group/e3sm/ac.mwu/archive/20220504.v2.LR.bi-grid.amip.chemMZT.chrysalis/archive/rest/1985-01-01-00000"
-readonly RUN_REFCASE="20220504.v2.LR.bi-grid.amip.chemMZT.chrysalis"
-readonly RUN_REFDATE="1985-01-01"
+readonly RUN_REFDIR="/lcrc/group/e3sm/ac.golaz/E3SMv2_1/v2_1.LR.piControl/init"
+readonly RUN_REFCASE="20221012.submeso.piControl.ne30pg2_EC30to60E2r2.chrysalis"
+readonly RUN_REFDATE="0301-01-01"
 
 # Set paths
-readonly CODE_ROOT="/home/ac.wlin/E3SM/integration/v3atm"
+readonly CODE_ROOT="/home/ac.wlin/E3SM/integration/v3atm-work"
 readonly CASE_ROOT="/lcrc/group/e3sm/${USER}/E3SM_testings/v3atm/${CASE_NAME}"
 readonly MY_INPUT_DATA_PATH="/lcrc/group/e3sm/ac.mwu/inputdata"
 
@@ -85,11 +85,11 @@ else
   readonly CASE_SCRIPTS_DIR=${CASE_ROOT}/case_scripts
   readonly CASE_RUN_DIR=${CASE_ROOT}/run
   #readonly PELAYOUT="M"
-  readonly PELAYOUT="custom-10"
-  readonly WALLTIME="2:00:00"
-  readonly STOP_OPTION="ndays"
-  readonly STOP_N="9"
-  readonly REST_OPTION="ndays"
+  readonly PELAYOUT="L"
+  readonly WALLTIME="6:00:00"
+  readonly STOP_OPTION="nmonths"
+  readonly STOP_N="1"
+  readonly REST_OPTION="nmonths"
   readonly REST_N="5"
   readonly RESUBMIT="0"
   readonly DO_SHORT_TERM_ARCHIVING=false
@@ -215,38 +215,40 @@ nhtfrq =   0,-24,-6,-6,-3,-24,0
  gas_wetdep_list                = 'C2H5OOH','CH2O','CH3CHO','CH3OOH','H2O2','H2SO4','HNO3','HO2NO2','SO2','SOAG0','SOAG15','SOAG24','SOAG35','SOAG34','SOAG33','SOAG32','SOAG31'
  gas_wetdep_method              = 'NEU'
  
- ext_frc_specifier              = 'NO2    -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/chem_gases/2degrees/emissions-cmip6_NO2_aircraft_vertical_2010_clim_1.9x2.5_c20230213.nc',
-         'SO2    -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/DECK_ne30/cmip6_mam4_so2_elev_1x1_2010_clim_c20190821.nc', 
-         'SOAG0  -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/DECK_ne30/emissions-cmip6_e3sm_SOAG0_elev_2010_clim_1.9x2.5_c20230213.nc',
-         'bc_a4       -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/DECK_ne30/cmip6_mam4_bc_a4_elev_1x1_2010_clim_c20190821.nc',
-         'num_a1      -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/DECK_ne30/cmip6_mam4_num_a1_elev_1x1_2010_clim_c20190821.nc',
-         'num_a2      -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/DECK_ne30/cmip6_mam4_num_a2_elev_1x1_2010_clim_c20190821.nc',
-         'num_a4      -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/DECK_ne30/cmip6_mam4_num_a4_elev_1x1_2010_clim_c20190821.nc',
-         'pom_a4      -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/DECK_ne30/cmip6_mam4_pom_a4_elev_1x1_2010_clim_c20190821.nc',
-         'so4_a1      -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/DECK_ne30/cmip6_mam4_so4_a1_elev_1x1_2010_clim_c20190821.nc',
-         'so4_a2      -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/DECK_ne30/cmip6_mam4_so4_a2_elev_1x1_2010_clim_c20190821.nc'
+ ext_frc_cycle_yr               = 1850
+ ext_frc_specifier              = 'NO2    -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/chem_gases/2degrees/emissions-cmip6_NO2_aircraft_vertical_1750-2015_1.9x2.5_c20170608.nc',
+         'SO2    -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/DECK_ne30/cmip6_mam4_so2_elev_1850-2014_c180205.nc',
+         'SOAG0  -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/DECK_ne30/emissions-cmip6_e3sm_SOAG0_elev_1850-2014_1.9x2.5_c20230201.nc',
+         'bc_a4  -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/DECK_ne30/cmip6_mam4_bc_a4_elev_1850-2014_c180205.nc',
+         'num_a1 -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/DECK_ne30/cmip6_mam4_num_a1_elev_1850-2014_c180205.nc',
+         'num_a2 -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/DECK_ne30/cmip6_mam4_num_a2_elev_1850-2014_c180205.nc',
+         'num_a4 -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/DECK_ne30/cmip6_mam4_num_a4_elev_1850-2014_c180205.nc',
+         'pom_a4 -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/DECK_ne30/cmip6_mam4_pom_a4_elev_1850-2014_c180205.nc',
+         'so4_a1 -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/DECK_ne30/cmip6_mam4_so4_a1_elev_1850-2014_c180205.nc',
+         'so4_a2 -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/DECK_ne30/cmip6_mam4_so4_a2_elev_1850-2014_c180205.nc'
  ext_frc_type           = 'CYCLICAL'
- srf_emis_specifier             = 'C2H4     -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/chem_gases/2degrees/emissions-cmip6_e3sm_C2H4_surface_2010_clim_1.9x2.5_c20230213.nc', 
-         'C2H6     -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/chem_gases/2degrees/emissions-cmip6_e3sm_C2H6_surface_2010_clim_1.9x2.5_c20230213.nc', 
-         'C3H8     -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/chem_gases/2degrees/emissions-cmip6_e3sm_C3H8_surface_2010_clim_1.9x2.5_c20230213.nc',
-         'CH2O     -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/chem_gases/2degrees/emissions-cmip6_e3sm_CH2O_surface_2010_clim_1.9x2.5_c20230213.nc',
-         'CH3CHO   -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/chem_gases/2degrees/emissions-cmip6_e3sm_CH3CHO_surface_2010_clim_1.9x2.5_c20230213.nc',
-         'CH3COCH3 -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/chem_gases/2degrees/emissions-cmip6_e3sm_CH3COCH3_surface_2010_clim_1.9x2.5_c20230213.nc',
-         'CO       -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/chem_gases/2degrees/emissions-cmip6_e3sm_CO_surface_2010_clim_1.9x2.5_c20230213.nc',       
-         'ISOP     -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/chem_gases/2degrees/emissions-cmip6_e3sm_ISOP_surface_2010_clim_1.9x2.5_c20230213.nc',
-         'C10H16   -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/chem_gases/2degrees/emissions-cmip6_e3sm_MTERP_surface_2010_clim_1.9x2.5_c20230213.nc',         
-         'SOAG0     -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/DECK_ne30/emissions-cmip6_e3sm_SOAG0_surf_2010_clim_1.9x2.5_c20230213.nc',
-         'NO        -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/chem_gases/2degrees/emissions-cmip6_e3sm_NO_surface_2010_clim_1.9x2.5_c20230213.nc',    
-         'DMS       -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/DMSflux.2010.1deg_latlon_conserv.POPmonthlyClimFromACES4BGC_c20190220.nc',
-         'SO2       -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/DECK_ne30/cmip6_mam4_so2_surf_1x1_2010_clim_c20190821.nc',
-         'bc_a4     -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/DECK_ne30/cmip6_mam4_bc_a4_surf_1x1_2010_clim_c20190821.nc',
-         'num_a1    -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/DECK_ne30/cmip6_mam4_num_a1_surf_1x1_2010_clim_c20190821.nc',
-         'num_a2    -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/DECK_ne30/cmip6_mam4_num_a2_surf_1x1_2010_clim_c20190821.nc',
-         'num_a4    -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/DECK_ne30/cmip6_mam4_num_a4_surf_1x1_2010_clim_c20190821.nc',
-         'pom_a4    -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/DECK_ne30/cmip6_mam4_pom_a4_surf_1x1_2010_clim_c20190821.nc',
-         'so4_a1    -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/DECK_ne30/cmip6_mam4_so4_a1_surf_1x1_2010_clim_c20190821.nc',
-         'so4_a2    -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/DECK_ne30/cmip6_mam4_so4_a2_surf_1x1_2010_clim_c20190821.nc'
-         'E90       -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/chem_gases/2degrees/emissions_E90_surface_2010_clim_1.9x2.5_c20230213.nc'
+ srf_emis_cycle_yr              = 1850
+ srf_emis_specifier             = 'C2H4     -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/chem_gases/2degrees/emissions-cmip6_e3sm_C2H4_surface_1850-2014_1.9x2.5_c20210323.nc',
+         'C2H6     -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/chem_gases/2degrees/emissions-cmip6_e3sm_C2H6_surface_1850-2014_1.9x2.5_c20210323.nc',
+         'C3H8     -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/chem_gases/2degrees/emissions-cmip6_e3sm_C3H8_surface_1850-2014_1.9x2.5_c20210323.nc',
+         'CH2O     -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/chem_gases/2degrees/emissions-cmip6_e3sm_CH2O_surface_1850-2014_1.9x2.5_c20210323.nc',
+         'CH3CHO   -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/chem_gases/2degrees/emissions-cmip6_e3sm_CH3CHO_surface_1850-2014_1.9x2.5_c20210323.nc',
+         'CH3COCH3 -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/chem_gases/2degrees/emissions-cmip6_e3sm_CH3COCH3_surface_1850-2014_1.9x2.5_c20210323.nc',
+         'CO       -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/chem_gases/2degrees/emissions-cmip6_e3sm_CO_surface_1850-2014_1.9x2.5_c20210323.nc',
+         'ISOP     -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/chem_gases/2degrees/emissions-cmip6_e3sm_ISOP_surface_1850-2014_1.9x2.5_c20210323.nc',
+         'C10H16   -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/chem_gases/2degrees/emissions-cmip6_e3sm_MTERP_surface_1850-2014_1.9x2.5_c20230126.nc',
+         'SOAG0    -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/DECK_ne30/emissions-cmip6_e3sm_SOAG0_surf_1850-2014_1.9x2.5_c20230201.nc',
+         'NO       -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/chem_gases/2degrees/emissions-cmip6_e3sm_NO_surface_1850-2014_1.9x2.5_c20220425.nc',
+         'DMS      -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/DMSflux.1850.1deg_latlon_conserv.POPmonthlyClimFromACES4BGC_c20160416.nc',
+         'SO2      -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/DECK_ne30/cmip6_mam4_so2_surf_1850-2014_c180205.nc',
+         'bc_a4    -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/DECK_ne30/cmip6_mam4_bc_a4_surf_1850-2014_c180205.nc',
+         'num_a1   -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/DECK_ne30/cmip6_mam4_num_a1_surf_1850-2014_c180205.nc',
+         'num_a2   -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/DECK_ne30/cmip6_mam4_num_a2_surf_1850-2014_c180205.nc',
+         'num_a4   -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/DECK_ne30/cmip6_mam4_num_a4_surf_1850-2014_c180205.nc',
+         'pom_a4   -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/DECK_ne30/cmip6_mam4_pom_a4_surf_1850-2014_c180205.nc',
+         'so4_a1   -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/DECK_ne30/cmip6_mam4_so4_a1_surf_1850-2014_c180205.nc',
+         'so4_a2   -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/DECK_ne30/cmip6_mam4_so4_a2_surf_1850-2014_c180205.nc'
+         'E90      -> \$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/emis/chem_gases/2degrees/emissions_E90_surface_1750-2015_1.9x2.5_c20210408.nc'
  srf_emis_type          = 'CYCLICAL'
 
  mode_defs = 'mam5_mode1:accum:=', 'A:num_a1:N:num_c1:num_mr:+',
@@ -305,8 +307,8 @@ cat << EOF >> user_nl_elm
  fsurdat = '\${DIN_LOC_ROOT}/lnd/clm2/surfdata_map/surfdata_ne30pg2_simyr1850_c210402.nc'
 
  !comment out finidat if running hybrid type
-
  finidat = '\${DIN_LOC_ROOT}/lnd/clm2/initdata/NGD_v3atm.ne30pg2_EC30to60E2r2.elm.r.0001-01-01-00000.c20230106.nc'
+
  ! If using the above finidat for 1850, also set the following, esp. the 2nd one
   check_finidat_fsurdat_consistency = .false.
   check_finidat_pct_consistency   = .false.
