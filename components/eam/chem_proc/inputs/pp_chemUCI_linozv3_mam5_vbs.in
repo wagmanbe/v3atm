@@ -266,21 +266,21 @@ CHEMISTRY
 
 
 * VBS SOAG reactions
-              SOAG0 + OH -> 1.15*SOAG15                                       ; 2e-11
-              SOAG15 + OH -> 1.15*SOAG24                                      ; 2e-11
-              SOAG24 + OH -> 0.46*SOAG33 + 0.5*SOAG35                         ; 2e-11
+[vsoag0_oh]   SOAG0 + OH -> 1.15*SOAG15                                       ; 2e-11
+[vsoag15_oh]  SOAG15 + OH -> 1.15*SOAG24                                      ; 2e-11
+[vsoag24_oh]  SOAG24 + OH -> 0.46*SOAG33 + 0.5*SOAG35                         ; 2e-11
 
-              ISOP + OH ->   0.00272*SOAG32 + 0.00981*SOAG33 + 0.00218*SOAG34       ; 2.54e-11, 410
-              C10H16 + OH -> 0.14986*SOAG32 + 0.05450*SOAG33 + 0.09264*SOAG34     ; 1.2e-11, 444
-              ISOP + O3 -> 0.00327*SOAG33                                         ; 1.05e-14, -2000
-              C10H16 + O3 -> 0.04360*SOAG31 + 0.01035*SOAG32 + 0.09809*SOAG33 + 0.01635*SOAG34     ; 1.e-15, -732
-              ISOP + NO3 -> 0.00027*SOAG32 + 0.04060*SOAG33 + 0.06458*SOAG34      ; 3.03e-12,-446
-              C10H16 + NO3 -> 0.17493*SOAG33 + 0.59019*SOAG34                     ; 1.2e-12, 490
+[visop_oh]    ISOP + OH ->   0.00272*SOAG32 + 0.00981*SOAG33 + 0.00218*SOAG34       ; 2.54e-11, 410
+[vc10h16_oh]  C10H16 + OH -> 0.14986*SOAG32 + 0.05450*SOAG33 + 0.09264*SOAG34     ; 1.2e-11, 444
+[visop_o3]    ISOP + O3 -> 0.00327*SOAG33                                         ; 1.05e-14, -2000
+[vc10h16_o3]  C10H16 + O3 -> 0.04360*SOAG31 + 0.01035*SOAG32 + 0.09809*SOAG33 + 0.01635*SOAG34     ; 1.e-15, -732
+[visop_no3]   ISOP + NO3 -> 0.00027*SOAG32 + 0.04060*SOAG33 + 0.06458*SOAG34      ; 3.03e-12,-446
+[vc10h16_no3] C10H16 + NO3 -> 0.17493*SOAG33 + 0.59019*SOAG34                     ; 1.2e-12, 490
 
-              SOAG35 + OH -> 0.46*SOAG34  + 0.5*SOAG35      ; 2e-11
-              SOAG34 + OH -> 0.46*SOAG33  + 0.5*SOAG35      ; 2e-11
-              SOAG33 + OH -> 0.46*SOAG32  + 0.5*SOAG35      ; 2e-11
-              SOAG32 + OH -> 0.46*SOAG31  + 0.5*SOAG35      ; 2e-11
+[vsoag35_oh]  SOAG35 + OH -> 0.46*SOAG34  + 0.5*SOAG35      ; 2e-11
+[vsoag34_oh]  SOAG34 + OH -> 0.46*SOAG33  + 0.5*SOAG35      ; 2e-11
+[vsoag33_oh]  SOAG33 + OH -> 0.46*SOAG32  + 0.5*SOAG35      ; 2e-11
+[vsoag32_oh]  SOAG32 + OH -> 0.46*SOAG31  + 0.5*SOAG35      ; 2e-11
  End Reactions
 
  Ext Forcing
