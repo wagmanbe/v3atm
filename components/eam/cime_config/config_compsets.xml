@@ -17,6 +17,16 @@
   </compset>
 
   <compset>
+    <alias>F1850_chemUCI-Linozv2</alias>
+    <lname>1850_EAM%CHEMUCI-LINOZV2_ELM%SPBC_MPASSI%PRES_DOCN%DOM_MOSART_SGLC_SWAV</lname>
+  </compset>
+
+  <compset>
+    <alias>F1850_chemUCI-Linozv3</alias>
+    <lname>1850_EAM%CHEMUCI-LINOZV3_ELM%SPBC_MPASSI%PRES_DOCN%DOM_MOSART_SGLC_SWAV</lname>
+  </compset>
+
+  <compset>
     <alias>F1850S-AR5-superfast</alias>
     <lname>1850S_EAM%AR5sf_ELM%SPBC_CICE%PRES_DOCN%DOM_SROF_SGLC_SWAV</lname>
   </compset>
