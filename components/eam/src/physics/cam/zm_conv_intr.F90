@@ -1382,7 +1382,7 @@ snowold(:ncol) = snow(:ncol)
          prec, snow, ntprprd, ntsnprd , flxprec, flxsnow, sprd, old_snow)
 
 !if 1 the disabling zm_conv_evap
-#if 1 
+#if 0 
 ntprprd=0
 ntsnprd=0
 flxprec=0
@@ -1441,7 +1441,7 @@ snow(:ncol) = snowold(:ncol)
 
 
 !!!!!!!!!!! trying to disable all
-#if 0
+#if 1
 
 
 

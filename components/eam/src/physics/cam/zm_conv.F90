@@ -4459,7 +4459,7 @@ subroutine q1q2_pjr(lchnk   , &
       kbm = min(kbm,mx(i))
    end do
 
-#if 0
+#if 1
    do k = ktm,pver-1
       do i = il1g,il2g
          emc = -cu (i,k)               &         ! condensation in updraft
