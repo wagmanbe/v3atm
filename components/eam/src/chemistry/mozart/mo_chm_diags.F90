@@ -1578,26 +1578,27 @@ contains
                       wrk_sum(:ncol) = wrk_sum(:ncol) + wrk(:ncol,k)
                    enddo
                    call outfld( trim(solsym(m))//'_'//flag(1:5)//'_L3', wrk_sum(:ncol), ncol ,lchnk )
-        
-                  wrk_sum(:ncol) = 0.0_r8
-                  do k = gaschmbudget_2D_L4_s, gaschmbudget_2D_L4_e
-                     wrk_sum(:ncol) = wrk_sum(:ncol) + wrk(:ncol,k)
-                  enddo
-                  call outfld( trim(solsym(m))//'_'//flag(1:5)//'_L4', wrk_sum(:ncol), ncol ,lchnk )
+
+                   wrk_sum(:ncol) = 0.0_r8
+                   do k = gaschmbudget_2D_L4_s, gaschmbudget_2D_L4_e
+                      wrk_sum(:ncol) = wrk_sum(:ncol) + wrk(:ncol,k)
+                   enddo
+                   call outfld( trim(solsym(m))//'_'//flag(1:5)//'_L4', wrk_sum(:ncol), ncol ,lchnk )
 
                elseif (flag(6:10) == '_trop') then
                !this change is to let code not got to flag(6:8) when length is 5
                !to avoid debug built issue
 
-                  wrk_sum(:ncol) = 0.0_r8
-                  if (trim(solsym(m))=='O3' .or. trim(solsym(m))=='O3LNZ' .or. &
-                       trim(solsym(m))=='N2OLNZ' .or. trim(solsym(m))=='CH4LNZ') then
-                     do k = 1, pver
-                           wrk_sum(:ncol) = wrk_sum(:ncol) + wrk(:ncol,k) * tropFlagInt(:ncol,k)
-                     enddo
-                     call outfld( trim(solsym(m))//'_'//flag, wrk_sum(:ncol), ncol ,lchnk )
-                  endif
+                   wrk_sum(:ncol) = 0.0_r8
+                   if (trim(solsym(m))=='O3' .or. trim(solsym(m))=='O3LNZ' .or. &
+                        trim(solsym(m))=='N2OLNZ' .or. trim(solsym(m))=='CH4LNZ') then
+                      do k = 1, pver
+                            wrk_sum(:ncol) = wrk_sum(:ncol) + wrk(:ncol,k) * tropFlagInt(:ncol,k)
+                      enddo
+                      call outfld( trim(solsym(m))//'_'//flag, wrk_sum(:ncol), ncol ,lchnk )
+                   endif
                endif
+
             else
                do k=2,pver
                   wrk(:ncol,1) = wrk(:ncol,1) + wrk(:ncol,k)

@@ -42,7 +42,8 @@ module mo_gas_phase_chemdr
   integer :: ch3o2_ndx, no_ndx, ho2_ndx, c2h5o2_ndx, ch3co3_ndx, roho2_ndx, isopo2_ndx, mvko2_ndx
   integer :: h2_ndx, ch4_ndx, c2h4_ndx, isop_ndx, oh_ndx, mvkmacr_ndx
   integer :: no2_ndx, no3_ndx, n2o5_ndx
-  integer :: lo3_no_ndx, lo3_no2_ndx 
+  integer :: lo3_no_ndx, lo3_no2_ndx
+  integer :: c10h16_ndx, visop_o3_ndx, vc10h16_o3_ndx 
 
   character(len=fieldname_len),dimension(rxntot-phtcnt) :: rxn_names
   character(len=fieldname_len),dimension(phtcnt)        :: pht_names
@@ -133,6 +134,7 @@ contains
     isop_ndx       = get_spc_ndx('ISOP')
     oh_ndx         = get_spc_ndx('OH')
     mvkmacr_ndx    = get_spc_ndx('MVKMACR')
+    c10h16_ndx     = get_spc_ndx('C10H16')
     lo3_no_ndx     = get_rxt_ndx('lo3_no')
     lo3_no2_ndx    = get_rxt_ndx('lo3_no2')
     jo1dU_ndx      = get_rxt_ndx('jo1dU')
@@ -140,6 +142,8 @@ contains
     jno3_a_ndx     = get_rxt_ndx('jno3_a')
     jn2o5_b_ndx    = get_rxt_ndx('jn2o5_b')
     po3_oh_ndx     = get_rxt_ndx('po3_oh')
+    visop_o3_ndx     = get_rxt_ndx('visop_o3')
+    vc10h16_o3_ndx   = get_rxt_ndx('vc10h16_o3')
 
     call cnst_get_ind( 'CLDICE', cldice_ndx )
 
@@ -503,7 +507,8 @@ contains
     real(r8)     ::  chemmp_prod(ncol,pver,gas_pcnst)         ! xported species (vmr/delt)
     real(r8)     ::  chemmp_loss(ncol,pver,gas_pcnst)         ! xported species (vmr/delt)
     real(r8)     ::  diags_reaction_rates(ncol,pver,max(1,rxntot))       
-   
+    real(r8)     ::  p_l_net, tmp_tdi, tmp_a, tmp_b
+
     ! flags for MMF configuration
     logical :: use_MMF, use_ECPP
 
@@ -987,26 +992,6 @@ contains
                   invariants(1,1,indexm), ncol, lchnk, ltrop_sol(:ncol) ) 
     call t_stopf('imp_sol')
 
-    if ( history_gaschmbudget .or. history_gaschmbudget_2D .or. history_gaschmbudget_2D_levels) then
-       if ( history_gaschmbudget ) then
-          call gaschmmass_diags( lchnk, ncol, vmr(:ncol,:,:), vmr_old(:ncol,:,:), &
-                                 pdeldry(:ncol,:), mbar, delt_inverse, 'TDI' )
-       endif
-       if ( history_gaschmbudget_2D ) then
-          call gaschmmass_diags( lchnk, ncol, vmr(:ncol,:,:), vmr_old(:ncol,:,:), &
-                                 pdeldry(:ncol,:), mbar, delt_inverse, '2DTDI' )
-          call gaschmmass_diags( lchnk, ncol, vmr(:ncol,:,:), vmr_old(:ncol,:,:), &
-                                 pdeldry(:ncol,:), mbar, delt_inverse, '2DMSI' )
-       endif
-       if ( history_gaschmbudget_2D_levels ) then
-         call gaschmmass_diags( lchnk, ncol, vmr(:ncol,:,:), vmr_old(:ncol,:,:), &
-                                pdeldry(:ncol,:), mbar, delt_inverse, '2DTDI_LL' )
-         call gaschmmass_diags( lchnk, ncol, vmr(:ncol,:,:), vmr_old(:ncol,:,:), &
-                                pdeldry(:ncol,:), mbar, delt_inverse, '2DTDI_trop', tropFlagInt )
-       endif
-       vmr_old(:ncol,:,:) = vmr(:ncol,:,:)
-    endif
-
     ! ozone production 
     if (uci1_ndx > 0) then
       chem_prod(:,:,:) = 0._r8
@@ -1025,16 +1010,48 @@ contains
          + reaction_rates(i,k,uci2_ndx) &
          + reaction_rates(i,k,uci3_ndx) * vmr(i,k,ch4lnz_ndx) &
          + reaction_rates(i,k,lc2h4_o3_ndx)*vmr(i,k,c2h4_ndx) &
-         + reaction_rates(i,k,lisop_o3_ndx)*vmr(i,k,isop_ndx)  &
+         + (reaction_rates(i,k,lisop_o3_ndx)+reaction_rates(i,k,visop_o3_ndx))*vmr(i,k,isop_ndx)  &
          + reaction_rates(i,k,lo3_oh_ndx)*vmr(i,k,oh_ndx)  &
          + reaction_rates(i,k,lo3_ho2_ndx)*vmr(i,k,ho2_ndx)  &
          + reaction_rates(i,k,lo3_no_ndx)*vmr(i,k,no_ndx)  &
          + reaction_rates(i,k,lo3_no2_ndx)*vmr(i,k,no2_ndx)  &
          + reaction_rates(i,k,lmvkmacr_o3_ndx)*vmr(i,k,mvkmacr_ndx)  &
+         + reaction_rates(i,k,vc10h16_o3_ndx)*vmr(i,k,c10h16_ndx)  &
          + het_rates(i,k,o3_ndx)) *vmr(i,k,o3_ndx)  
+
+      ! closure check - non-closure due to non-convergent in implicit solver 
+         p_l_net = chem_prod(i,k,o3_ndx)-chem_loss(i,k,o3_ndx)
+         tmp_tdi = (vmr(i,k,o3_ndx)-vmr_old2(i,k,o3_ndx))/1800_r8
+         tmp_a = (p_l_net - tmp_tdi) * (p_l_net - tmp_tdi)
+         tmp_b = tmp_tdi * tmp_tdi
+         if (sqrt(tmp_a/tmp_b) > 1.e-6) then
+            vmr(i,k,o3_ndx) = vmr_old2(i,k,o3_ndx)
+            chem_prod(i,k,o3_ndx) = 0. 
+            chem_loss(i,k,o3_ndx) = 0.
+         end if
 
       end do column0_loop
       end do level0_loop
+    end if
+    
+    if ( history_gaschmbudget .or. history_gaschmbudget_2D .or. history_gaschmbudget_2D_levels) then
+       if ( history_gaschmbudget ) then
+          call gaschmmass_diags( lchnk, ncol, vmr(:ncol,:,:), vmr_old(:ncol,:,:), &
+                                 pdeldry(:ncol,:), mbar, delt_inverse, 'TDI' )
+       endif
+       if ( history_gaschmbudget_2D ) then
+          call gaschmmass_diags( lchnk, ncol, vmr(:ncol,:,:), vmr_old(:ncol,:,:), &
+                                 pdeldry(:ncol,:), mbar, delt_inverse, '2DTDI' )
+          call gaschmmass_diags( lchnk, ncol, vmr(:ncol,:,:), vmr_old(:ncol,:,:), &
+                                 pdeldry(:ncol,:), mbar, delt_inverse, '2DMSI' )
+       endif
+       if ( history_gaschmbudget_2D_levels ) then
+         call gaschmmass_diags( lchnk, ncol, vmr(:ncol,:,:), vmr_old(:ncol,:,:), &
+                                pdeldry(:ncol,:), mbar, delt_inverse, '2DTDI_LL' )
+         call gaschmmass_diags( lchnk, ncol, vmr(:ncol,:,:), vmr_old(:ncol,:,:), &
+                                pdeldry(:ncol,:), mbar, delt_inverse, '2DTDI_trop', tropFlagInt )
+       endif
+       vmr_old(:ncol,:,:) = vmr(:ncol,:,:)
     endif
 
     if ( history_UCIgaschmbudget_2D .or. history_UCIgaschmbudget_2D_levels) then
@@ -1098,40 +1115,41 @@ contains
       column_loop: do i = 1, ncol
       IF (k <= ltrop_sol(i)) CYCLE column_loop
       chemmp_prod(i,k,o3_ndx) = 2._r8 * diags_reaction_rates(i,k,jo2_b_ndx) & 
-         + diags_reaction_rates(i,k,lch3o2_no_ndx)*vmr(i,k,ch3o2_ndx)*vmr(i,k,no_ndx) &
-         + diags_reaction_rates(i,k,lno_ho2_ndx)*vmr(i,k,no_ndx)*vmr(i,k,ho2_ndx) &
-         + diags_reaction_rates(i,k,lc2h5o2_no_ndx)*vmr(i,k,c2h5o2_ndx)*vmr(i,k,no_ndx) &
-         + diags_reaction_rates(i,k,lch3co3_no_ndx)*vmr(i,k,ch3co3_ndx)*vmr(i,k,no_ndx) &
-         + diags_reaction_rates(i,k,lroho2_no_ndx)*vmr(i,k,roho2_ndx)*vmr(i,k,no_ndx) &
-         + diags_reaction_rates(i,k,lisopo2_no_ndx)*vmr(i,k,isopo2_ndx)*vmr(i,k,no_ndx) &
-         + diags_reaction_rates(i,k,lmvko2_no_ndx)*vmr(i,k,mvko2_ndx)*vmr(i,k,no_ndx) 
+         + diags_reaction_rates(i,k,lch3o2_no_ndx)*vmr_old2(i,k,ch3o2_ndx)*vmr_old2(i,k,no_ndx) &
+         + diags_reaction_rates(i,k,lno_ho2_ndx)*vmr_old2(i,k,no_ndx)*vmr_old2(i,k,ho2_ndx) &
+         + diags_reaction_rates(i,k,lc2h5o2_no_ndx)*vmr_old2(i,k,c2h5o2_ndx)*vmr_old2(i,k,no_ndx) &
+         + diags_reaction_rates(i,k,lch3co3_no_ndx)*vmr_old2(i,k,ch3co3_ndx)*vmr_old2(i,k,no_ndx) &
+         + diags_reaction_rates(i,k,lroho2_no_ndx)*vmr_old2(i,k,roho2_ndx)*vmr_old2(i,k,no_ndx) &
+         + diags_reaction_rates(i,k,lisopo2_no_ndx)*vmr_old2(i,k,isopo2_ndx)*vmr_old2(i,k,no_ndx) &
+         + diags_reaction_rates(i,k,lmvko2_no_ndx)*vmr_old2(i,k,mvko2_ndx)*vmr_old2(i,k,no_ndx) 
  
       chemmp_loss(i,k,o3_ndx) = (diags_reaction_rates(i,k,uci1_ndx) &
          + diags_reaction_rates(i,k,uci2_ndx) &
-         + diags_reaction_rates(i,k,uci3_ndx) * vmr(i,k,ch4lnz_ndx) &
-         + diags_reaction_rates(i,k,lc2h4_o3_ndx)*vmr(i,k,c2h4_ndx) &
-         + diags_reaction_rates(i,k,lisop_o3_ndx)*vmr(i,k,isop_ndx)  &
-         + diags_reaction_rates(i,k,lo3_oh_ndx)*vmr(i,k,oh_ndx)  &
-         + diags_reaction_rates(i,k,lo3_ho2_ndx)*vmr(i,k,ho2_ndx)  &
-         + diags_reaction_rates(i,k,lmvkmacr_o3_ndx)*vmr(i,k,mvkmacr_ndx) ) *vmr(i,k,o3_ndx)  
+         + diags_reaction_rates(i,k,uci3_ndx) * vmr_old2(i,k,ch4lnz_ndx) &
+         + diags_reaction_rates(i,k,lc2h4_o3_ndx)*vmr_old2(i,k,c2h4_ndx) &
+         + diags_reaction_rates(i,k,lisop_o3_ndx)*vmr_old2(i,k,isop_ndx)  &
+         + diags_reaction_rates(i,k,lo3_oh_ndx)*vmr_old2(i,k,oh_ndx)  &
+         + diags_reaction_rates(i,k,lo3_ho2_ndx)*vmr_old2(i,k,ho2_ndx)  &
+         + diags_reaction_rates(i,k,lmvkmacr_o3_ndx)*vmr_old2(i,k,mvkmacr_ndx) ) *vmr_old2(i,k,o3_ndx)  
 
       chem_prod(i,k,o3_ndx ) =  2._r8 * diags_reaction_rates(i,k,jo2_b_ndx) &
-         +  diags_reaction_rates(i,k,jno2_ndx)*vmr(i,k,no2_ndx) &
-         +  diags_reaction_rates(i,k,jno3_a_ndx)*vmr(i,k,no3_ndx) &
-         +  diags_reaction_rates(i,k,jn2o5_b_ndx)*vmr(i,k,n2o5_ndx) &
-         +  diags_reaction_rates(i,k,po3_oh_ndx)*vmr(i,k,oh_ndx)*vmr(i,k,oh_ndx)
+         +  diags_reaction_rates(i,k,jno2_ndx)*vmr_old2(i,k,no2_ndx) &
+         +  diags_reaction_rates(i,k,jno3_a_ndx)*vmr_old2(i,k,no3_ndx) &
+         +  diags_reaction_rates(i,k,jn2o5_b_ndx)*vmr_old2(i,k,n2o5_ndx) &
+         +  diags_reaction_rates(i,k,po3_oh_ndx)*vmr_old2(i,k,oh_ndx)*vmr_old2(i,k,oh_ndx)
 
       chem_loss(i,k,o3_ndx) = (diags_reaction_rates(i,k,uci1_ndx) &
          + diags_reaction_rates(i,k,uci2_ndx) &
-         + diags_reaction_rates(i,k,uci3_ndx) * vmr(i,k,ch4lnz_ndx) &
-         + diags_reaction_rates(i,k,lc2h4_o3_ndx)*vmr(i,k,c2h4_ndx) &
-         + diags_reaction_rates(i,k,lisop_o3_ndx)*vmr(i,k,isop_ndx)  &
-         + diags_reaction_rates(i,k,lo3_oh_ndx)*vmr(i,k,oh_ndx)  &
-         + diags_reaction_rates(i,k,lo3_ho2_ndx)*vmr(i,k,ho2_ndx)  &
-         + diags_reaction_rates(i,k,lo3_no_ndx)*vmr(i,k,no_ndx)  &
-         + diags_reaction_rates(i,k,lo3_no2_ndx)*vmr(i,k,no2_ndx)  &
-         + diags_reaction_rates(i,k,lmvkmacr_o3_ndx)*vmr(i,k,mvkmacr_ndx)  &
-         + het_rates(i,k,o3_ndx)) *vmr(i,k,o3_ndx)  
+         + diags_reaction_rates(i,k,uci3_ndx) * vmr_old2(i,k,ch4lnz_ndx) &
+         + diags_reaction_rates(i,k,lc2h4_o3_ndx)*vmr_old2(i,k,c2h4_ndx) &
+         + (diags_reaction_rates(i,k,lisop_o3_ndx)+diags_reaction_rates(i,k,visop_o3_ndx))*vmr_old2(i,k,isop_ndx)  &
+         + diags_reaction_rates(i,k,lo3_oh_ndx)*vmr_old2(i,k,oh_ndx)  &
+         + diags_reaction_rates(i,k,lo3_ho2_ndx)*vmr_old2(i,k,ho2_ndx)  &
+         + diags_reaction_rates(i,k,lo3_no_ndx)*vmr_old2(i,k,no_ndx)  &
+         + diags_reaction_rates(i,k,lo3_no2_ndx)*vmr_old2(i,k,no2_ndx)  &
+         + diags_reaction_rates(i,k,lmvkmacr_o3_ndx)*vmr_old2(i,k,mvkmacr_ndx)  &
+         + diags_reaction_rates(i,k,vc10h16_o3_ndx)*vmr_old2(i,k,c10h16_ndx)  &
+         + het_rates(i,k,o3_ndx)) *vmr_old2(i,k,o3_ndx)  
 
       end do column_loop
       end do level_loop
