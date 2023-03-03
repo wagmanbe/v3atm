@@ -23,6 +23,9 @@ module modal_aero_convproc
    use cam_abortutils, only: endrun
    use physconst,    only: spec_class_aerosol, spec_class_gas
    use constituents,  only: pcnst
+!<shanyp 02172023  Pass the zm_microp switch from the ZM scheme
+   use zm_conv,      only: zm_microp ! 
+!shanyp 02172023>
    implicit none
 
    save
@@ -850,7 +853,6 @@ subroutine ma_convproc_dp_intr(                &
                      lun,        itmpveca,                           &
                      dcon_resusp3d=dcon_resusp3d,wuc=wuc )
 !                    ed,         dp,         dsubcld,    jt,         &   
-
 
 
 ! set qbb = "modified q" with convtran tendency applied,
@@ -2065,9 +2067,12 @@ k_loop_main_bb: &
                wup(k) = max( 0.1_r8, min( 4.0_r8, wup(k) ) )
             end if
 ! update the vertical velocity from convective cloud microphysics scheme
-            wup(k) = wuc(icol,k)
-            wup(k) = max( 0.1_r8, min( 15.0_r8, wup(k) ) )
-
+!<shanyp 02172023 Use the wuc only when the zm_microp is turned on. 
+            if(zm_microp) then
+             wup(k) = wuc(icol,k)
+             wup(k) = max( 0.1_r8, min( 15.0_r8, wup(k) ) )
+            end if
+!shanyp 02172023>
 ! compute lagrangian transport time (dt_u) and updraft fractional area (fa_u)
 ! *** these must obey    dt_u(k)*mu_p_eudp(k) = dp_i(k)*fa_u(k)
             dt_u(k) = dz/wup(k)
