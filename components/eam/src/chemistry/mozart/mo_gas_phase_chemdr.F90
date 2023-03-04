@@ -1021,7 +1021,7 @@ contains
 
       ! closure check - non-closure due to non-convergent in implicit solver 
          p_l_net = chem_prod(i,k,o3_ndx)-chem_loss(i,k,o3_ndx)
-         tmp_tdi = (vmr(i,k,o3_ndx)-vmr_old2(i,k,o3_ndx))/1800_r8
+         tmp_tdi = (vmr(i,k,o3_ndx)-vmr_old2(i,k,o3_ndx))/delt
          tmp_a = (p_l_net - tmp_tdi) * (p_l_net - tmp_tdi)
          tmp_b = tmp_tdi * tmp_tdi
          if (sqrt(tmp_a/tmp_b) > 1.e-6) then
