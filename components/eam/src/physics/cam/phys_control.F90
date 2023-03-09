@@ -85,6 +85,7 @@ logical           :: history_budget       = .false.    ! output tendencies and s
 logical           :: history_gaschmbudget = .false.    ! output gas chemistry tracer concentrations and tendencies
 logical           :: history_gaschmbudget_2D = .false. ! output 2D gas chemistry tracer concentrations and tendencies
 logical           :: history_gaschmbudget_2D_levels = .false. ! output 2D gas chemistry tracer concentrations and tendencies within certain layers
+integer           :: history_gaschmbudget_num = 2      ! Tape number for instantaneous gas chemistry budget output
 integer           :: gaschmbudget_2D_L1_s = 1          ! Start layer of L1 for 2D gas chemistry tracer budget 
 integer           :: gaschmbudget_2D_L1_e = 26         ! End layer of L1 for 2D gas chemistry tracer budget 
 integer           :: gaschmbudget_2D_L2_s = 27         ! Start layer of L2 for 2D gas chemistry tracer budget 
@@ -231,6 +232,7 @@ subroutine phys_ctl_readnl(nlfile)
       history_UCIgaschmbudget_2D, history_UCIgaschmbudget_2D_levels, &
       UCIgaschmbudget_2D_L1_s, UCIgaschmbudget_2D_L1_e, UCIgaschmbudget_2D_L2_s, UCIgaschmbudget_2D_L2_e, & 
       UCIgaschmbudget_2D_L3_s, UCIgaschmbudget_2D_L3_e, UCIgaschmbudget_2D_L4_s, UCIgaschmbudget_2D_L4_e, & 
+      history_gaschmbudget_num, &
       use_qqflx_fixer, & 
       print_fixer_message, & 
       use_hetfrz_classnuc, use_gw_oro, use_gw_front, use_gw_convect, &
@@ -310,6 +312,7 @@ subroutine phys_ctl_readnl(nlfile)
    call mpibcast(UCIgaschmbudget_2D_L3_e,            1 , mpiint,  0, mpicom)
    call mpibcast(UCIgaschmbudget_2D_L4_s,            1 , mpiint,  0, mpicom)
    call mpibcast(UCIgaschmbudget_2D_L4_e,            1 , mpiint,  0, mpicom)
+   call mpibcast(history_gaschmbudget_num,           1 , mpiint,  0, mpicom)
    call mpibcast(history_budget_histfile_num,     1 , mpiint,  0, mpicom)
    call mpibcast(history_waccm,                   1 , mpilog,  0, mpicom)
    call mpibcast(history_clubb,                   1 , mpilog,  0, mpicom)
@@ -670,6 +673,7 @@ subroutine phys_getopts(deep_scheme_out, shallow_scheme_out, eddy_scheme_out, &
    if ( present(history_budget_out      ) ) history_budget_out       = history_budget
    if ( present(history_gaschmbudget_out) ) history_gaschmbudget_out = history_gaschmbudget
    if ( present(history_gaschmbudget_2D_out) ) history_gaschmbudget_2D_out = history_gaschmbudget_2D
+   if ( present(history_gaschmbudget_num_out) ) history_gaschmbudget_num_out = history_gaschmbudget_num
    if ( present(history_gaschmbudget_2D_levels_out) ) history_gaschmbudget_2D_levels_out = history_gaschmbudget_2D_levels
    if ( present(gaschmbudget_2D_L1_s_out) ) gaschmbudget_2D_L1_s_out = gaschmbudget_2D_L1_s
    if ( present(gaschmbudget_2D_L1_e_out) ) gaschmbudget_2D_L1_e_out = gaschmbudget_2D_L1_e
