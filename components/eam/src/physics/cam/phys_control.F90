@@ -516,7 +516,8 @@ subroutine phys_getopts(deep_scheme_out, shallow_scheme_out, eddy_scheme_out, &
                         radiation_scheme_out, use_subcol_microp_out, atm_dep_flux_out, &
                         history_amwg_out, history_verbose_out, history_vdiag_out, &
                         history_aerosol_out, history_aero_optics_out, history_eddy_out, &
-                        history_budget_out, history_gaschmbudget_out, history_gaschmbudget_2D_out, history_gaschmbudget_2D_levels_out, &
+                        history_budget_out, history_gaschmbudget_out, history_gaschmbudget_2D_out, &
+                        history_gaschmbudget_num_out, history_gaschmbudget_2D_levels_out, &
                         gaschmbudget_2D_L1_s_out, gaschmbudget_2D_L1_e_out, gaschmbudget_2D_L2_s_out, gaschmbudget_2D_L2_e_out, &
                         gaschmbudget_2D_L3_s_out, gaschmbudget_2D_L3_e_out, gaschmbudget_2D_L4_s_out, gaschmbudget_2D_L4_e_out, &
                         history_UCIgaschmbudget_2D_out, history_UCIgaschmbudget_2D_levels_out, &
@@ -578,6 +579,7 @@ subroutine phys_getopts(deep_scheme_out, shallow_scheme_out, eddy_scheme_out, &
    logical,           intent(out), optional :: history_budget_out
    logical,           intent(out), optional :: history_gaschmbudget_out
    logical,           intent(out), optional :: history_gaschmbudget_2D_out
+   integer,           intent(out), optional :: history_gaschmbudget_num_out
    logical,           intent(out), optional :: history_gaschmbudget_2D_levels_out
    integer,           intent(out), optional :: gaschmbudget_2D_L1_s_out
    integer,           intent(out), optional :: gaschmbudget_2D_L1_e_out
