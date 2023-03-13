@@ -43,7 +43,11 @@ module tracer_data
   public :: read_trc_restart
   public :: init_trc_restart
   public :: incr_filename
-
+  !Jinbo Xie added public for linoz
+  public :: read_next_trcdata
+  public :: interpolate_trcdata
+  public :: get_model_time
+  !
 
   ! !PUBLIC MEMBERS
 
@@ -1871,12 +1875,16 @@ contains
                    datain(:ncol,:) = fact1*flds(f)%input(nm)%data(:ncol,:,c) + fact2*flds(f)%input(np)%data(:ncol,:,c)
                 end if
                 if ( file%top_bndry ) then
+                        !write(iulog,*) 'Jinbo Xie vert_interp_ub'
                    call vert_interp_ub(ncol, file%nlev, file%levs,  datain(:ncol,:), data_out(:ncol,:) )
                 else if(file%conserve_column) then
+                        !write(iulog,*) 'Jinbo Xie mixrat'
                    call vert_interp_mixrat(ncol,file%nlev,pver,state(c)%pint, &
                         datain, data_out(:,:), &
                         file%p0,ps,file%hyai,file%hybi)
                 else
+                        !write(iulog,*) 'Jinbo Xie file%curr_filename',file%curr_filename
+                        !write(iulog,*) 'Jinbo Xie vert_interp'
                    call vert_interp(ncol, file%nlev, pin, state(c)%pmid, datain, data_out(:,:) )
                 endif
              endif
@@ -2403,6 +2411,7 @@ contains
        kkstart = levsiz
        do i=1,ncol
           kkstart = min0(kkstart,kupper(i))
+          !write(iulog,*) 'Jinbo Xie kkstart,pver,levsiz',kkstart,pver,levsiz
        end do
        !
        ! Store level indices for interpolation
@@ -2411,11 +2420,14 @@ contains
           do i=1,ncol
              if (pin(i,kk).lt.pmid(i,k) .and. pmid(i,k).le.pin(i,kk+1)) then
                 kupper(i) = kk
+                !write(iulog,*) 'Jinbo Xie pin(i,kk),pmid(i,k),pin(i,kk+1)',pin(i,kk),pmid(i,k),pin(i,kk+1)
+                !write(iulog,*) 'Jinbo Xie kupper(i)',kupper(i)
              end if
           end do
        end do
        ! interpolate or extrapolate...
        do i=1,ncol
+          !write(iulog,*) 'Jinbo Xie pmid(i,k),pin(i,1),pin(i,levsiz)',pmid(i,k),pin(i,1),pin(i,levsiz)
           if (pmid(i,k) .lt. pin(i,1)) then
              dataout(i,k) = datain(i,1)*pmid(i,k)/pin(i,1)
           else if (pmid(i,k) .gt. pin(i,levsiz)) then
@@ -2426,6 +2438,10 @@ contains
              dataout(i,k) = (datain(i,kupper(i) )*dpl + &
                   datain(i,kupper(i)+1)*dpu)/(dpl + dpu)
           end if
+          !
+          !write(iulog,*) 'Jinbo Xie pmid(i,k)/pin(i,1),pmid(i,k),pin(i,1)',pmid(i,k)/pin(i,1),pmid(i,k),pin(i,1)
+          !write(iulog,*) 'Jinbo Xie dpl,dpu,(dpl+dpu)',dpl,dpu,(dpl+dpu)
+          !
        end do
     end do
 

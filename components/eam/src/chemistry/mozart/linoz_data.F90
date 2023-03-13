@@ -348,7 +348,10 @@ contains
 
     if( .not. has_linoz_data ) return
 
-    call advance_trcdata( fields, file, state, pbuf2d  )
+    write(iulog,*) 'Jinbo Xie before advance trcdata'
+    !call advance_trcdata( fields, file, state, pbuf2d  )
+    call advance_trcdata_linoz( fields, file, state, pbuf2d  )
+    write(iulog,*) 'Jinbo Xie after advance trcdata'
     
     ! set the tracer fields with the correct units
     do i = 1,number_flds
@@ -360,7 +363,67 @@ contains
     enddo
 
   end subroutine linoz_data_adv
+!--------
+!--------
+!Jinbo Xie added for separate treatment of linoz advance
+!#if 0
+ subroutine advance_trcdata_linoz( flds, file, state, pbuf2d )
+    use ppgrid,       only : pcols, pver, pverp, begchunk, endchunk
+    use perf_mod,     only : t_startf, t_stopf
+    use physics_types,only : physics_state
+    use physics_buffer, only : physics_buffer_desc
+    use ppgrid, only : pver,pcols
+    use tracer_data,  only : read_next_trcdata,interpolate_trcdata,get_model_time
 
+    implicit none
+
+    type(trfile),        intent(inout) :: file
+    type(trfld),         intent(inout) :: flds(:)
+    type(physics_state), intent(in)    :: state(begchunk:endchunk)
+
+    type(physics_buffer_desc), optional, pointer :: pbuf2d(:,:)
+    integer :: ncol
+    real(r8) :: data_time
+    real(r8) :: t(pcols,pver)          ! input temperature (K)
+    real(r8) :: rho(pcols,pver)          ! input temperature (K)
+    real(r8) :: pmid(pcols,pver)       ! pressure at layer midpoints (pa)
+!--------------------------------------BLH-----------------------------------  
+    call t_startf('advance_trcdata_linoz')
+    if ( .not.( file%fixed .and. file%initialized ) ) then
+       call get_model_time(file)
+       data_time = file%datatimep
+       if ( file%cyclical .or. file%cyclical_list ) then
+          ! wrap around
+          if ( (file%datatimep<file%datatimem) .and. (file%curr_mod_time>file%datatimem) ) then
+             data_time = data_time + file%one_yr
+          endif
+       endif
+
+     ! For stepTime need to advance if the times are equal
+     ! Should not impact other runs?
+       if ( file%curr_mod_time >= data_time ) then
+          call t_startf('read_next_trcdata')
+          call read_next_trcdata(state, flds, file )
+          call t_stopf('read_next_trcdata')
+          if(masterproc) write(iulog,*) 'READ_NEXT_TRCDATA ', flds%fldnam
+       end if
+
+    endif 
+    ! need to interpolate the data, regardless
+    ! each mpi task needs to interpolate
+    call t_startf('interpolate_trcdata')
+    if(present(pbuf2d)) then
+       call interpolate_trcdata( state, flds, file, pbuf2d )
+    else
+       call interpolate_trcdata( state, flds, file )
+    endif
+    call t_stopf('interpolate_trcdata')
+
+    file%initialized = .true.
+    call t_stopf('advance_trcdata_linoz')
+  end subroutine advance_trcdata_linoz
+!#endif
+!Jinbo Xie added for separate treatment of linoz advance
 !-------------------------------------------------------------------
 !-------------------------------------------------------------------
   subroutine init_linoz_data_restart( piofile )
