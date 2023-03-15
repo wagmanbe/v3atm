@@ -1322,8 +1322,6 @@ subroutine zm_convr(lchnk   ,ncol    , &
             qlg (i,k) = 0._r8
             dsfmg(i,k) = 0._r8
             dsfng(i,k) = 0._r8 
-
-!OG what's the point to have that line in q1q2 if frzg=0 here?
             frzg (i,k) = 0._r8
             loc_microp_st%wu(i,k) = 0._r8
             loc_microp_st%qliq (i,k) = 0._r8
@@ -1414,7 +1412,6 @@ subroutine zm_convr(lchnk   ,ncol    , &
 !
 ! compute temperature and moisture changes due to convection.
 !
-#if 1
    call q1q2_pjr(lchnk   , &
                  dqdt    ,dsdt    ,qg      ,qs      ,qu      , &
                  su      ,du      ,qhat    ,shat    ,dp      , &
@@ -1424,15 +1421,10 @@ subroutine zm_convr(lchnk   ,ncol    , &
                  dlg     ,evpg    ,cug     ,qideg   ,dig     , &
                  ncdeg   ,nideg   ,dnlg    ,dnig    ,frzg    , &
                  qsdeg   ,nsdeg   ,dsg     ,dnsg    )
-#endif
+
 !
 ! Conservation check
 !
-
-
-
-!block A, 4 less, maybe?
-#if 1
   if (zm_microp) then
     do k = msg + 1,pver
 #ifdef CPRCRAY
@@ -1525,7 +1517,7 @@ subroutine zm_convr(lchnk   ,ncol    , &
       end do
    end do
   end if
-#endif
+
 
 
 ! gather back temperature and mixing ratio.
@@ -3539,7 +3531,6 @@ subroutine cldprp(lchnk   , &
            if(tpert_fix) then
              hu(i,k) = hmn(i,mx(i)) + cp*tiedke_add 
              su(i,k) = s(i,mx(i)) + tiedke_add
-!OG sus
            else
              hu(i,k) = hmn(i,mx(i)) + cp*(tiedke_add+tp_fac*tpertg(i)) !PMA
              su(i,k) = s(i,mx(i)) + tiedke_add+tp_fac*tpertg(i)
@@ -3704,7 +3695,6 @@ subroutine cldprp(lchnk   , &
                eu(i,k) = 0._r8
                du(i,k) = mu(i,k+1)/dz(i,k)
             else
-! OG sus
               if (zm_microp) then
                 hu(i,k) = (mu(i,k+1)*hu(i,k+1) + dz(i,k)*(eu(i,k)*hmn(i,k) +   &
                             latice*frz(i,k)))/(mu(i,k)+ dz(i,k)*du(i,k))
@@ -4459,18 +4449,18 @@ subroutine q1q2_pjr(lchnk   , &
       kbm = min(kbm,mx(i))
    end do
 
-#if 1
    do k = ktm,pver-1
       do i = il1g,il2g
          emc = -cu (i,k)               &         ! condensation in updraft
                +evp(i,k)                         ! evaporating rain in downdraft
+
          dsdt(i,k) = -rl/cp*emc &
                      + (+mu(i,k+1)* (su(i,k+1)-shat(i,k+1)) &
                         -mu(i,k)*   (su(i,k)-shat(i,k)) &
                         +md(i,k+1)* (sd(i,k+1)-shat(i,k+1)) &
                         -md(i,k)*   (sd(i,k)-shat(i,k)) &
                        )/dp(i,k)
-!OG suspect, but disabling does not help
+
          if (zm_microp) dsdt(i,k) = dsdt(i,k) + latice/cp*frz(i,k)
 
          dqdt(i,k) = emc + &
@@ -4488,6 +4478,7 @@ subroutine q1q2_pjr(lchnk   , &
            dsnow(i,k) = du(i,k)*qsde(i,k+1)
            dns(i,k)  = du(i,k)*nsde(i,k+1)
          end if
+
       end do
    end do
 
@@ -4512,8 +4503,6 @@ subroutine q1q2_pjr(lchnk   , &
          end if
       end do
    end do
-#endif
-
 !
    return
 end subroutine q1q2_pjr

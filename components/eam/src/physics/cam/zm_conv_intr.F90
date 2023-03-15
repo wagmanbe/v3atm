@@ -892,9 +892,6 @@ subroutine zm_conv_tend(pblh    ,mcon    ,cme     , &
    real(r8) :: frz(pcols,pver)
    real(r8)  precz_snum(pcols)
 
-   real(r8)  precold(pcols)
-   real(r8)  snowold(pcols)
-
 
    if (zm_microp) then
      allocate( &
@@ -1041,12 +1038,6 @@ subroutine zm_conv_tend(pblh    ,mcon    ,cme     , &
    call pbuf_get_field(pbuf, snow_dp_idx,     snow )
 
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!11
-!OG for zm_convr
-precold(:ncol) = prec(:ncol)
-snowold(:ncol) = snow(:ncol)
-
-
 ! DCAPE-ULL
    if(trigdcape_ull .or. trig_dcape_only)then
      call pbuf_get_field(pbuf, t_star_idx,     t_star)
@@ -1116,7 +1107,6 @@ snowold(:ncol) = snow(:ncol)
                     aero(lchnk), qi, dif, dnlf, dnif, dsf, dnsf, sprd, rice, frz, mudpcu, &
                     lambdadpcu,  microp_st, wuc)
 
-
    if (zm_microp) then
      dlftot(:,:) = dlf(:,:) + dif(:,:) + dsf(:,:)
    else
@@ -1128,6 +1118,7 @@ snowold(:ncol) = snow(:ncol)
 
    call outfld('CAPE', cape, pcols, lchnk)        ! RBN - CAPE output
    call outfld('DCAPE', dcape, pcols, lchnk)
+
 
    if (doslop) then
   !   
@@ -1250,6 +1241,7 @@ snowold(:ncol) = snow(:ncol)
          if (doslop_vwind) ptend_loc%v(i,k) = Qmv(i,k)
        enddo
      enddo
+
    
    !   
    ! End the MCSP parameterization here 
@@ -1265,7 +1257,6 @@ snowold(:ncol) = snow(:ncol)
       call outfld('MCSP_shear ',MCSP_shear                      ,pcols   ,lchnk   )
 
    end if
-
 !
 ! Output fractional occurance of ZM convection
 !
@@ -1323,20 +1314,6 @@ snowold(:ncol) = snow(:ncol)
    call outfld('MAXI  ',maxgsav          ,pcols   ,lchnk   )
 
 
-#if 0
-tend_s_snwprd  (:ncol,:pver)=0
-tend_s_snwevmlt(:ncol,:pver)=0
-ptend_loc%s = 0
-ptend_loc%q = 0
-ptend_loc%u = 0
-ptend_loc%v = 0
-
-prec(:ncol) = 0 !precold(:ncol)
-snow(:ncol) = 0 !snowold(:ncol)
-rliq=0
-rice=0
-#endif
-
   call physics_ptend_init(ptend_all, state%psetcols, 'zm_conv_tend')
 
   ! add tendency from this process to tendencies from other processes
@@ -1344,15 +1321,6 @@ rice=0
 
   ! update physics state type state1 with ptend_loc 
   call physics_update(state1, ptend_loc, ztodt)
-
-
-
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!11
-!for zm_conv_evap
-precold(:ncol) = prec(:ncol)
-snowold(:ncol) = snow(:ncol)
-
 
   ! initialize ptend for next process
   lq(:) = .FALSE.
@@ -1374,31 +1342,11 @@ snowold(:ncol) = snow(:ncol)
     dp_cldice(:ncol,:) = 0._r8
 
     call t_startf ('zm_conv_evap')
-
     call zm_conv_evap(state1%ncol,state1%lchnk, &
          state1%t,state1%pmid,state1%pdel,state1%q(:pcols,:pver,1), &
          ptend_loc%s, tend_s_snwprd, tend_s_snwevmlt, ptend_loc%q(:pcols,:pver,1), &
          rprd, cld, ztodt, &
          prec, snow, ntprprd, ntsnprd , flxprec, flxsnow, sprd, old_snow)
-
-!if 1 the disabling zm_conv_evap
-#if 0 
-ntprprd=0
-ntsnprd=0
-flxprec=0
-flxsnow=0
-tend_s_snwprd  (:ncol,:pver)=0
-tend_s_snwevmlt(:ncol,:pver)=0
-
-ptend_loc%s = 0
-ptend_loc%q = 0
-ptend_loc%u = 0
-ptend_loc%v = 0
-
-prec(:ncol) = precold(:ncol)
-snow(:ncol) = snowold(:ncol)
-#endif
-
     call t_stopf ('zm_conv_evap')
 
     evapcdp(:ncol,:pver) = ptend_loc%q(:ncol,:pver,1)
@@ -1440,11 +1388,6 @@ snow(:ncol) = snowold(:ncol)
   call physics_update(state1, ptend_loc, ztodt)
 
 
-!!!!!!!!!!! trying to disable all
-#if 1
-
-
-
   ! Momentum Transport (non-cam3 physics)
 
   if ( .not. cam_physpkg_is('cam3')) then
@@ -1468,13 +1411,6 @@ snow(:ncol) = snowold(:ncol)
      ptend_loc%u(:ncol,:pver) = wind_tends(:ncol,:pver,1)
      ptend_loc%v(:ncol,:pver) = wind_tends(:ncol,:pver,2)
      ptend_loc%s(:ncol,:pver) = seten(:ncol,:pver)  
-
-#if 0
-ptend_loc%s = 0
-ptend_loc%q = 0
-ptend_loc%u = 0
-ptend_loc%v = 0
-#endif
 
      call physics_ptend_sum(ptend_loc,ptend_all, ncol)
 
@@ -1524,21 +1460,8 @@ ptend_loc%v = 0
    call outfld('ZMDICE ',ptend_loc%q(1,1,ixcldice) ,pcols   ,lchnk   )
    call outfld('ZMDLIQ ',ptend_loc%q(1,1,ixcldliq) ,pcols   ,lchnk   )
 
-#if 0
-ptend_loc%s = 0
-ptend_loc%q = 0
-ptend_loc%u = 0
-ptend_loc%v = 0
-
-#endif
-
    ! add tendency from this process to tend from other processes here
    call physics_ptend_sum(ptend_loc,ptend_all, ncol)
-
-
-!!!!!!!!!!!! trying to disable all
-#endif
-
 
    call physics_state_dealloc(state1)
    call physics_ptend_dealloc(ptend_loc)
