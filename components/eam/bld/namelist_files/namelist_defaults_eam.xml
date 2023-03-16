@@ -853,11 +853,11 @@
 <p3_mincdnc        microphys="p3">  -999.       </p3_mincdnc>
 
 <!-- P3 specific namelist variables (using v2 defaults rather than KK defaults) -->
-<micro_p3_lookup_dir	    > atm/cam/physprops </micro_p3_lookup_dir>
-<micro_p3_tableversion		      >  4.1.2 	</micro_p3_tableversion>
-<micro_aerosolactivation        > .true.  </micro_aerosolactivation>
-<micro_subgrid_cloud     	      > .true.  </micro_subgrid_cloud>
-<micro_tend_output       	      > .true.  </micro_tend_output>
+<micro_p3_lookup_dir	            > atm/cam/physprops </micro_p3_lookup_dir>
+<micro_p3_tableversion		    >  4.1.2 	</micro_p3_tableversion>
+<micro_aerosolactivation            > .true.  </micro_aerosolactivation>
+<micro_subgrid_cloud     	    > .true.  </micro_subgrid_cloud>
+<micro_tend_output       	    > .false.  </micro_tend_output>
 <p3_autocon_coeff    		    >  30500.0   </p3_autocon_coeff>
 <p3_qc_autocon_expon    	    >  3.19   </p3_qc_autocon_expon>
 <p3_nc_autocon_expon                >  -1.40   </p3_nc_autocon_expon>
@@ -866,8 +866,8 @@
 <p3_wbf_coeff                       > 0.7     </p3_wbf_coeff>
 <p3_max_mean_rain_size              > 0.005     </p3_max_mean_rain_size>
 <p3_embryonic_rain_size             > 0.000025  </p3_embryonic_rain_size>
-<do_prescribed_CCN              > .false. </do_prescribed_CCN>
-<do_Cooper_inP3                 > .false. </do_Cooper_inP3>
+<do_prescribed_CCN                  > .false. </do_prescribed_CCN>
+<do_Cooper_inP3                     > .false. </do_Cooper_inP3>
 
 <!-- special defaults for MMF, which now sets all other physics scheme options to "off" -->
 <micro_mincdnc        use_MMF="1">  -999.       </micro_mincdnc>
