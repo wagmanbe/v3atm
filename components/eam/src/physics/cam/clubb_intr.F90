@@ -2666,12 +2666,11 @@ end subroutine clubb_init_cnst
          if (zm_microp) then
 
 !print *, "OG in clubb in zm_microp statement"
-#if 1
            !no phase changes, so, no ptend%s
            ptend_loc%q(i,k,ixcldliq) = dlfzm(i,k)
            ptend_loc%q(i,k,ixcldice) = difzm(i,k) + dsfzm(i,k)
            ptend_loc%s(i,k)          = 0._r8
-#endif
+
            ptend_loc%q(i,k,ixnumliq) = dnlfzm(i,k) + 3._r8    &
                                                    / (4._r8*3.14_r8*clubb_liq_sh**3*997._r8)      ! Shallow Convection
            ptend_loc%q(i,k,ixnumice) = dnifzm(i,k) + dnsfzm(i,k) + 3._r8  &

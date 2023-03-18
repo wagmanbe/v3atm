@@ -2592,26 +2592,16 @@ print *, 'OG tw_cur, nstep ', nstep, state%tw_cur(:ncol)
 !total water brough into the model is rliq (in form [units of cflx]/1000), ice part of rliq is rice
 !frozen part of the water brought back is det_ice (units of rliq), but with a minus sign
 
-#if 0 
-!version AAA conserves water
-                flx_cnd(:ncol) = -1._r8*rliq(:ncol)
-                flx_heat(:ncol) = cam_in%shf(:ncol) + ( rliq(:ncol) + det_ice(:ncol) )*1000*latice
-
-                call check_energy_chng(state, tend, "clubb_tend", nstep, ztodt, &
-                     cam_in%cflx(:,1)/cld_macmic_num_steps, flx_cnd/cld_macmic_num_steps, &
-                     zero, flx_heat/cld_macmic_num_steps)
-#endif
-#if 1
-!version BBB energy
                 flx_cnd(:ncol) = -1._r8*rliq(:ncol)
                 flx_heat(:ncol) = cam_in%shf(:ncol) - rice(:ncol)*1000*latice
 
                 call check_energy_chng(state, tend, "clubb_tend", nstep, ztodt, &
                      cam_in%cflx(:,1)/cld_macmic_num_steps, flx_cnd/cld_macmic_num_steps, &
                      zero, flx_heat/cld_macmic_num_steps)
-#endif
 
-
+!compare det_ice with rice, check if det_s is zero
+!   det_ice(i)                = det_ice(i) - ptend_loc%q(i,k,ixcldice)*state1%pdel(i,k)*invrs_gravit
+!   det_ice(:ncol) = det_ice(:ncol)/1000._r8  ! divide by density of water
 
 #endif
 
