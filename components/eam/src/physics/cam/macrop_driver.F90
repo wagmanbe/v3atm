@@ -338,6 +338,8 @@ end subroutine macrop_driver_readnl
     dnsfzm_idx = pbuf_get_index('DNSFZM', err)
     if (dnlfzm_idx > 0) zmconv_microp = .true.
 
+print *, 'OG in macrop driver zmconv_microp=',zmconv_microp
+
     if (micro_do_icesupersat) then 
        naai_idx      = pbuf_get_index('NAAI')
     endif
