@@ -2582,8 +2582,9 @@ print *, 'OG tw_cur, nstep ', nstep, state%tw_cur(:ncol)
                 !      input for microphysics              
                 call physics_update(state, ptend, ztodt, tend)
 
-#if 0
+#if 1
 !original
+!also works now
                 call check_energy_chng(state, tend, "clubb_tend", nstep, ztodt, &
                      cam_in%cflx(:,1)/cld_macmic_num_steps, flx_cnd/cld_macmic_num_steps, &
                      det_ice/cld_macmic_num_steps, flx_heat/cld_macmic_num_steps)
@@ -2599,6 +2600,9 @@ print *, 'OG tw_cur, nstep ', nstep, state%tw_cur(:ncol)
                      cam_in%cflx(:,1)/cld_macmic_num_steps, flx_cnd/cld_macmic_num_steps, &
                      zero, flx_heat/cld_macmic_num_steps)
 
+!det_s seem to be zero, rice=-det_ice
+!print *, 'OG detice, rice', det_ice(1),rice(1),det_ice(1)+rice(1)
+!print *, 'OG dets', det_s(1:10)
 !compare det_ice with rice, check if det_s is zero
 !   det_ice(i)                = det_ice(i) - ptend_loc%q(i,k,ixcldice)*state1%pdel(i,k)*invrs_gravit
 !   det_ice(:ncol) = det_ice(:ncol)/1000._r8  ! divide by density of water
