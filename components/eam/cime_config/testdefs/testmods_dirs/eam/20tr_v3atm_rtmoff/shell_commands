@@ -1,3 +1,3 @@
-SRCROOT=`././xmlquery SRCROOT --value`
+SRCROOT=`./xmlquery SRCROOT --value`
 usr_mech_infile="$SRCROOT/components/eam/chem_proc/inputs/pp_chemUCI_linozv3_mam5_vbs.in"
 ./xmlchange --id CAM_CONFIG_OPTS --append --val='-chem superfast_mam5_resus_mom_vbs_mosaic -vbs -usr_mech_infile '${usr_mech_infile}
