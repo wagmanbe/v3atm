@@ -2858,7 +2858,7 @@ state%deltaw_step(:ncol) = state%tw_after(:ncol) - state%tw_before(:ncol)
     !my guess is that precc etc are fluxes, since CG script uses them like fluxes and
     !they are called rates in cam exchange
 
-#if 0
+#if 1
     state%delta_te(1:ncol)=state%te_cur(1:ncol)-state%te_before_physstep(:ncol)
     state%rr(1:ncol) =                         &
        ( fsnt(1:ncol) - flnt(1:ncol) )                    &
