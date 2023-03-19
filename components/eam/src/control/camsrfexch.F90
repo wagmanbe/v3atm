@@ -804,6 +804,7 @@ subroutine cam_export(state,cam_out,pbuf)
       cam_out%precsc(i) = snow_dp(i)  + snow_sh(i)
       cam_out%precsl(i) = snow_sed(i) + snow_pcw(i)
 
+#if 0
       ! jrm These checks should not be necessary if they exist in the parameterizations
       if (cam_out%precc(i) .lt.0._r8) cam_out%precc(i)=0._r8
       if (cam_out%precl(i) .lt.0._r8) cam_out%precl(i)=0._r8
@@ -811,6 +812,33 @@ subroutine cam_export(state,cam_out,pbuf)
       if (cam_out%precsl(i).lt.0._r8) cam_out%precsl(i)=0._r8
       if (cam_out%precsc(i).gt.cam_out%precc(i)) cam_out%precsc(i)=cam_out%precc(i)
       if (cam_out%precsl(i).gt.cam_out%precl(i)) cam_out%precsl(i)=cam_out%precl(i)
+#else
+      if (cam_out%precc(i) .lt.0._r8) then
+           cam_out%precc(i)=0._r8
+print *, 'OG activate lim precc'
+      endif
+      if (cam_out%precl(i) .lt.0._r8) then
+           cam_out%precl(i)=0._r8
+print *, 'OG activate lim precl'
+      endif
+      if (cam_out%precsc(i).lt.0._r8) then
+           cam_out%precsc(i)=0._r8
+print *, 'OG activate lim precsc'
+      endif
+      if (cam_out%precsl(i).lt.0._r8) then
+           cam_out%precsl(i)=0._r8
+print *, 'OG activate lim precsl'
+      endif
+      if (cam_out%precsc(i).gt.cam_out%precc(i)) then
+           cam_out%precsc(i)=cam_out%precc(i)
+print *, 'OG activate lim precsc-precc'
+      endif
+      if (cam_out%precsl(i).gt.cam_out%precl(i)) then
+           cam_out%precsl(i)=cam_out%precl(i)
+print *, 'OG activate lim precsl-precl'
+      endif
+#endif
+
       ! end jrm
    end do
 
