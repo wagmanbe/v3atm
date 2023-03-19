@@ -108,6 +108,8 @@ contains
     integer :: UCIgaschmbudget_2D_L3_e
     integer :: UCIgaschmbudget_2D_L4_s
     integer :: UCIgaschmbudget_2D_L4_e
+    integer :: history_gaschmbudget_num ! History tape number for instantaneous gas chemistry budget output
+
     integer :: bulkaero_species(20)
 
     !-----------------------------------------------------------------------
@@ -136,7 +138,8 @@ contains
                        UCIgaschmbudget_2D_L3_s_out = UCIgaschmbudget_2D_L3_s, &
                        UCIgaschmbudget_2D_L3_e_out = UCIgaschmbudget_2D_L3_e, &
                        UCIgaschmbudget_2D_L4_s_out = UCIgaschmbudget_2D_L4_s, &
-                       UCIgaschmbudget_2D_L4_e_out = UCIgaschmbudget_2D_L4_e )
+                       UCIgaschmbudget_2D_L4_e_out = UCIgaschmbudget_2D_L4_e, &
+                      history_gaschmbudget_num_out = history_gaschmbudget_num)
 
     if (masterproc) then
        if (history_gaschmbudget) then
@@ -564,10 +567,10 @@ contains
           endif
           if ( .not. any( aer_species == m ) ) then
              if (history_gaschmbudget) then
-                call add_default( trim(spc_name)//'_MSB', 2, ' ' )
-                call add_default( trim(spc_name)//'_MSL', 2, ' ' )
-                call add_default( trim(spc_name)//'_MSS', 2, ' ' )
-                call add_default( trim(spc_name)//'_MSD', 2, ' ' )
+                call add_default( trim(spc_name)//'_MSB', history_gaschmbudget_num, ' ' )
+                call add_default( trim(spc_name)//'_MSL', history_gaschmbudget_num, ' ' )
+                call add_default( trim(spc_name)//'_MSS', history_gaschmbudget_num, ' ' )
+                call add_default( trim(spc_name)//'_MSD', history_gaschmbudget_num, ' ' )
                 call add_default( trim(spc_name)//'_TDE', 1, ' ' )
                 call add_default( trim(spc_name)//'_TDI', 1, ' ' )
                 call add_default( trim(spc_name)//'_TRI', 1, ' ' )
@@ -582,17 +585,17 @@ contains
                 call add_default( trim(spc_name)//'_TDO', 1, ' ' )
              endif
              if (history_gaschmbudget_2D) then
-                call add_default( trim(spc_name)//'_2DMSB', 2, ' ' )
-                call add_default( trim(spc_name)//'_2DMSL', 2, ' ' )
-                call add_default( trim(spc_name)//'_2DMSS', 2, ' ' )
-                call add_default( trim(spc_name)//'_2DMSD', 2, ' ' )
-                call add_default( trim(spc_name)//'_2DMSI', 2, ' ' )
-                call add_default( trim(spc_name)//'_2DMSE', 2, ' ' )
-                call add_default( trim(spc_name)//'_2DMSA', 2, ' ' )
-                call add_default( trim(spc_name)//'_2DMSN', 2, ' ' )
-                call add_default( trim(spc_name)//'_2DMSU', 2, ' ' )
-                call add_default( trim(spc_name)//'_2DMSC', 2, ' ' )
-                call add_default( trim(spc_name)//'_2DMSW', 2, ' ' )
+                call add_default( trim(spc_name)//'_2DMSB', history_gaschmbudget_num, ' ' )
+                call add_default( trim(spc_name)//'_2DMSL', history_gaschmbudget_num, ' ' )
+                call add_default( trim(spc_name)//'_2DMSS', history_gaschmbudget_num, ' ' )
+                call add_default( trim(spc_name)//'_2DMSD', history_gaschmbudget_num, ' ' )
+                call add_default( trim(spc_name)//'_2DMSI', history_gaschmbudget_num, ' ' )
+                call add_default( trim(spc_name)//'_2DMSE', history_gaschmbudget_num, ' ' )
+                call add_default( trim(spc_name)//'_2DMSA', history_gaschmbudget_num, ' ' )
+                call add_default( trim(spc_name)//'_2DMSN', history_gaschmbudget_num, ' ' )
+                call add_default( trim(spc_name)//'_2DMSU', history_gaschmbudget_num, ' ' )
+                call add_default( trim(spc_name)//'_2DMSC', history_gaschmbudget_num, ' ' )
+                call add_default( trim(spc_name)//'_2DMSW', history_gaschmbudget_num, ' ' )
                 call add_default( trim(spc_name)//'_2DTDE', 1, ' ' )
                 call add_default( trim(spc_name)//'_2DTDI', 1, ' ' )
                 call add_default( trim(spc_name)//'_2DTRI', 1, ' ' )
@@ -623,10 +626,10 @@ contains
                 endif
              endif
              if (history_gaschmbudget_2D_levels) then
-                call add_default( trim(spc_name)//'_2DMSB_L1', 2, ' ' )
-                call add_default( trim(spc_name)//'_2DMSL_L1', 2, ' ' )
-                call add_default( trim(spc_name)//'_2DMSS_L1', 2, ' ' )
-                call add_default( trim(spc_name)//'_2DMSD_L1', 2, ' ' )
+                call add_default( trim(spc_name)//'_2DMSB_L1', history_gaschmbudget_num, ' ' )
+                call add_default( trim(spc_name)//'_2DMSL_L1', history_gaschmbudget_num, ' ' )
+                call add_default( trim(spc_name)//'_2DMSS_L1', history_gaschmbudget_num, ' ' )
+                call add_default( trim(spc_name)//'_2DMSD_L1', history_gaschmbudget_num, ' ' )
                 call add_default( trim(spc_name)//'_2DTDE_L1', 1, ' ' )
                 call add_default( trim(spc_name)//'_2DTDI_L1', 1, ' ' )
                 call add_default( trim(spc_name)//'_2DTRI_L1', 1, ' ' )
@@ -640,10 +643,10 @@ contains
                 call add_default( trim(spc_name)//'_2DTDD_L1', 1, ' ' )
                 call add_default( trim(spc_name)//'_2DTDO_L1', 1, ' ' )
 
-                call add_default( trim(spc_name)//'_2DMSB_L2', 2, ' ' )
-                call add_default( trim(spc_name)//'_2DMSL_L2', 2, ' ' )
-                call add_default( trim(spc_name)//'_2DMSS_L2', 2, ' ' )
-                call add_default( trim(spc_name)//'_2DMSD_L2', 2, ' ' )
+                call add_default( trim(spc_name)//'_2DMSB_L2', history_gaschmbudget_num, ' ' )
+                call add_default( trim(spc_name)//'_2DMSL_L2', history_gaschmbudget_num, ' ' )
+                call add_default( trim(spc_name)//'_2DMSS_L2', history_gaschmbudget_num, ' ' )
+                call add_default( trim(spc_name)//'_2DMSD_L2', history_gaschmbudget_num, ' ' )
                 call add_default( trim(spc_name)//'_2DTDE_L2', 1, ' ' )
                 call add_default( trim(spc_name)//'_2DTDI_L2', 1, ' ' )
                 call add_default( trim(spc_name)//'_2DTRI_L2', 1, ' ' )
@@ -657,10 +660,10 @@ contains
                 call add_default( trim(spc_name)//'_2DTDD_L2', 1, ' ' )
                 call add_default( trim(spc_name)//'_2DTDO_L2', 1, ' ' )
 
-                call add_default( trim(spc_name)//'_2DMSB_L3', 2, ' ' )
-                call add_default( trim(spc_name)//'_2DMSL_L3', 2, ' ' )
-                call add_default( trim(spc_name)//'_2DMSS_L3', 2, ' ' )
-                call add_default( trim(spc_name)//'_2DMSD_L3', 2, ' ' )
+                call add_default( trim(spc_name)//'_2DMSB_L3', history_gaschmbudget_num, ' ' )
+                call add_default( trim(spc_name)//'_2DMSL_L3', history_gaschmbudget_num, ' ' )
+                call add_default( trim(spc_name)//'_2DMSS_L3', history_gaschmbudget_num, ' ' )
+                call add_default( trim(spc_name)//'_2DMSD_L3', history_gaschmbudget_num, ' ' )
                 call add_default( trim(spc_name)//'_2DTDE_L3', 1, ' ' )
                 call add_default( trim(spc_name)//'_2DTDI_L3', 1, ' ' )
                 call add_default( trim(spc_name)//'_2DTRI_L3', 1, ' ' )
@@ -674,10 +677,10 @@ contains
                 call add_default( trim(spc_name)//'_2DTDD_L3', 1, ' ' )
                 call add_default( trim(spc_name)//'_2DTDO_L3', 1, ' ' )
 
-                call add_default( trim(spc_name)//'_2DMSB_L4', 2, ' ' )
-                call add_default( trim(spc_name)//'_2DMSL_L4', 2, ' ' )
-                call add_default( trim(spc_name)//'_2DMSS_L4', 2, ' ' )
-                call add_default( trim(spc_name)//'_2DMSD_L4', 2, ' ' )
+                call add_default( trim(spc_name)//'_2DMSB_L4', history_gaschmbudget_num, ' ' )
+                call add_default( trim(spc_name)//'_2DMSL_L4', history_gaschmbudget_num, ' ' )
+                call add_default( trim(spc_name)//'_2DMSS_L4', history_gaschmbudget_num, ' ' )
+                call add_default( trim(spc_name)//'_2DMSD_L4', history_gaschmbudget_num, ' ' )
                 call add_default( trim(spc_name)//'_2DTDE_L4', 1, ' ' )
                 call add_default( trim(spc_name)//'_2DTDI_L4', 1, ' ' )
                 call add_default( trim(spc_name)//'_2DTRI_L4', 1, ' ' )
@@ -693,10 +696,10 @@ contains
 
              if (trim(spc_name) == 'O3' .or. trim(spc_name) == 'O3LNZ' .or. &
                  trim(spc_name) == 'N2OLNZ' .or. trim(spc_name) == 'CH4LNZ' ) then
-                call add_default( trim(spc_name)//'_2DMSB_trop', 2, ' ' )
-                call add_default( trim(spc_name)//'_2DMSL_trop', 2, ' ' )
-                call add_default( trim(spc_name)//'_2DMSS_trop', 2, ' ' )
-                call add_default( trim(spc_name)//'_2DMSD_trop', 2, ' ' )
+                call add_default( trim(spc_name)//'_2DMSB_trop', history_gaschmbudget_num, ' ' )
+                call add_default( trim(spc_name)//'_2DMSL_trop', history_gaschmbudget_num, ' ' )
+                call add_default( trim(spc_name)//'_2DMSS_trop', history_gaschmbudget_num, ' ' )
+                call add_default( trim(spc_name)//'_2DMSD_trop', history_gaschmbudget_num, ' ' )
                 call add_default( trim(spc_name)//'_2DTDE_trop', 1, ' ' )
                 call add_default( trim(spc_name)//'_2DTDI_trop', 1, ' ' )
                 call add_default( trim(spc_name)//'_2DTRI_trop', 1, ' ' )
@@ -1578,26 +1581,27 @@ contains
                       wrk_sum(:ncol) = wrk_sum(:ncol) + wrk(:ncol,k)
                    enddo
                    call outfld( trim(solsym(m))//'_'//flag(1:5)//'_L3', wrk_sum(:ncol), ncol ,lchnk )
-        
-                  wrk_sum(:ncol) = 0.0_r8
-                  do k = gaschmbudget_2D_L4_s, gaschmbudget_2D_L4_e
-                     wrk_sum(:ncol) = wrk_sum(:ncol) + wrk(:ncol,k)
-                  enddo
-                  call outfld( trim(solsym(m))//'_'//flag(1:5)//'_L4', wrk_sum(:ncol), ncol ,lchnk )
+
+                   wrk_sum(:ncol) = 0.0_r8
+                   do k = gaschmbudget_2D_L4_s, gaschmbudget_2D_L4_e
+                      wrk_sum(:ncol) = wrk_sum(:ncol) + wrk(:ncol,k)
+                   enddo
+                   call outfld( trim(solsym(m))//'_'//flag(1:5)//'_L4', wrk_sum(:ncol), ncol ,lchnk )
 
                elseif (flag(6:10) == '_trop') then
                !this change is to let code not got to flag(6:8) when length is 5
                !to avoid debug built issue
 
-                  wrk_sum(:ncol) = 0.0_r8
-                  if (trim(solsym(m))=='O3' .or. trim(solsym(m))=='O3LNZ' .or. &
-                       trim(solsym(m))=='N2OLNZ' .or. trim(solsym(m))=='CH4LNZ') then
-                     do k = 1, pver
-                           wrk_sum(:ncol) = wrk_sum(:ncol) + wrk(:ncol,k) * tropFlagInt(:ncol,k)
-                     enddo
-                     call outfld( trim(solsym(m))//'_'//flag, wrk_sum(:ncol), ncol ,lchnk )
-                  endif
+                   wrk_sum(:ncol) = 0.0_r8
+                   if (trim(solsym(m))=='O3' .or. trim(solsym(m))=='O3LNZ' .or. &
+                        trim(solsym(m))=='N2OLNZ' .or. trim(solsym(m))=='CH4LNZ') then
+                      do k = 1, pver
+                            wrk_sum(:ncol) = wrk_sum(:ncol) + wrk(:ncol,k) * tropFlagInt(:ncol,k)
+                      enddo
+                      call outfld( trim(solsym(m))//'_'//flag, wrk_sum(:ncol), ncol ,lchnk )
+                   endif
                endif
+
             else
                do k=2,pver
                   wrk(:ncol,1) = wrk(:ncol,1) + wrk(:ncol,k)
