@@ -1067,7 +1067,9 @@ end function bfb_expm1
       p3_tend_out(k,31) = nr2ni_immers_freeze_tend    ! immersion freezing rain
       p3_tend_out(k,32) = nr_ice_shed_tend            ! source for rain number from collision of rain/ice above freezing and shedding
       p3_tend_out(k,33) = qc2qr_ice_shed_tend         ! source for rain mass due to cloud water/ice collision above freezing and shedding or wet growth and shedding
-      p3_tend_out(k,34) = 0._rtype                    ! used to be qcmul, but that has been removed.  Kept at 0.0 as placeholder.
+!<shanyp 02172023
+      p3_tend_out(k,34) = qiberg                    ! used to be qcmul, but that has been removed.  Kept at 0.0 as placeholder.
+!shanyp 02172023>
       p3_tend_out(k,35) = ncshdc                      ! source for rain number due to cloud water/ice collision above freezing  and shedding (combined with NRSHD in the paper)
       ! Outputs associated with aerocom comparison:
       pratot(k) = qc2qr_accret_tend                   ! cloud drop accretion by rain

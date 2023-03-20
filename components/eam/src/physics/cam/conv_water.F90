@@ -37,6 +37,9 @@ module conv_water
              ast_idx, sh_cldliq1_idx, sh_cldice1_idx, rei_idx,icimrdp_idx   
 
   integer :: ixcldice, ixcldliq
+!<shanyp 03122023
+  integer :: icimrst2_idx
+!shanyp 03122023>
 
   logical :: pergro_mods
 
@@ -97,6 +100,9 @@ module conv_water
    dp_frac_idx  = pbuf_get_index('DP_FRAC')
    ast_idx      = pbuf_get_index('AST')
    rei_idx      = pbuf_get_index('REI')
+!<shanyp 03122023
+   icimrst2_idx = pbuf_get_index('ICIMRST2')
+!shanyp 03122023>
 
    ! Convective cloud water variables.
    call addfld ('ICIMRCU', (/ 'lev' /), 'A', 'kg/kg', 'Convection in-cloud ice mixing ratio '                   )
@@ -163,7 +169,9 @@ module conv_water
    real(r8), pointer, dimension(:,:) ::  fice     ! Ice partitioning ratio
    real(r8), pointer, dimension(:,:) ::  sh_cldliq ! shallow convection gbx liq cld mixing ratio for COSP
    real(r8), pointer, dimension(:,:) ::  sh_cldice ! shallow convection gbx ice cld mixing ratio for COSP
-
+!<shanyp 03122023
+   real(r8), pointer, dimension(:,:) ::  icimrst2 ! stratiform cloud ice from P3 (in-cloud value, snow is separated)
+!shanyp 03122023>
    ! Local Variables
 
    real(r8) :: conv_ice(pcols,pver)               ! Convective contributions to IC cloud ice
@@ -216,7 +224,9 @@ module conv_water
 
    itim_old = pbuf_old_tim_idx()
    call pbuf_get_field(pbuf, ast_idx,  ast,  start=(/1,1,itim_old/), kount=(/pcols,pver,1/) ) 
-
+!<shanyp 03122023
+   call pbuf_get_field(pbuf, icimrst2_idx,  icimrst2)
+!shanyp 03122023>
    ! --------------------------------------------------------------- !
    ! Loop through grid-boxes and determine:                          !
    ! 1. Effective mean in-cloud convective ice/liquid (deep+shallow) !
@@ -239,9 +249,13 @@ module conv_water
       cu0_frac = sh0_frac + dp0_frac
 
     ! For the moment calculate the emissivity based upon the ls clouds ice fraction
-
-      wrk1 = min(1._r8,max(0._r8, state%q(i,k,ixcldice)/(state%q(i,k,ixcldice)+state%q(i,k,ixcldliq)+1.e-36_r8)))
-
+!<shanyp 03122023
+! All the changes are stratiforward: replace state%q(i,k,ixcldice) with
+! icimrst2*cldf
+!      wrk1 = min(1._r8,max(0._r8, state%q(i,k,ixcldice)/(state%q(i,k,ixcldice)+state%q(i,k,ixcldliq)+1.e-36_r8)))
+      wrk1 = min(1._r8,max(0._r8, (icimrst2(i,k)*max(frac_limit,ast(i,k)))/ & 
+                                  (icimrst2(i,k)*max(frac_limit,ast(i,k))+state%q(i,k,ixcldliq)+1.e-36_r8)))
+!shanyp 03122023>
       if( ( cu0_frac < frac_limit ) .or. ( ( sh_icwmr(i,k) + dp_icwmr(i,k) ) < ic_limit ) ) then
 
             cu0_frac = 0._r8
@@ -258,10 +272,17 @@ module conv_water
                 totg_ice(i,k) = 0._r8
                 totg_liq(i,k) = 0._r8
             else
-                ls_icwmr = ( state%q(i,k,ixcldliq) + state%q(i,k,ixcldice) )/max(frac_limit,ls_frac) ! Convert to IC value.
-                tot_ice(i,k)  = state%q(i,k,ixcldice)/max(frac_limit,ls_frac)
+!<shanyp 03122023
+ !               ls_icwmr = ( state%q(i,k,ixcldliq) + state%q(i,k,ixcldice) )/max(frac_limit,ls_frac) ! Convert to IC value.
+                ls_icwmr = ( state%q(i,k,ixcldliq) + icimrst2(i,k)*max(frac_limit,ls_frac) )/max(frac_limit,ls_frac) 
+!                tot_ice(i,k)  = state%q(i,k,ixcldice)/max(frac_limit,ls_frac)
+                tot_ice(i,k)  = icimrst2(i,k) 
+!shanyp 03122023>
                 tot_liq(i,k)  = state%q(i,k,ixcldliq)/max(frac_limit,ls_frac)
-                totg_ice(i,k) = state%q(i,k,ixcldice)
+!<shanyp 03122023
+!                totg_ice(i,k) = state%q(i,k,ixcldice)
+                totg_ice(i,k) = icimrst2(i,k)*max(frac_limit,ls_frac)
+!shanyp 03122023>
                 totg_liq(i,k) = state%q(i,k,ixcldliq)
             endif
 
@@ -288,7 +309,10 @@ module conv_water
              conv_liq(i,k) = ( sh0_frac * sh_iclmr + dp0_frac*dp_iclmr)/max(frac_limit,cu0_frac)
              ls_frac   = ast(i,k)
              tot0_frac = (ls_frac + cu0_frac)
-             tot_ice(i,k) = (state%q(i,k,ixcldice) + cu0_frac*conv_ice(i,k))/max(frac_limit,tot0_frac)
+!<shanyp 03122023
+!             tot_ice(i,k) = (state%q(i,k,ixcldice) + cu0_frac*conv_ice(i,k))/max(frac_limit,tot0_frac)
+             tot_ice(i,k) = (icimrst2(i,k)*max(frac_limit,ls_frac) + cu0_frac*conv_ice(i,k))/max(frac_limit,tot0_frac)
+!shanyp 03122023>
              tot_liq(i,k) = (state%q(i,k,ixcldliq) + cu0_frac*conv_liq(i,k))/max(frac_limit,tot0_frac)
              totg_ice(i,k) = tot0_frac * tot_ice(i,k)
              totg_liq(i,k) = tot0_frac * tot_liq(i,k)
@@ -311,7 +335,10 @@ module conv_water
           ! Attribute large-scale/convective area fraction differently from default.
 
             ls_frac   = ast(i,k) 
-            ls_icwmr  = (state%q(i,k,ixcldliq) + state%q(i,k,ixcldice))/max(frac_limit,ls_frac) ! Convert to IC value.
+!<shanyp 03122023
+!            ls_icwmr  = (state%q(i,k,ixcldliq) + state%q(i,k,ixcldice))/max(frac_limit,ls_frac) ! Convert to IC value.
+            ls_icwmr  = (state%q(i,k,ixcldliq) + icimrst2(i,k)*max(frac_limit,ls_frac))/max(frac_limit,ls_frac) ! Convert to IC value.
+!shanyp 03122023>
             tot0_frac = (ls_frac + cu0_frac) 
 
             select case (conv_water_mode) ! Type of average
