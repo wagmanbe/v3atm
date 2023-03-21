@@ -2858,22 +2858,12 @@ state%deltaw_step(:ncol) = state%tw_after(:ncol) - state%tw_before(:ncol)
     !my guess is that precc etc are fluxes, since CG script uses them like fluxes and
     !they are called rates in cam exchange
 
-#if 1
     state%delta_te(1:ncol)=state%te_cur(1:ncol)-state%te_before_physstep(:ncol)
     state%rr(1:ncol) =                         &
        ( fsnt(1:ncol) - flnt(1:ncol) )                    &
      - ( fsns(1:ncol) - flns(1:ncol) - cam_in%shf(1:ncol) &
      -        (latvap+latice)*cam_in%cflx(:ncol,1)        &
      + 1000.0* latice        *( cam_out%precc(1:ncol)+cam_out%precl(1:ncol) - cam_out%precsc(1:ncol) - cam_out%precsl(1:ncol) ) )
-#else
-    state%delta_te(1:ncol)=state%te_cur(1:ncol)-state%te_before_physstep(:ncol)
-    state%rr(1:ncol) =                         &
-       ( fsnt(1:ncol) - flnt(1:ncol) )                    &
-     - ( fsns(1:ncol) - flns(1:ncol) - cam_in%shf(1:ncol) &
-     -        (latvap+latice)*cam_in%cflx(:ncol,1)        &
-     + 1000.0* latice        *( prec_dp(:ncol)  + prec_sh(:ncol)+prec_sed(:ncol) + prec_pcw(:ncol) &
-                              - snow_dp(:ncol)  - snow_sh(:ncol) - snow_sed(:ncol) - snow_pcw(:ncol) ) )
-#endif
 
 ogtemp1 = maxval( abs(  prec_dp(:ncol)  + prec_sh(:ncol)+prec_sed(:ncol) + prec_pcw(:ncol) &
                       - snow_dp(:ncol)  - snow_sh(:ncol) - snow_sed(:ncol) - snow_pcw(:ncol) &
