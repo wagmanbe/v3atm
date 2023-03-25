@@ -70,6 +70,11 @@
 </compset>
 
 <compset>
+  <alias>WCYCL1850_chemUCI-Linozv3-4xCO2</alias>
+  <lname>1850SOI_EAM%CHEMUCI-LINOZV3-4xCO2_ELM%SPBC_MPASSI_MPASO_MOSART_SGLC_SWAV</lname>
+</compset>
+
+<compset>
   <alias>WCYCL1950</alias>
   <lname>1950SOI_EAM%CMIP6_ELM%SPBC_MPASSI_MPASO_MOSART_SGLC_SWAV</lname>
 </compset>
