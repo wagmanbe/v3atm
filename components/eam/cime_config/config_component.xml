@@ -135,7 +135,7 @@
       <value compset="1850(?:SOI)?_EAM.*CMIP6"  >1850_eam_CMIP6</value>
       <value compset="1850(?:SOI)?_EAM.*CMIP6-1pctCO2"  >1850_eam_CMIP6-1pctCO2</value>
       <value compset="1850(?:SOI)?_EAM.*CHEMUCI.*LINOZ"  >1850_eam_chemUCI-Linoz</value>
-      <value compset="1850(?:SOI)?_EAM.*CHEMUCI.*LINOZ-1pctCO2"  >1850_eam_chemUCI-Linoz-1pctCO2</value>
+      <value compset="1850(?:SOI)?_EAM.*CHEMUCI.*LINOZ.*-1pctCO2"  >1850_eam_chemUCI-Linoz-1pctCO2</value>
       <value compset="1950(?:SOI)?_EAM.*CMIP6"  >1950_eam_CMIP6</value>
       <value compset="1850(?:SOI)?_EAM.*CMIP6.*_BGC%B"  >1850_cam5_CMIP6_bgc</value>
       <value compset="2010S_EAM.*CMIP6"  >2010S_cam5_CMIP6</value>
