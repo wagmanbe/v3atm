@@ -125,7 +125,7 @@ end subroutine linoz_readnl
     ! input parameters from netcdf file and interpolate to
     ! present model grid
     !
-    use linoz_data,   only : linoz_data_init, has_linozv3_data, has_linoz_data
+    use linoz_data,   only : linoz_data_init, has_linozv3_data, has_linoz_data,file
     use ppgrid,       only : pver
     use mo_chem_utls, only : get_spc_ndx, get_rxt_ndx
     use cam_history,  only : addfld, horiz_only, add_default
@@ -188,6 +188,18 @@ end subroutine linoz_readnl
 !     
 !   initialize the linoz data
 
+    !!set true for linoz_v3 interpolation in interpolation
+    if (linoz_v3) file%linoz_v3=.true.
+    if (linoz_v2) file%linoz_v2=.true.
+    !!
+    if (linoz_v2.eq..true. .and.linoz_v3.eq..true. ) then
+            write(iulog,*) "Error: Both linoz_v2 and linoz_v3 are true, please check"
+            return
+    elseif (linoz_v2.eq..false..and.linoz_v3.eq..false.) then
+            write(iulog,*) "Error: Both linoz_v2 and linoz_v3 are false, please check"
+            return
+    endif
+    !!
     call linoz_data_init()
 
     ! define additional output
