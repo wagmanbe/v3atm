@@ -193,10 +193,10 @@ end subroutine linoz_readnl
     if (linoz_v2) file%linoz_v2=.true.
     !!
     if (linoz_v2.eq..true. .and.linoz_v3.eq..true. ) then
-            write(iulog,*) subname // ', linoz: Both linoz_v2 and linoz_v3 are true, please check'
+            write(iulog,*) 'linoz_readnl, linoz: Both linoz_v2 and linoz_v3 are true, please check'
             return
     elseif (linoz_v2.eq..false..and.linoz_v3.eq..false.) then
-            write(iulog,*) subname // ', linoz: Both linoz_v2 and linoz_v3 are false, please check'
+            write(iulog,*) 'linoz_readnl, linoz: Both linoz_v2 and linoz_v3 are false, please check'
             return
     endif
     !!
