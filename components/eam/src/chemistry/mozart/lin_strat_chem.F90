@@ -274,7 +274,7 @@ end subroutine linoz_readnl
                               lnoy_dPmL_dCH4_ndx,lnoy_dPmL_dH2O_ndx, lnoy_dPmL_dT_ndx,  lnoy_dPmL_dO3col_ndx,&
                               nch4_PmL_clim_ndx, nch4_dPmL_dO3_ndx,  nch4_dPmL_dN2O_ndx,nch4_dPmL_dNOy_ndx,  &
                               nch4_dPmL_dCH4_ndx,nch4_dPmL_dH2O_ndx, nch4_dPmL_dT_ndx,  nch4_dPmL_dO3col_ndx,&
-                              cariolle_pscs_ndx, o3lbs_ndx
+                              cariolle_pscs_ndx, o3lbs_ndx,ch4_avg_srf_ndx
     !
     integer,  intent(in)                           :: ncol                ! number of columns in chunk
     integer,  intent(in)                           :: lchnk               ! chunk index
@@ -324,6 +324,7 @@ end subroutine linoz_readnl
     real(r8), dimension(:,:), pointer :: linoz_dPmL_dO3col
     real(r8), dimension(:,:), pointer :: linoz_cariolle_psc
     real(r8), dimension(:,:), pointer :: linoz_o3lbs
+    real(r8), dimension(:,:), pointer :: linoz_ch4_avg_srf
     ! real O3 variables
     real(r8), dimension(ncol,pver) :: do3_linoz_du, do3_linoz_psc_du
     real(r8), dimension(ncol) :: twod_do3_linoz
@@ -362,6 +363,8 @@ end subroutine linoz_readnl
        linoz_o3col_clim   => fields(o3col_clim_ndx)   %data(:,:,lchnk )
        linoz_o3lbs        => fields(o3lbs_ndx)        %data(:,:,lchnk )
 
+       linoz_ch4_avg_srf  => fields(ch4_avg_srf_ndx)  %data(:,:,lchnk )
+
        dO3(:,:)     =   o3_vmr(:,:)  - linoz_o3_clim(:,:)
        dN2O(:,:)    =  n2o_vmr(:,:)  - linoz_n2o_clim(:,:)
        dNOY(:,:)    =  noy_vmr(:,:)  - linoz_noy_clim(:,:) 
@@ -380,7 +383,8 @@ end subroutine linoz_readnl
        xsfc(2,:)=   linoz_n2o_clim(:,pver) !  n2o (constant throughout latitude)
        xsfc(3,:)=   linoz_o3lbs(:,pver)*3.e-3_r8  !noylnz
        xsfc(4,:)=   linoz_ch4_clim(:,pver) ! ch4 (constant throughout latitude)
-       ch4max =     maxval(linoz_ch4_clim(1:ncol,pver)) 
+
+       ch4max =     maxval(linoz_ch4_avg_srf(1:ncol,:)) 
        pw= 2.0_r8 * ch4max + 3.65e-6_r8 
  
 ! OZONE P-L terms !unit vmr/sec

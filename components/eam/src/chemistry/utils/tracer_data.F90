@@ -1288,7 +1288,12 @@ contains
                                                                 (/ flds(f)%order(ZA_LATDIM),flds(f)%order(ZA_LEVDIM)/), &
                                                                 vid_srf=flds(f+57)%var_id )
                      elseif (index(flds(f)%fldnam,"_srf").gt.0) then
-                             continue
+                             !!single time variable for globe
+                             if (index(flds(f)%fldnam,"ch4_avg_srf").gt.0) then
+                                     call read_pt_trc_linoz(fids(i), flds(f)%var_id, flds(f)%input(i)%data, strt3, cnt3, file)
+                             else
+                                     continue
+                             endif
                      else
                              call read_za_trc_linoz( fids(i), flds(f)%var_id, flds(f)%input(i)%data, strt3, cnt3, file, &
                                                                 (/ flds(f)%order(ZA_LATDIM),flds(f)%order(ZA_LEVDIM) /) )
@@ -1657,7 +1662,6 @@ contains
     integer :: cnt_srf(2)
     integer :: strt_srf(2)
     !!
-
     type(interp_type) :: lat_wgts
     real(r8) :: to_lats(pcols), to_lons(pcols), wrk(pcols)
     real(r8), allocatable, target :: wrk2d(:,:)
@@ -1745,6 +1749,62 @@ contains
     end if
 !    if(dycore_is('LR')) call polar_average(loc_arr)
   end subroutine read_za_trc_linoz
+
+!------------------------------------------------------------------------
+  subroutine read_pt_trc_linoz( fid, vid, loc_arr, strt, cnt, file)
+    use phys_grid,        only : pcols, begchunk, endchunk, get_ncols_p, get_rlat_all_p, get_rlon_all_p
+    !!
+    implicit none
+    type(file_desc_t), intent(in) :: fid
+    type(var_desc_t),  intent(in) :: vid
+    integer,           intent(in) :: strt(:), cnt(:)
+    real(r8),          intent(out):: loc_arr(:,:,:)
+    type (trfile),     intent(in) :: file
+    !!
+    real(r8), allocatable, target :: wrk(:)
+    real(r8), pointer :: wrk_in(:)
+    integer :: c, k, ierr, ncols
+    integer :: cnt_srf(1)
+    integer :: strt_srf(1)
+    !!
+    nullify(wrk_in)
+     allocate( wrk(cnt(1)), stat=ierr )
+     if( ierr /= 0 ) then
+        write(iulog,*) 'read_pt_trc_linoz: wrk allocation error = ',ierr
+        call endrun
+     end if
+    !!
+    !allocate( wrk_in(cnt(1)), stat=ierr )
+    if( ierr /= 0 ) then
+           write(iulog,*) 'read_pt_trc_linoz: wrk_in allocation error = ',ierr
+           call endrun
+    end if
+    !!
+    strt_srf=strt(1)
+    cnt_srf=cnt(1)
+    ierr = pio_get_var( fid, vid, strt_srf, cnt_srf, wrk )
+    !!
+    if(associated(wrk_in)) then
+       wrk_in = reshape( wrk(:),(/1/))
+       deallocate(wrk)
+    else
+       wrk_in => wrk
+    end if
+    !!
+    do c=begchunk,endchunk
+           ncols = get_ncols_p(c)
+           do k=1,file%nlev
+           loc_arr(1:ncols,k,c-begchunk+1) = wrk(1)
+           enddo
+    enddo
+    !!
+    if(allocated(wrk)) then
+       deallocate(wrk)
+    else
+       deallocate(wrk_in)
+    end if
+    !!
+    end subroutine read_pt_trc_linoz
 
 !------------------------------------------------------------------------
 
