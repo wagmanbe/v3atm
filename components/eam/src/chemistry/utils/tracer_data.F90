@@ -2613,8 +2613,8 @@ contains
     integer ::  i,k                   ! longitude index
     ! Initialize index array
     !
-    do i=1,ncol
-        do k=1,pver
+    do k=1,pver
+        do i=1,ncol
         call vert_interp_uci_single(pint(i,k+1),pint(i,k),dataout(i,k),pin,datain(i,:),levsiz)
         enddo
     enddo
