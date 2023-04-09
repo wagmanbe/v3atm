@@ -196,7 +196,7 @@ end subroutine linoz_readnl
             write(iulog,*) 'linoz_readnl, linoz: Both linoz_v2 and linoz_v3 are true. This is wrong! please check.'
             return
     elseif (linoz_v2.eq..false..and.linoz_v3.eq..false.) then
-            write(iulog,*) 'linoz_readnl, linoz: Both linoz_v2 and linoz_v3 are false, please check if these setting are correct.'
+            write(iulog,*) 'linoz_readnl, linoz: Both linoz_v2 and linoz_v3 are false, which can be correct, but be sure that is intended!'
     endif
     !!
     call linoz_data_init()
