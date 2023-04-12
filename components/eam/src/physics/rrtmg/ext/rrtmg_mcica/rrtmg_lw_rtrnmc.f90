@@ -529,6 +529,7 @@
       !+
       ! History
       ! Oct. 17, 2016 Develop the code (Chia-Pang Kuo)
+      ! Mar.  4, 2022 Add plank function in each layer in suboutine TwsFunctionIR (Chia-Pang Kuo)
       !-
       ! Contact Information
       !  Chia-Pang Kuo @ Texas A&M University
@@ -626,6 +627,7 @@
       real(kind=r8) :: asyrevcld(nlayers)
       real(kind=r8) :: asyrevclr(nlayers)
       real(kind=r8) :: plankrev(0:nlayers)
+      real(kind=r8) :: plankray(nlayers)
       real(kind=r8) :: fracsrev(nlayers)
 
       real(kind=r8), parameter :: pi = 3.1415926535897932_r8
@@ -687,6 +689,7 @@
       asyrevcld = 0.0_r8
       asyrevclr = 0.0_r8
       plankrev = 0.0_r8
+      plankray = 0.0_r8
       planksuf = 0.0_r8
       albedosuf = 0.0_r8
       fracsrev = 0.0_r8
@@ -702,6 +705,11 @@
       ! ***    planck function for each level
       do lay = 0, nlayers
       plankrev(nlayers-lay) = planklev(lay,iband) * 1.0e4_r8 * delwave(iband)
+      enddo
+
+      ! ***    planck function for each layer
+      do lay = 1, nlayers
+      plankray(nlayers-lay+1) = planklay(lay,iband) * 1.0e4_r8 * delwave(iband)
       enddo
 
       ! ***    planck function at the surface
@@ -783,7 +791,7 @@
       ! ***    boundary conditions
       dnftoa  = 0.0_r8
 
-      call TwsFunctionIR(nlayers,diffus,taurevcld,ssarevcld,fracsrev,plankrev,planksuf,&
+      call TwsFunctionIR(nlayers,diffus,taurevcld,ssarevcld,fracsrev,plankrev,plankray,planksuf,&
             gama1,gama2,albedosuf,dnftoa,fluxupcld,fluxdncld)
 
       ! Set unphysical values to 0.0
@@ -821,7 +829,7 @@
       ! ***    boundary conditions
       dnftoa  = 0.0_r8
 
-      call TwsFunctionIR(nlayers,diffus,taurevclr,ssarevclr,fracsrev,plankrev,planksuf,&
+      call TwsFunctionIR(nlayers,diffus,taurevclr,ssarevclr,fracsrev,plankrev,plankray,planksuf,&
             gama1,gama2,albedosuf,dnftoa,fluxupclr,fluxdnclr)
 
       ! Set unphysical values to 0.0
@@ -873,7 +881,7 @@
       !--------------------------------------------
       ! 2) TwsFunctionIR (add by U-MICH team)
 
-      subroutine TwsFunctionIR(nlayers,difactor,taulay,ssalay,planckfracs,planckflev,planckfsuf,&
+      subroutine TwsFunctionIR(nlayers,difactor,taulay,ssalay,planckfracs,planckflev,planckflay,planckfsuf,&
                gama1,gama2,sufalb,dnf0,upf,dnf)
 
       !+
@@ -889,6 +897,7 @@
       ! History
       ! Nov. 11, 2016 Develop the code (Chia-Pang Kuo)
       ! Mar. 29, 2017 Fix a bug in paramH and paramG (Chia-Pang Kuo)
+      ! Mar.  4, 2022 Treat boundary conditions seperatly for upward and downard radiances (Chia-Pang Kuo)
       !-
       ! Contact Information
       !  Chia-Pang Kuo @ Texas A&M University
@@ -928,6 +937,8 @@
                                     ! dimension(layer)
       real(kind=r8), intent(in) :: planckflev(0:)  ! plank function in each level
                                     ! dimension(0:layer)
+      real(kind=r8), intent(in) :: planckflay(:)   ! plank function in each layer
+                                                   ! dimension(layer)
       real(kind=r8), intent(in) :: planckfracs(:)  ! 
                                     ! dimensions: (layer)
       real(kind=r8), intent(in) :: planckfsuf      ! plank function on the ground
@@ -945,6 +956,7 @@
       real(kind=r8) :: upfn        ! upward flux at the surface (boundary condition)
       real(kind=r8) :: planktop
       real(kind=r8) :: plankbas
+      real(kind=r8) :: plankeff
       real(kind=r8) :: lamda(nlayers)
       real(kind=r8) :: gama(nlayers)
       real(kind=r8) :: exp1(nlayers)
@@ -954,8 +966,10 @@
       real(kind=r8) :: e3n(nlayers)
       real(kind=r8) :: e4n(nlayers)
       real(kind=r8) :: mu1
-      real(kind=r8) :: b0(nlayers)
-      real(kind=r8) :: b1(nlayers)
+      real(kind=r8) :: bu0(nlayers)
+      real(kind=r8) :: bu1(nlayers)
+      real(kind=r8) :: bd0(nlayers)
+      real(kind=r8) :: bd1(nlayers)
       real(kind=r8) :: tempc(nlayers)
       real(kind=r8) :: upc0(nlayers)
       real(kind=r8) :: upcn(nlayers)
@@ -1005,8 +1019,10 @@
       e3n     = 0.0_r8
       e4n     = 0.0_r8
       mu1     = 0.0_r8
-      b0      = 0.0_r8
-      b1      = 0.0_r8
+      bu0     = 0.0_r8
+      bu1     = 0.0_r8
+      bd0     = 0.0_r8
+      bd1     = 0.0_r8
       tempc   = 0.0_r8
       upc0    = 0.0_r8
       upcn    = 0.0_r8
@@ -1062,27 +1078,33 @@
       ! (mu = diffusivity factor * inv(diffusivity factor) = 1.0)
       mu1 = 1.0_r8
 
-      ! approximate Planck function by first two terms of Taylor expansion in eq. 25
-      ! bn(tau) = b0n + b1n*tau
-      do lay = 1, nlayers
-      ! weighted planck function for a g interval
-      planktop = planckflev(lay-1) * planckfracs(lay)
-      plankbas = planckflev(lay) * planckfracs(lay)
-      if (taulay(lay) .lt. 1.0e-6_r8) then
-      b1(lay) = 0.0_r8
-      b0(lay) = planktop
-      else
-      b1(lay) = (plankbas - planktop) / taulay(lay)
-      b0(lay) = planktop
-      endif
-      enddo
+      ! Follow "linear in tau, bn(tau) = b0n + b1n*tau" assumption made by RRTMG and LBLRTM
+      do lay = 1, nlayers 
+            ! weighted planck function for a g interval
+            planktop = planckflev(lay-1) * planckfracs(lay)
+            plankbas = planckflev(lay)   * planckfracs(lay)
+            plankeff = planckflay(lay)   * planckfracs(lay)
+            if (taulay(lay) .lt. 1.0e-6_r8) then
+               bd1(lay) = 0.0_r8
+               bu1(lay) = 0.0_r8
+               bd0(lay) = plankeff
+               bu0(lay) = plankeff
+            else
+               ! For downward radiance, b0=be, and b1=(bb-be)/tau
+               bd1(lay) = (plankbas - plankeff) / taulay(lay)
+               bd0(lay) = plankeff
+               ! For upward radiance, b0=be, and b1=(bt-be)/tau
+               bu1(lay) = (planktop - plankeff) / taulay(lay)
+               bu0(lay) = plankeff
+            endif
+         enddo
 
       ! particular solution in eq. 27
       tempc = 1.0_r8 / (gama1 + gama2)
-      upc0 = b0 + b1*(0.0_r8+tempc) ! upward direction at the top of the layer
-      upcn = b0 + b1*(taulay+tempc) ! upward direction at the bottom of the layer 
-      dnc0 = b0 + b1*(0.0_r8-tempc) ! downward direction at the top of the layer
-      dncn = b0 + b1*(taulay-tempc) ! downward direction at the bottom of the layer 
+      upc0 = bu0 + bu1*(0.0_r8+tempc) ! upward direction at the top of the layer
+      upcn = bu0 + bu1*(taulay+tempc) ! upward direction at the bottom of the layer 
+      dnc0 = bd0 + bd1*(0.0_r8-tempc) ! downward direction at the top of the layer
+      dncn = bd0 + bd1*(taulay-tempc) ! downward direction at the bottom of the layer 
 
       ! upCn+1(0) - upCn(tau) in eq. 41 and 42
       upc_tmp(1:nlayers-1)  = upc0(2:nlayers) - upcn(1:nlayers-1)
@@ -1137,10 +1159,10 @@
       paramG = k1n * param1
       paramK = k2n * param1
       paramJ = k1n * param2
-      sigma1 = b0 - b1*(tempc-difactorev)
-      sigma2 = b1
-      alpha1 = b0 + b1*(tempc-difactorev)
-      alpha2 = b1
+      sigma1 = bd0 - bd1*(tempc-difactorev)
+      sigma2 = bd1
+      alpha1 = bu0 + bu1*(tempc-difactorev)
+      alpha2 = bu1
 
       ! downward intensity for a given direction
       do iangle = 1, nangle ! loop over double gauss quadrature
