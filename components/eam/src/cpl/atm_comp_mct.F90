@@ -399,7 +399,7 @@ CONTAINS
           call atm_read_srfrest_mct( EClock, x2a_a, a2x_a )
           ! Sent .true. as an optional argument so that restart_init is set to .true.  in atm_import
 	      ! This will ensure BFB restarts whenever qneg4 updates fluxes on the restart time step
-          call atm_import( x2a_a%rattr, cam_in, .true. )
+          call atm_import( x2a_a%rattr, cam_in, cam_out, .true. )
           call cam_run1 ( cam_in, cam_out ) 
        end if
 
@@ -520,8 +520,9 @@ CONTAINS
     ! Map input from mct to cam data structure
 
     call t_startf ('CAM_import')
-    call atm_import( x2a_a%rattr, cam_in )
+    call atm_import( x2a_a%rattr, cam_in, cam_out )
     call t_stopf  ('CAM_import')
+
     
     ! Cycle over all time steps in the atm coupling interval
     
@@ -962,5 +963,5 @@ CONTAINS
 
 
   end subroutine atm_write_srfrest_mct
-
+ 
 end module atm_comp_mct

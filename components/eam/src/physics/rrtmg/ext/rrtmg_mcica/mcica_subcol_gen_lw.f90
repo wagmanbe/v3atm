@@ -51,7 +51,8 @@
 
       subroutine mcica_subcol_lw(lchnk, ncol, nlay, icld, permuteseed, play, &
                        cldfrac, ciwp, clwp, rei, rel, tauc, cldfmcl, &
-                       ciwpmcl, clwpmcl, reicmcl, relqmcl, taucmcl, clm_rand_seed, pergro_mods)
+                       ciwpmcl, clwpmcl, reicmcl, relqmcl, taucmcl, clm_rand_seed, pergro_mods, &
+                       ssac, asmc, ssacmcl, asmcmcl) !U-MICH add
 
 ! ----- Input -----
 ! Control
@@ -118,6 +119,11 @@
 !      real(kind=r8) :: qi(ncol, nlay)                ! ice water (specific humidity)
 !      real(kind=r8) :: ql(ncol, nlay)                ! liq water (specific humidity)
 
+      ! U-MICH Add
+      real(kind=r8), intent(in) :: ssac (:,:,:)      ! Cloud single scattering albedo
+      real(kind=r8), intent(in) :: asmc (:,:,:)      ! Cloud asymmetric factor
+      real(kind=r8), intent(out) :: ssacmcl (:,:,:)  ! Cloud single scattering albedo [mcica]
+      real(kind=r8), intent(out) :: asmcmcl (:,:,:)  ! Cloud asymmetric factor [mcica]
 
 ! Return if clear sky; or stop if icld out of range
       if (icld.eq.0) return
@@ -152,14 +158,16 @@
 
 !  Generate the stochastic subcolumns of cloud optical properties for the longwave;
       call generate_stochastic_clouds (ncol, nlay, nsubclw, icld, pmid, cldfrac, clwp, ciwp, tauc, &
-                               cldfmcl, clwpmcl, ciwpmcl, taucmcl, permuteseed, clm_rand_seed, pergro_mods)!BSINGH
+                               cldfmcl, clwpmcl, ciwpmcl, taucmcl, permuteseed, clm_rand_seed, pergro_mods, &
+                               ssac, asmc, ssacmcl, asmcmcl) !U-MICH add
 
       end subroutine mcica_subcol_lw
 
 
 !-------------------------------------------------------------------------------------------------
       subroutine generate_stochastic_clouds(ncol, nlay, nsubcol, icld, pmid, cld, clwp, ciwp, tauc, &
-                                   cld_stoch, clwp_stoch, ciwp_stoch, tauc_stoch, changeSeed, clm_rand_seed, pergro_mods)!BSINGH  
+                                   cld_stoch, clwp_stoch, ciwp_stoch, tauc_stoch, changeSeed, clm_rand_seed, pergro_mods, & 
+                                   ssac, asmc, ssac_stoch, asmc_stoch) ! U-MICH add
 !-------------------------------------------------------------------------------------------------
 
   !----------------------------------------------------------------------------------------------------------------
@@ -304,6 +312,18 @@
 
 ! Indices
       integer :: ilev, isubcol, i, n         ! indices
+
+! U-MICH team add -->
+      ! add new variables
+      real(kind=r8), intent(in) :: ssac (:,:,:) ! Cloud single scattering albedo
+      !    Dimensions: (nbndlw,ncol,nlay)
+      real(kind=r8), intent(in) :: asmc(:,:,:) ! Cloud phase function expansion coefficient
+      !    Dimensions: (moment,nbndlw,ncol,nlay)
+      real(kind=r8), intent(out) :: ssac_stoch (:,:,:)  ! Cloud single scattering albedo [mcica]
+      !    Dimensions: (ngptlw,ncol,nlay)
+      real(kind=r8), intent(out) :: asmc_stoch (:,:,:) ! Cloud phase function expansion coefficient [mcica]
+      !    Dimensions: (moment,ngptlw,ncol,nlay)
+! <---
 
 !------------------------------------------------------------------------------------------ 
 
@@ -518,12 +538,12 @@
                if ( iscloudy(isubcol,i,ilev) .and. (cldf(i,ilev) > 0._r8) ) then
                   n = ngb(isubcol)
                   tauc_stoch(isubcol,i,ilev) = tauc(n,i,ilev)
-!                  ssac_stoch(isubcol,i,ilev) = ssac(n,i,ilev)
-!                  asmc_stoch(isubcol,i,ilev) = asmc(n,i,ilev)
+                  ssac_stoch(isubcol,i,ilev) = ssac(n,i,ilev)
+                  asmc_stoch(isubcol,i,ilev) = asmc(n,i,ilev)
                else
                   tauc_stoch(isubcol,i,ilev) = 0._r8
-!                  ssac_stoch(isubcol,i,ilev) = 1._r8
-!                  asmc_stoch(isubcol,i,ilev) = 0._r8
+                  ssac_stoch(isubcol,i,ilev) = 1._r8
+                  asmc_stoch(isubcol,i,ilev) = 0._r8
                endif
             enddo
          enddo

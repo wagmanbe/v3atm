@@ -32,5 +32,20 @@
       real(kind=r8) :: absliq0
       real(kind=r8) , dimension(58,16) :: absliq1
 
+      real(kind=r8) , dimension(2,7,16) :: absice4 ! U-MICH team Dec.18, 2019
+      real(kind=r8) , dimension(2,7,16) :: extice4 ! U-MICH team Dec.18, 2019  
+      real(kind=r8) , dimension(2,7,16) :: ssaice4 ! U-MICH team Dec.18, 2019  
+      real(kind=r8) , dimension(2,7,16) :: asyice4 ! U-MICH team Dec.18, 2019  
+
+      real(kind=r8) , dimension(2,7,16) :: absice5 ! U-MICH team Feb.10, 2020 
+      real(kind=r8) , dimension(2,7,16) :: extice5 ! U-MICH team Feb.10, 2020  
+      real(kind=r8) , dimension(2,7,16) :: ssaice5 ! U-MICH team Feb.10, 2020 
+      real(kind=r8) , dimension(2,7,16) :: asyice5 ! U-MICH team Feb.10, 2020  
+
+      real(kind=r8) , dimension(2,8,16) :: absice6 ! U-MICH team Feb.10, 2020
+      real(kind=r8) , dimension(2,8,16) :: extice6 ! U-MICH team Feb.10, 2020  
+      real(kind=r8) , dimension(2,8,16) :: ssaice6 ! U-MICH team Feb.10, 2020  
+      real(kind=r8) , dimension(2,8,16) :: asyice6 ! U-MICH team Feb.10, 2020 
+
       end module rrlw_cld
 

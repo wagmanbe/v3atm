@@ -5,30 +5,34 @@ module atm_import_export
 
 contains
 
-  subroutine atm_import( x2a, cam_in, restart_init )
+  subroutine atm_import( x2a, cam_in, cam_out, restart_init )
 
     !-----------------------------------------------------------------------
     use cam_cpl_indices
-    use camsrfexch,     only: cam_in_t
+    use camsrfexch,     only: cam_in_t, cam_out_t
     use phys_grid ,     only: get_ncols_p
-    use ppgrid    ,     only: begchunk, endchunk       
+    use ppgrid    ,     only: begchunk, endchunk, pcols
     use shr_const_mod,  only: shr_const_stebol
     use seq_drydep_mod, only: n_drydep
     use co2_cycle     , only: c_i, co2_readFlux_ocn, co2_readFlux_fuel
     use co2_cycle     , only: co2_transport, co2_time_interp_ocn, co2_time_interp_fuel
     use co2_cycle     , only: data_flux_ocn, data_flux_fuel
     use physconst     , only: mwco2
-    use time_manager  , only: is_first_step
+    use time_manager  , only: is_first_step, get_curr_date
+    use perf_mod      , only: t_startf, t_stopf
+    use radconstants  , only: nlwbands
+    use surface_emis_mod, only: surface_emis_intr
     !
     ! Arguments
     !
-    real(r8)      , intent(in)    :: x2a(:,:)
+    real(r8)      , intent(inout)    :: x2a(:,:)
     type(cam_in_t), intent(inout) :: cam_in(begchunk:endchunk)
+    type(cam_out_t), optional, intent(in) :: cam_out(begchunk:endchunk)
     logical, optional, intent(in) :: restart_init
     !
     ! Local variables
     !		
-    integer            :: i,lat,n,c,ig  ! indices
+    integer            :: i,j,lat,n,c,ig  ! indices
     integer            :: ncols         ! number of columns
     logical, save      :: first_time = .true.
     integer, parameter :: ndst = 2
@@ -101,6 +105,14 @@ contains
           cam_in(c)%icefrac(i)   =  x2a(index_x2a_Sf_ifrac, ig)  
           cam_in(c)%ocnfrac(i)   =  x2a(index_x2a_Sf_ofrac, ig)
           cam_in(c)%landfrac(i)  =  x2a(index_x2a_Sf_lfrac, ig)
+!  Added by U-MICH team on Dec.15, 2018  -->
+          cam_in(c)%tlai(i)      =  x2a(index_x2a_Sl_tlai, ig)
+          ! Add for restart, xiuhong, 10 Apr, 2020 -->
+          cam_in(c)%ts_atm(i)      =  x2a(index_x2a_Sl_ts_atm, ig)
+          do j=1,nlwbands
+             cam_in(c)%srf_emis_spec(i,j) =x2a(index_x2a_Sl_srf_emis_spec(j),ig)
+          enddo
+! <-- end of U-MICH add
           if ( associated(cam_in(c)%ram1) ) &
                cam_in(c)%ram1(i) =  x2a(index_x2a_Sl_ram1 , ig)
           if ( associated(cam_in(c)%fv) ) &
@@ -224,10 +236,30 @@ contains
              ncols = get_ncols_p(c)
              do i=1,ncols
                 cam_in(c)%lwup(i) = shr_const_stebol*(cam_in(c)%ts(i)**4)
+                ! added by U-MICH team on Dec.15, 2019       
+                cam_in(c)%ts_atm(i)      = sqrt(sqrt((cam_in(c)%lwup(i)/shr_const_stebol)))  
+                cam_in(c)%srf_emis_spec(i,1:nlwbands) = 1.0_r8
+                ! <--
              end do
           end do
        end if
        first_time = .false.
+    else
+       if (cam_out(begchunk)%do_emis(1) .eq. 1) then   ! to be consistent with when the block was in atm_comp_mct
+         call t_startf('SURF_EMIS')
+         call surface_emis_intr(cam_in,cam_out)
+         ig=1
+         do c=begchunk,endchunk
+            ncols = get_ncols_p(c) 
+            do i=1,ncols
+               x2a(index_x2a_Sl_ts_atm, ig) = cam_in(c)%ts_atm(i)
+               x2a(index_x2a_Sl_srf_emis_spec(:),ig) = &
+                          cam_in(c)%srf_emis_spec(i,:)
+               ig=ig+1
+            end do  ! i
+         end do ! chunk
+         call t_stopf('SURF_EMIS')
+       end if
     end if
 
   end subroutine atm_import
@@ -242,6 +274,7 @@ contains
     use ppgrid    , only: begchunk, endchunk       
     use cam_cpl_indices
     use phys_control, only: phys_getopts
+    use radconstants, only: nlwbands
     !
     ! Arguments
     !
@@ -251,7 +284,7 @@ contains
     ! Local variables
     !
     integer :: avsize, avnat
-    integer :: i,m,c,n,ig       ! indices
+    integer :: i,j,m,c,n,ig     ! indices
     integer :: ncols            ! Number of columns
     logical :: linearize_pbl_winds, export_gustiness
     !-----------------------------------------------------------------------
@@ -293,6 +326,13 @@ contains
           a2x(index_a2x_Faxa_swvdr,ig) = cam_out(c)%sols(i)   
           a2x(index_a2x_Faxa_swndf,ig) = cam_out(c)%solld(i)  
           a2x(index_a2x_Faxa_swvdf,ig) = cam_out(c)%solsd(i)  
+          ! added by U-MICH team on Dec. 15, 2019
+          a2x(index_a2x_Do_emis ,ig) = cam_out(c)%do_emis(i)
+          do j=1,nlwbands
+           a2x(index_a2x_Faxa_lwdn_spec(j) ,ig) = cam_out(c)%flwds_spec(i,j) 
+           a2x(index_a2x_Faxa_emis_spec(j) ,ig) = cam_out(c)%emis_spec(i,j)
+          enddo
+          ! <--
 
           ! aerosol deposition fluxes
           a2x(index_a2x_Faxa_bcphidry,ig) = cam_out(c)%bcphidry(i)

@@ -35,12 +35,18 @@ logical :: pergro_mods = .false.
 CONTAINS
 !===============================================================================
 
+!! U-MICH team modified input/output -->
 subroutine rad_rrtmg_lw(lchnk   ,ncol      ,rrtmg_levs,r_state,       &
                         pmid    ,aer_lw_abs,cld       ,tauc_lw,       &
                         qrl     ,qrlc      ,                          &
                         flns    ,flnt      ,flnsc     ,flntc  ,flwds, &
                         flut    ,flutc     ,fnl       ,fcnl   ,fldsc,clm_rand_seed, &
-                        lu      ,ld        )
+                        lu      ,ld        ,                        &
+                        ! U-MICH team add input -->
+                        rtr2_flag, ssac_lw, asmc_lw, surface_emis, &  
+                        ! U-MICH team add input -->
+                        spec_lwdn )  ! U-MICH team add
+! <---
 
 !-----------------------------------------------------------------------
    use cam_history,         only: outfld
@@ -136,6 +142,17 @@ subroutine rad_rrtmg_lw(lchnk   ,ncol      ,rrtmg_levs,r_state,       &
    real(r8) :: hrc(pcols,rrtmg_levs)     ! Clear sky longwave heating rate (K/d)
    real(r8) lwuflxs(nbndlw,pcols,pverp+1)  ! Longwave spectral flux up
    real(r8) lwdflxs(nbndlw,pcols,pverp+1)  ! Longwave spectral flux down
+
+   ! U-MICH team add  -->
+   logical, intent(in)   :: rtr2_flag                     ! flag to control cloud LW scattering
+   real(r8), intent(in)  :: ssac_lw (nbndlw,pcols,pver)   ! Cloud single scattering albedo
+   real(r8), intent(in)  :: asmc_lw(nbndlw,pcols,pver)    ! Cloud asymmetric factor
+   real(r8), intent(in)  :: surface_emis(pcols,nbndlw)    ! surface emissivity
+   real(r8), intent(out) :: spec_lwdn(nbndlw,pcols)       ! downward LW spectral flux at the surface
+   real(r8) :: ssac_stolw(nsubclw, pcols, rrtmg_levs-1)   ! Cloud single scattering albedo (mcica - optional)
+   real(r8) :: asmc_stolw(nsubclw, pcols, rrtmg_levs-1)   ! Cloud asymmetric factor (mcica - optional)
+   ! <---
+   
    !-----------------------------------------------------------------------
 
    ! mji/rrtmg
@@ -169,9 +186,15 @@ subroutine rad_rrtmg_lw(lchnk   ,ncol      ,rrtmg_levs,r_state,       &
    rei = 0.0_r8
    rel = 0.0_r8
 
+   ! U-MICH team modify (add input & output) -->
    call mcica_subcol_lw(lchnk, ncol, rrtmg_levs-1, icld, permuteseed, pmid(:, pverp-rrtmg_levs+1:pverp-1), &
       cld(:, pverp-rrtmg_levs+1:pverp-1), cicewp, cliqwp, rei, rel, tauc_lw(:, :ncol, pverp-rrtmg_levs+1:pverp-1), &
-      cld_stolw, cicewp_stolw, cliqwp_stolw, rei_stolw, rel_stolw, tauc_stolw, clm_rand_seed, pergro_mods)
+      cld_stolw, cicewp_stolw, cliqwp_stolw, rei_stolw, rel_stolw, tauc_stolw, clm_rand_seed, pergro_mods, &
+      ! U-MICH team add input -->
+      ssac_lw(:, :ncol, pverp-rrtmg_levs+1:pverp-1), asmc_lw(:,:ncol,pverp-rrtmg_levs+1:pverp-1), &
+      ! U-MICH team add output -->
+      ssac_stolw, asmc_stolw)
+! <---
 
    call t_stopf('mcica_subcol_lw')
 
@@ -208,25 +231,30 @@ subroutine rad_rrtmg_lw(lchnk   ,ncol      ,rrtmg_levs,r_state,       &
    ! Convert incoming water amounts from specific humidity to vmr as needed;
    ! Convert other incoming molecular amounts from mmr to vmr as needed;
    ! Convert pressures from Pa to hPa;
-   ! Set surface emissivity to 1.0 here, this is treated in land surface model;
+   ! Set surface emissivity to the real surface emissivity here by UMich Team,
+   !   this is treated in land surface model
    ! Set surface temperature
    ! Set aerosol optical depth to zero for now
 
-   emis(:ncol,:nbndlw) = 1._r8
+   emis(:ncol,:nbndlw) = 1._r8 * surface_emis(:ncol,1:nbndlw)
    tsfc(:ncol) = r_state%tlev(:ncol,rrtmg_levs+1)
    taua_lw(:ncol, 1:rrtmg_levs-1, :nbndlw) = aer_lw_abs(:ncol,pverp-rrtmg_levs+1:pverp-1,:nbndlw)
 
    if (associated(lu)) lu(1:ncol,:,:) = 0.0_r8
    if (associated(ld)) ld(1:ncol,:,:) = 0.0_r8
 
-   call rrtmg_lw(lchnk  ,ncol ,rrtmg_levs    ,icld    ,                 &
+   ! U-MICH team modify input (add rtr2_flag, ssac_stolw, and asmc_stolw) -->
+   call rrtmg_lw(lchnk  ,ncol ,rrtmg_levs    ,icld    , rtr2_flag,         &
         r_state%pmidmb  ,r_state%pintmb  ,r_state%tlay    ,r_state%tlev    ,tsfc    ,r_state%h2ovmr, &
         r_state%o3vmr   ,r_state%co2vmr  ,r_state%ch4vmr  ,r_state%o2vmr   ,r_state%n2ovmr  ,r_state%cfc11vmr,r_state%cfc12vmr, &
         r_state%cfc22vmr,r_state%ccl4vmr ,emis    ,inflglw ,iceflglw,liqflglw, &
-        cld_stolw,tauc_stolw,cicewp_stolw,cliqwp_stolw ,rei, rel, &
+        cld_stolw,tauc_stolw,ssac_stolw,asmc_stolw,cicewp_stolw,cliqwp_stolw ,rei, rel, &
         taua_lw, &
         uflx    ,dflx    ,hr      ,uflxc   ,dflxc   ,hrc, &
         lwuflxs, lwdflxs)
+       
+        spec_lwdn(:,:) = lwdflxs(:,:ncol,1) ! U-MICH team add spec_lwdn output 
+! <---
 
    !
    !----------------------------------------------------------------------

@@ -115,7 +115,10 @@ contains
     character(len=CL)  :: stream_fldFileName_ndep    ! nitrogen deposition stream filename
     logical :: use_sitedata, has_zonefile, use_daymet, use_livneh
     data caldaym / 1, 32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366 /    
-
+! Added by U-MICH team on Dec.15, 2019
+    integer :: j  
+    integer, parameter :: nlwbands = 16 !number of LW radiation bands
+! <--
     ! Constants to compute vapor pressure
     parameter (a0=6.107799961_r8    , a1=4.436518521e-01_r8, &
          a2=1.428945805e-02_r8, a3=2.650648471e-04_r8, &
@@ -179,6 +182,13 @@ contains
     thisng = bounds%endg - bounds%begg + 1
     do g = bounds%begg,bounds%endg
        i = 1 + (g - bounds%begg)
+! Added by U-MICH team on Dec.15, 2019 -->
+       atm2lnd_vars%do_emis(g) = x2l(index_x2l_Do_emis,i)
+       do j=1,nlwbands
+          atm2lnd_vars%lwdn_spec(g,j)   = x2l(index_x2l_Faxa_lwdn_spec(j),i)
+          atm2lnd_vars%emis_spec(g,j)   = x2l(index_x2l_Faxa_emis_spec(j),i)
+       enddo
+! <--
        
        ! Determine flooding input, sign convention is positive downward and
        ! hierarchy is atm/glc/lnd/rof/ice/ocn.  so water sent from rof to land is negative,
@@ -1347,7 +1357,7 @@ contains
     real(r8)          , intent(out)   :: l2x(:,:)! land to coupler export state on land grid
     !
     ! !LOCAL VARIABLES:
-    integer  :: g,i   ! indices
+    integer  :: g,i,j ! indices
     integer  :: ier   ! error status
     integer  :: nstep ! time step index
     integer  :: dtime ! time step   
@@ -1361,6 +1371,15 @@ contains
 
     do g = bounds%begg,bounds%endg
        i = 1 + (g-bounds%begg)
+! Added by U-MICH team on Dec.15, 2019 -->
+       l2x(index_l2x_Sl_tlai,i)     =  lnd2atm_vars%tlai(g)  
+       ! Removed to fix restart bug, xiuhong, 10 Apr, 2020 -->
+       !l2x(index_l2x_Sl_ts_atm,i)   =  lnd2atm_vars%ts_atm(g)  
+       !do j=1,16
+       !   l2x(index_l2x_Sl_srf_emis_spec(j),i) = lnd2atm_vars%srf_emis_spec(g,j) 
+       !enddo
+       ! end remove.
+! <--
        l2x(index_l2x_Sl_t,i)        =  lnd2atm_vars%t_rad_grc(g)
        l2x(index_l2x_Sl_snowh,i)    =  lnd2atm_vars%h2osno_grc(g)
        l2x(index_l2x_Sl_avsdr,i)    =  lnd2atm_vars%albd_grc(g,1)
