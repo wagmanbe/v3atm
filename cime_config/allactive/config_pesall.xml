@@ -145,7 +145,6 @@
     </mach>
 
     <mach name="thetapm-gpu|cori-knl|cori-haswell|jlse">
->>>>>>> 160cc23b04... Add pm-cpu as a new machine -- CPU-only nodes of perlmutter
       <pes compset="any" pesize="any">
         <comment>default pelayout on jlse</comment>
         <ntasks>
