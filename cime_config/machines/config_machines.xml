@@ -162,7 +162,6 @@
   <machine MACH="pm-cpu">
     <DESC>Perlmutter CPU-only nodes at NERSC.  Phase2 only: Each node has 2 AMD EPYC 7713 64-Core (Milan) 512GB</DESC>
     <NODENAME_REGEX>$ENV{NERSC_HOST}:perlmutter</NODENAME_REGEX>
->>>>>>> 160cc23b04... Add pm-cpu as a new machine -- CPU-only nodes of perlmutter
     <OS>Linux</OS>
     <COMPILERS>gnu,nvidia,aocc,amdclang</COMPILERS>
     <MPILIBS>mpich</MPILIBS>
@@ -251,7 +250,7 @@
     <RUNDIR>$CIME_OUTPUT_ROOT/$CASE/run</RUNDIR>
     <EXEROOT>$CIME_OUTPUT_ROOT/$CASE/bld</EXEROOT>
     <TEST_TPUT_TOLERANCE>0.1</TEST_TPUT_TOLERANCE>
-    <TEST_MEMLEAK_TOLERANCE>0.20</TEST_MEMLEAK_TOLERANCE>
+    <TEST_MEMLEAK_TOLERANCE>0.20</TEST_MEMLEAK_TOLERANCE>    
 
     <environment_variables>
       <env name="MPICH_ENV_DISPLAY">1</env>
